@@ -1,0 +1,17 @@
+{
+    "basic_info":{
+        "game_width" : 720,
+        "game_height" : 360,
+        "background_color" : "#050B2B",
+        "nevigation_color" : "white",
+        "nev_text_color" : "black",
+        "home_screen_speed" : 100,
+        "home_screen_box_size" : 40,
+        "game_box_size" : 30,
+        "game_speed"  : 120
+
+    },
+    "game_info":{
+        "none" : 0
+    }
+}

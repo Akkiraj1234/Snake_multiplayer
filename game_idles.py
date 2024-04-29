@@ -179,9 +179,10 @@ class Heart:
         self.color = color
         self.distance = self.box_size // 4
         self.hearts_list = []
+        self.inisial_heart = inisial_heart
         self.limit = None
         self.heart()
-        for _ in range(inisial_heart-1):
+        for _ in range(self.inisial_heart-1):
             self.add_one_heart()
     
     def add_one_heart(self):
