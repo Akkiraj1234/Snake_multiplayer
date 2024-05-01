@@ -73,8 +73,6 @@ class inisial_screens:
         self.snakes = []
         self.animation_after_ids=None
     
-    def add_to_window(self):
-        self.child_window.pack()
     
     def add_snakes(self, color:str ,coordinates:tuple, lenght:int, direction:str)-> None:
         """Add a snake to the game screen.
@@ -102,6 +100,17 @@ class inisial_screens:
         self.random_color=randome_color
         self.food=Food(self.child_window, self.box_size, color, self.game_width, self.game_height, food_type)
         
+    def add_button(self,*args):
+        """Add button widgets to the game screen.
+
+        Args:
+            *buttons: Button widgets to be added to the game screen.
+        """
+        num = self.box_size-(self.box_size*2)
+        for button in args:
+            self.child_window.create_window(self.game_width//2,self.game_height//2+num,window=button)
+            num += self.box_size
+        
     def start_animation(self):
         """Start the animation loop for moving snakes and updating the game state."""
         for snake in self.snakes:
@@ -118,13 +127,11 @@ class inisial_screens:
         """Stop the animation loop."""
         self.child_window.after_cancel(self.animation_after_ids)
     
-    def add_button(self,*args):
-        """Add button widgets to the game screen.
-
-        Args:
-            *buttons: Button widgets to be added to the game screen.
-        """
-        num = self.box_size-(self.box_size*2)
-        for button in args:
-            self.child_window.create_window(self.game_width//2,self.game_height//2+num,window=button)
-            num += self.box_size
+    
+    def add_to_master(self):
+        '''add to the master'''
+        self.child_window.pack()
+        
+    def remove_from_master(self):
+        self.stop_animation()
+        self.child_window.pack_forget()

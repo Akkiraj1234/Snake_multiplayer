@@ -1,10 +1,143 @@
 from game_idles import Snake , Food , Heart
 from game_screens import inisial_screens
-from tkinter import Tk , Canvas , Button , Label
+from tkinter import Tk , Canvas , Button , Label , Frame
 from random import choice , randint
 import json
 import time
 #!!!!!!!!!!!!!!!!!!!!!!!!sneck_game!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# class player_info:
+#     pass
+# class audios:
+#     pass
+# class nevigation:
+#     def __init__(self):
+#         pass
+# class sneck_idels:
+#     pass
+
+# class food_idels:
+#     pass
+
+# class game_obsticales:
+#     pass
+
+
+
+
+
+
+
+
+class Game_Materiales:
+    def __init__(self, Master, canvas_background_color, game_width, Game_height, box_size, snack_color, food_type, food_color, navigation_color, heart_color, nevigation_text_color):
+        # <---------main_variables---------------->
+        self.MASTER = Master
+        self.GAME_CANVAS = None
+        self.SNECK = None
+        self.FOOD = None
+        self.NEVIGATION_CANVAS = None
+        self.SCORE = 0
+        
+        # <---------main_canvas_info----------->
+        self._canvas_background_color = canvas_background_color
+        self._game_width = game_width
+        self._Game_height = Game_height
+        self._box_size = box_size
+        
+        # <--------snake_variables------------->
+        self._snake_lenght = 3
+        self._snake_cordinates = (0,0)
+        self._snake_color = snack_color 
+        
+        # <--------food_variables-------------->
+        self._food_type = food_type
+        self._food_color = food_color
+        
+        # <--------nevigation_set_up----------->
+        self._Nevigation_height = 0
+        self._inisial_heart = 3
+        self._Nevigation_color = navigation_color
+        self._NAVIGATION_text_color = nevigation_text_color
+        self._heart_color = heart_color
+        self._adjust_window_size()
+        
+        # <--------creating_widgets------------>
+        self._create_nevigation_board()
+        self._create_game_board()
+    
+    def _adjust_window_size(self):
+        nevi_height = self._Game_height // 8
+        nevi_height = nevi_height // self._box_size
+        if not nevi_height:
+            self._Nevigation_height = self._box_size
+        else:
+            self._Nevigation_height = self._box_size * nevi_height
+        self._Game_height = self._Game_height -  self._Nevigation_height
+    
+    def _create_game_board(self):
+        self.GAME_CANVAS = Canvas(self.MASTER,bg=self._canvas_background_color,width=self._game_width,height=self._Game_height)
+        self.SNECK = Snake(self.GAME_CANVAS,self._snake_lenght,self._snake_cordinates, self._snake_color,self._box_size)
+        self.FOOD = Food(self.GAME_CANVAS,self._box_size,self._food_color,self._game_width,self._Game_height,self._food_type)
+    
+    def _create_nevigation_board(self):
+        self.NEVIGATION_CANVAS = Canvas(self.MASTER,bg=self._Nevigation_color,width=self._game_width,height=self._Nevigation_height)
+        division4 = self._Nevigation_height // 4
+        heart_size = division4 * 3
+        pady = division4 // 2
+        
+        self.HEART = Heart(self.NEVIGATION_CANVAS,(self._game_width-heart_size,pady),heart_size,self._heart_color,self._inisial_heart)
+        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(self._game_width//2,division4*2,font=("Arial",division4*2,"bold"),text=f"Score: {self.SCORE}",fill=self._NAVIGATION_text_color)
+        self.menu_option = self.NEVIGATION_CANVAS.create_text(30,division4*2,font=("Arial",division4*2,"bold"),text="Menu",fill=self._NAVIGATION_text_color)
+    
+    def restart(self):
+        pass
+    
+    def resume(self):
+        pass
+        
+class game_engion:
+    
+    def __init__(self,Master:Tk):
+        self.MASTER = Master
+        self.DIRECTION_sneck = "down"
+        self.Snake = Snake()
+        #<----------Game_Canvas_screnn---------->
+        self.game_window_frame = Frame(self.MASTER)
+        game_window = Game_Materiales()
+        
+        
+        
+        
+    def _bind_key(self):
+        self.MASTER.bind('<Left>', lambda event: self.change_direction('left'))
+        self.MASTER.bind('<Right>', lambda event: self.change_direction('right'))
+        self.MASTER.bind('<Up>', lambda event: self.change_direction('up'))
+        self.MASTER.bind('<Down>', lambda event: self.change_direction('down'))
+        self.MASTER.bind('<a>', lambda event: self.change_direction('left'))
+        self.MASTER.bind('<d>', lambda event: self.change_direction('right'))
+        self.MASTER.bind('<w>', lambda event: self.change_direction('up'))
+        self.MASTER.bind('<s>', lambda event: self.change_direction('down'))
+        # stop and resume keys binding
+    
+    def change_direction(self,direction):
+        if direction in ("down","up") and self.DIRECTION_sneck in ("down","up"):
+            pass
+        elif direction in ("right","left") and self.DIRECTION_sneck in ("right","left"):
+            pass
+        else: self.DIRECTION_sneck =direction
+    
+    def _check_collision(self):
+        pass
+    
+    
+    
+    
+    
+    
+    
+    
+    
 class Game_screen:
     """
     Class representing the game screen.
