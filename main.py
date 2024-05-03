@@ -80,7 +80,7 @@ class variable:
         with the extracted data.
         """
         # Extracting game setting info
-        with open("setting.json","r",encoding="utf-8") as Game_settings:
+        with open("Game_assets\\setting.json","r",encoding="utf-8") as Game_settings:
             self._game_setting = json.load(Game_settings)
             
         #gathering player account_name
@@ -125,7 +125,7 @@ class variable:
         self._game_setting["game_info"]["game_speed"] = self.game_speed
         self._game_setting["game_info"]["Account"] = self.ACCOUNT_NAME
         
-        with open("setting.json","w",encoding="utf-8") as game_setting:
+        with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
             json.dump(self._game_setting,game_setting)
     
     def update_password(self) -> None:
