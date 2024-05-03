@@ -581,7 +581,7 @@ class Game_engion:
         if status == "pause":
             text = 'Game is Paused'
         if status == "loss":
-            text = f'YOu lose :(  score: {self.SCORE}'
+            text = f'You lose :(  score: {self.SCORE}'
             deacive_resume = True
         if status == "high_score":
             text = f'New High Score:0   {self.SCORE}'
