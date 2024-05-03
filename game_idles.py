@@ -231,7 +231,7 @@ class Heart:
         if self.hearts_list == []:
             return None
         
-        for _ in self.hearts_list:
+        for _ in range(len(self.hearts_list)):
             self.remmove_heart()
             
     def add_heart_in_range(self,num = 0):
@@ -239,10 +239,11 @@ class Heart:
         add hearts in a range given by num or the value of 
         num is by default set to be num = self.inisial_heart
         '''
-        num = self.inisial_heart
+        if not num:
+            num = self.inisial_heart
         
         for _ in range(num):
-             self.add_one_heart()
+            self.add_one_heart()
     
     def heart(self):
         """
