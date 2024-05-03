@@ -71,6 +71,7 @@ class inisial_screens:
         if pack: self.child_window.pack()
         self.food = None
         self.snakes = []
+        self.Windows_list = []
         self.animation_after_ids=None
     
     
@@ -106,6 +107,8 @@ class inisial_screens:
         Args:
             *buttons: Button widgets to be added to the game screen.
         """
+        self.Windows_list = args
+        
         num = self.box_size-(self.box_size*2)
         for button in args:
             self.child_window.create_window(self.game_width//2,self.game_height//2+num,window=button)
@@ -125,9 +128,9 @@ class inisial_screens:
     
     def stop_animation(self):
         """Stop the animation loop."""
-        self.child_window.after_cancel(self.animation_after_ids)
-    
-    
+        if self.animation_after_ids:
+            self.child_window.after_cancel(self.animation_after_ids)
+        
     def add_to_master(self):
         '''add to the master'''
         self.child_window.pack()

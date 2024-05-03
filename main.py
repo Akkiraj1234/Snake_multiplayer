@@ -246,9 +246,11 @@ class Game_screen:
         
         self.SNECK.coordinates = (0,0)
         self.DIRECTION_sneck = "down"
+        
         for body in self.SNECK.snake_body:
             self.SNECK.canvas.delete(body)
         self.SNECK._create_snake()
+        
         for _ in range(len(self.HEART.hearts_list)):
             self.HEART.remmove_heart()
         for _ in range(self.HEART.inisial_heart):

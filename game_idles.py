@@ -67,6 +67,14 @@ class Snake:
         square= self.canvas.create_rectangle(x,y,x+self.box_size,y+self.box_size,fill=self.color)
         return square
     
+    def get_to_inisial_posision(self):
+        self.coordinates = (0,0)
+        
+        for body in self.snake_body:
+            self.canvas.delete(body)
+        
+        self._create_snake()
+    
     
 class Food:
     """Represents a food item in the game.
@@ -130,7 +138,7 @@ class Food:
         """Delete the current food item from the canvas."""
         self.canvas.delete(self.food)
     
-    def new_food(self,food_type:str):
+    def new_food(self,food_type:str="oval"):
         """Create a new food item of the specified type.
 
         Args:
@@ -213,6 +221,29 @@ class Heart:
             self.canvas.delete(ids)
         self.cordinates = (self.cordinates[0]+self.box_size+self.distance , self.cordinates[1])
         
+    def remove_all_heart(self):
+        """
+        remove all the heart left on the canvas.
+        
+        returns:
+            None
+        """
+        if self.hearts_list == []:
+            return None
+        
+        for _ in self.hearts_list:
+            self.remmove_heart()
+            
+    def add_heart_in_range(self,num = 0):
+        '''
+        add hearts in a range given by num or the value of 
+        num is by default set to be num = self.inisial_heart
+        '''
+        num = self.inisial_heart
+        
+        for _ in range(num):
+             self.add_one_heart()
+    
     def heart(self):
         """
         Draw a heart shape on the canvas.
