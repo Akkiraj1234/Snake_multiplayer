@@ -3,6 +3,7 @@ from game_screens import inisial_screens
 
 from tkinter import Tk,Canvas,Button,Label,Frame
 from random import choice , randint
+# from other import setting_window
 
 import json
 import time
@@ -147,6 +148,7 @@ class variable:
         self.update_user_settings()
         self.updaing_game_setting()
         
+        
 class Game_screen:
     """
     Class to manage the game screen, including navigation setup,
@@ -188,7 +190,8 @@ class Game_screen:
         """
    
         self.var = var
-        self.MASTER = Master
+        self.master = Master
+        self.MASTER = Frame(self.master)
         
         self.NEVIGATION_CANVAS = None
         self.GAME_CANVAS = None
@@ -199,9 +202,17 @@ class Game_screen:
         self.SCORE_TEXT = None
         
         #game_variables
+        self.game_height = self.var.game_height
+        self.game_width = self.var.game_width
         self._game_bord_height = None
         self._nevigation_height = None
         
+    def set_up(self) -> None:
+        """
+        genrate the game canvas by adjusting 
+        window_size and nevigation_size create the
+        game_canvas with all things set up
+        """
         self.adjust_window_size()
         self.nevigation_setup()
         self.game_canvas_setup()
@@ -220,7 +231,7 @@ class Game_screen:
             _nevigation_height (int): The height of the navigation canvas.
             _game_bord_height (int): The height of the game board canvas.
         """
-        nevigation_height = self.var.game_height // 8
+        nevigation_height = self.game_height // 8
         nevigation_height = nevigation_height // self.var.game_box_size
         
         if not nevigation_height:
@@ -228,7 +239,7 @@ class Game_screen:
         else:
             self._nevigation_height = self.var.game_box_size
             
-        self._game_bord_height = self.var.game_height - self._nevigation_height
+        self._game_bord_height = self.game_height - self._nevigation_height
     
     def nevigation_setup(self) -> None:
         """
@@ -243,23 +254,26 @@ class Game_screen:
         self.NEVIGATION_CANVAS = Canvas(
             master = self.MASTER,
             bg = self.var.nevigation_color,
-            width = self.var.game_width,
+            width = self.game_width,
             height = self._nevigation_height
             )
+        
         self.HEART = Heart(
             canvas = self.NEVIGATION_CANVAS,
-            cordnites = (self.var.game_width - Heart_size,pady),
+            cordnites = (self.game_width - Heart_size,pady),
             box_size = Heart_size,
             color = self.var.heart_color,
             inisial_heart = self.var.INISISAL_HEART
             )
+        
         self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
-            self.var.game_width // 2,
+            self.game_width // 2,
             braking_into_4 * 2,
             font = ("Arial",braking_into_4 * 2,"bold"),
             text = f"Score: 0",
             fill = self.var.nevigation_text_color
             )
+        
         self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
             30,
             braking_into_4 * 2,
@@ -278,7 +292,7 @@ class Game_screen:
         self.GAME_CANVAS = Canvas(
             master = self.MASTER,
             bg = self.var.background_color,
-            width = self.var.game_width,
+            width = self.game_width,
             height = self._game_bord_height
             )
         
@@ -294,7 +308,7 @@ class Game_screen:
             canvas = self.GAME_CANVAS,
             box_size = self.var.game_box_size,
             color = self.var.food_color,
-            game_width = self.var.game_width,
+            game_width = self.game_width,
             game_height = self._game_bord_height,
             food_type = self.var.FOOD_TYPE
             )
@@ -312,10 +326,14 @@ class Game_screen:
                 self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
             )
     
-    def add_to_Master(self)->None:
+    def add_to_Master(self,side = "left",side_status = False)->None:
         """
         Pack the navigation and game canvases and add it to master
         """
+        if side_status:
+            self.MASTER.pack()
+        else:
+            self.MASTER.pack(side=side)
         self.NEVIGATION_CANVAS.pack()
         self.GAME_CANVAS.pack()
 
@@ -325,6 +343,7 @@ class Game_screen:
         """
         self.NEVIGATION_CANVAS.pack_forget()
         self.GAME_CANVAS.pack_forget()
+        self.MASTER.pack_forget()
 
 
 class Game_engion:
@@ -373,6 +392,7 @@ class Game_engion:
         
         #creating screen
         self.GAME_FRAME = Game_screen(self.MASTER,self.var)
+        self.GAME_FRAME.set_up()
         self.pause_screen = None
         
     def _bild_key(self) -> None:
@@ -935,8 +955,9 @@ def main():
     - Assigns the pause menu to the game object.
     - Starts the animation of the home screen.
     """
-    root.geometry(f"{var.game_width}x{var.game_height}")
+    root.geometry(f"{var.game_width+5}x{var.game_height+5}")
     root.title("title")
+    root.resizable(width=False,height=False)
     game.pause_screen = pause_menu
     home_screen.start_animation()
     
@@ -951,5 +972,6 @@ if __name__ == "__main__":
     game = Game_engion(Master=root, var=var)
     
     main()
+    
     root.update()
     root.mainloop()
