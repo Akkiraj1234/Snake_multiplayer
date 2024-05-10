@@ -75,6 +75,12 @@ class Snake:
         
         self._create_snake()
     
+    def delete_all_snake(self):
+        for body in self.snake_body:
+            self.canvas.delete(body)
+        self.snake_coordinates = []
+            
+    
     
 class Food:
     """Represents a food item in the game.

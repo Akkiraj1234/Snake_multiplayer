@@ -2,10 +2,10 @@
     "basic_info": {
         "background_color": "#050B2B",
         "font_color": "white",
-        "game_width": 740,
-        "game_height": 360,
-        "box_size": 40,
-        "speed": 120
+        "game_width": 1000,
+        "game_height": 500,
+        "box_size": 50,
+        "speed": 150
     },
     "game_info": {
         "box_size": 30,
