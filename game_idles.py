@@ -144,15 +144,25 @@ class Food:
         """Delete the current food item from the canvas."""
         self.canvas.delete(self.food)
     
-    def new_food(self,food_type:str="oval"):
-        """Create a new food item of the specified type.
+    def new_food(self,food_type:str="oval" , cordinates:list|tuple|None = None):
+        """
+        Create a new food item of the specified type and optionally at specified coordinates.
 
         Args:
-            food_type (str): The type of the food item ("oval" or "square" or "any" ).
+            food_type (str): The type of the food item ("oval" or "square" or "any", default is "oval").
+            coordinates (list or tuple or None): Optional coordinates to place the food item.
+                If provided, the food item will be placed at these coordinates.
         """
+        if cordinates is not None:
+            for x , y  in cordinates:
+                if self.x != x and self.y != y:
+                    self.new_coordinates()
+                    break
+        else:
+            self.new_coordinates()
+                
         if self.food:
             self._delete_food()
-        self.new_coordinates()
         
         if food_type == "oval":
             self._create_food_oval()
@@ -160,6 +170,8 @@ class Food:
             self._create_food_square()
         else:
             self._create_food_oval()
+         
+        
             
             
 class Heart:

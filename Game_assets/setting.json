@@ -2,8 +2,8 @@
     "basic_info": {
         "background_color": "#050B2B",
         "font_color": "white",
-        "game_width": 1000,
-        "game_height": 500,
+        "game_width": 720,
+        "game_height": 360,
         "box_size": 50,
         "speed": 150
     },
@@ -11,5 +11,9 @@
         "box_size": 30,
         "game_speed": 120,
         "Account": "demo_player"
+    },
+    "theme": {
+        "theme1":"#e6f2ff",
+        "theme2":"#111111"
     }
 }

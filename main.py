@@ -70,6 +70,10 @@ class variable:
         self.HIGHT_SCORE = self._player_acc_info["HIGH_SCORE"]
         self.POINTES = self._player_acc_info["points"]
         self.ACCOUNT_NAME = self._player_acc_info["name"]
+        
+        #Theme colors
+        self.theme1 = self._game_setting["theme"]["theme1"]
+        self.theme2 = self._game_setting["theme"]["theme2"]
     
     def getting_and_extracting_info(self) -> None:
         """
@@ -326,7 +330,7 @@ class Game_screen:
                 self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
             )
     
-    def add_to_Master(self,side = "left",side_status = False)->None:
+    def add_to_Master(self,side = "left",side_status = True)->None:
         """
         Pack the navigation and game canvases and add it to master
         """
@@ -334,6 +338,7 @@ class Game_screen:
             self.MASTER.pack()
         else:
             self.MASTER.pack(side=side)
+            
         self.NEVIGATION_CANVAS.pack()
         self.GAME_CANVAS.pack()
 
@@ -683,8 +688,11 @@ class Game_engion:
         self.GAME_FRAME.add_to_Master()
         self._bild_key()
         self.stop_game_animation = False
-    
-    
+
+
+
+
+   
 
 def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     """
