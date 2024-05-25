@@ -1,6 +1,29 @@
 from tkinter import * 
 from main import variable
 from main import Game_screen
+from tkinter import messagebox
+
+
+class modfication_screen:
+    def __init__(self) -> None:
+        _inisial_screen = Canvas(
+            master = self._master,
+            height = self.height_main_canvs,
+            width = self.width_main_canvs,
+            bg = self.var.theme1
+        )
+        _inisial_screen.create_text(
+            self.width_main_canvs // 2, self.height_main_canvs // 2,
+            font = ("Arial",10,'bold'),
+            text = "here its comes demo text1",
+            fill = self.var.theme2
+        )
+        self.change_screen(_inisial_screen)
+        return _inisial_screen
+    
+    
+
+
 
 class setting_option_menu:
     '''
@@ -11,12 +34,12 @@ class setting_option_menu:
         self._master = master
         self.var = var
         self._canvas_height = canvas_height
-        self._canvas_width = canvas_width
-        self._nevigation_height = nevigation_height
+        self._canvas_width  = canvas_width
+        self._nevigation_height  = nevigation_height
         self._game_button_height = button_height
         
         self.height_main_canvs = (self._canvas_height - self._nevigation_height) - self._game_button_height
-        self.width_main_canvs = self._canvas_width - 14
+        self.width_main_canvs  = self._canvas_width - 14
         
         self.curent_screen = self.INISIAL_SCREEN()
         self.INISALIZING_SETTING_SCREEN()
@@ -116,14 +139,190 @@ class setting_option_menu:
             width = self.width_main_canvs,
             bg = self.var.theme1
         )
-        self.Account_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",10,'bold'),
-            text = "this is account screen",
-            fill = self.var.theme2
-        )
+        
+        #calculating things
+        middle1 = self.width_main_canvs//4
+        middle2 = middle1 * 3
+        distance = self.height_main_canvs//7#7 is num of window i am gonna add
+        padx = (distance//3 )
+        start = padx *2
+        
+        #adding_windows
+        lable1 = Label(self.Account_screen,text="Game Width  :",font=('Arial',10,'bold'))
+        lable2 = Label(self.Account_screen,text="Game Height :",font=('Arial',10,'bold'))
+        lable3 = Label(self.Account_screen,text="Speed (Home):",font=('Arial',10,'bold'))
+        lable4 = Label(self.Account_screen,text="Size (Home)  :",font=('Arial',10,'bold'))
+        lable5 = Label(self.Account_screen,text="text size   :",font=('Arial',10,'bold'))
+        lable6 = Label(self.Account_screen,text="Volume level:",font=('Arial',10,'bold'))
+        lable7 = Button(self.Account_screen,text="Account Setting",font=('Arial',10,'bold'),relief="groove",width=30)
+        
+        self.__width_get = Entry(self.Account_screen,width=15,font=('Arial',10,'bold'))
+        self.__Height_get = Entry(self.Account_screen,width=15,font=('Arial',10,'bold'))
+        
+        option1 = ("Slow", "Normal", "Fast", "Extreme")
+        self.__Speed_get = StringVar(self.Account_screen)
+        Speed_get = OptionMenu(self.Account_screen,self.__Speed_get,*option1)
+        
+        option2 = ("Small", "Medium", "Large", "Extra Large")
+        self.__Size_get = StringVar(self.Account_screen)
+        size_get = OptionMenu(self.Account_screen,self.__Size_get,*option2)
+        
+        self.__Text_get = Scale(
+            self.Account_screen,from_= 5 , to = 20 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',10,'bold'))
+        self.__Volume_get = Scale(
+            self.Account_screen,from_= 0 , to = 100 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',10,'bold'))
+        
+        #setting up the inisial values :-=======
+        self.__width_get.insert(0,self.var.game_width)
+        self.__Height_get.insert(0,self.var.game_height)
+        size = self.var.home_boxsize
+        self.__Size_get.set('Small'if size == 15 else "Medium" if size == 30 else 'Large' if size == 45 else 'Extra Large')
+        speed = self.var.home_speed
+        self.__Speed_get.set('Extreme' if speed == 100 else 'Fast' if speed == 150 else 'Normal' if speed == 200 else 'Slow')
+        self.__Text_get.set(self.var.home_text_size)
+        self.__Volume_get.set(self.var.volume_level)
+        
+        #setting_widget_in Canvas
+        self.Account_screen.create_window(
+            middle1 , start , window=lable1)
+        self.Account_screen.create_window(
+            middle2 , start , window=lable2)
+        self.Account_screen.create_window(
+            middle1 , start := start + padx*2 , window=self.__width_get)
+        self.Account_screen.create_window(
+            middle2 , start , window=self.__Height_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable3)
+        self.Account_screen.create_window(
+            middle2 , start , window= Speed_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable4)
+        self.Account_screen.create_window(
+            middle2 , start , window= size_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable5)
+        self.Account_screen.create_window(
+            middle2 , start , window=self.__Text_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable6)
+        self.Account_screen.create_window(
+            middle2 , start , window=self.__Volume_get)
+        self.Account_screen.create_window(
+            middle1*2 , start := start + distance , window=lable7)
     
+    def _account_screen2(self):
+        self.Account_screen2 = Canvas(
+            master = self._master,
+            height = self.height_main_canvs,
+            width = self.width_main_canvs,
+            bg = self.var.theme1
+        )
+        #calculating things
+        middle1 = self.width_main_canvs//4
+        middle2 = middle1 * 3
+        distance = self.height_main_canvs//7#7 is num of window i am gonna add
+        padx = (distance//3 )
+        start = padx *2
+        
+        #adding_windows
+        lable1 = Label(self.Account_screen,text="Game Width  :",font=('Arial',10,'bold'))
+        lable2 = Label(self.Account_screen,text="Game Height :",font=('Arial',10,'bold'))
+        lable3 = Label(self.Account_screen,text="Speed (Home):",font=('Arial',10,'bold'))
+        lable4 = Label(self.Account_screen,text="Size (Home)  :",font=('Arial',10,'bold'))
+        lable5 = Label(self.Account_screen,text="text size   :",font=('Arial',10,'bold'))
+        lable6 = Label(self.Account_screen,text="Volume level:",font=('Arial',10,'bold'))
+        lable7 = Button(self.Account_screen,text="Account Setting",font=('Arial',10,'bold'),relief="groove",width=30)
+        
+        self.__width_get = Entry(self.Account_screen,width=15,font=('Arial',10,'bold'))
+        self.__Height_get = Entry(self.Account_screen,width=15,font=('Arial',10,'bold'))
+        
+        option1 = ("Slow", "Normal", "Fast", "Extreme")
+        self.__Speed_get = StringVar(self.Account_screen)
+        Speed_get = OptionMenu(self.Account_screen,self.__Speed_get,*option1)
+        
+        option2 = ("Small", "Medium", "Large", "Extra Large")
+        self.__Size_get = StringVar(self.Account_screen)
+        size_get = OptionMenu(self.Account_screen,self.__Size_get,*option2)
+        
+        self.__Text_get = Scale(
+            self.Account_screen,from_= 5 , to = 20 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',10,'bold'))
+        self.__Volume_get = Scale(
+            self.Account_screen,from_= 0 , to = 100 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',10,'bold'))
+        
+        #setting up the inisial values :-=======
+        self.__width_get.insert(0,self.var.game_width)
+        self.__Height_get.insert(0,self.var.game_height)
+        size = self.var.home_boxsize
+        self.__Size_get.set('Small'if size == 15 else "Medium" if size == 30 else 'Large' if size == 45 else 'Extra Large')
+        speed = self.var.home_speed
+        self.__Speed_get.set('Extreme' if speed == 100 else 'Fast' if speed == 150 else 'Normal' if speed == 200 else 'Slow')
+        self.__Text_get.set(10)
+        self.__Volume_get.set(70)
+        
+        #setting_widget_in Canvas
+        self.Account_screen.create_window(
+            middle1 , start , window=lable1)
+        self.Account_screen.create_window(
+            middle2 , start , window=lable2)
+        self.Account_screen.create_window(
+            middle1 , start := start + padx*2 , window=self.__width_get)
+        self.Account_screen.create_window(
+            middle2 , start , window=self.__Height_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable3)
+        self.Account_screen.create_window(
+            middle2 , start , window= Speed_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable4)
+        self.Account_screen.create_window(
+            middle2 , start , window= size_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable5)
+        self.Account_screen.create_window(
+            middle2 , start , window=self.__Text_get)
+        self.Account_screen.create_window(
+            middle1 , start := start + distance , window=lable6)
+        self.Account_screen.create_window(
+            middle2 , start , window=self.__Volume_get)
+        self.Account_screen.create_window(
+            middle2 , start := start + distance , window=lable7)
+        
+        
+    def save_fucn(self,event):#need to fix
+        # getting_value
+        width = self.__width_get.get()
+        height = self.__Height_get.get()
+        speed = self.__Speed_get.get()
+        size = self.__Size_get.get()
+        text = self.__Text_get.get()
+        volume = self.__Volume_get.get()
+        
+        #checking_if_value_is_ryt_or_not
+        if not (width.isdigit() and 360 <= int(width) <= 1440):
+            messagebox.showerror("Error", "Width shoude be number and under and equal to 360 and 1440!")
+            return None
+        if not (height.isdigit() and 180 <= int(height) <= 720):
+            messagebox.showerror("Error", "Height shoude be number and under and equal to 180 and 720!")
+            return None
+        speed = 100 if speed == 'Extreme' else 150 if speed == 'Fast' else 200 if speed ==  'Normal' else 300
+        size = 15 if size == 'Small' else 30 if size == "Medium" else 45 if size == 'Large' else 50
+        
+        
+        
+        print("=========================")
+        print(width)
+        print(height)
+        print(speed)
+        print(size)
+        
+        
+        
     def change_screen(self,canvas:Canvas):
+        self.__shift_button_button1(None)
         self.curent_screen.grid_forget()
         self.curent_screen = canvas
         self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)
@@ -224,11 +423,7 @@ class setting_option_menu:
         self.change_screen(_inisial_screen)
         return _inisial_screen
     
-    def save_fucn(self,event):#need to fix
-        print("amm there is nothing to save so ")
-        pass
-    
-    def __shift_button_button1(self,event):#add button action
+    def __shift_button_button1(self,event):
         self.nevigation_button1.config(bg = self.var.theme1)
         self.nevigation_button1.itemconfig(self._text_nev_button2, fill = self.var.theme2)
         self.nevigation_button2.config(bg = self.var.theme2)
@@ -237,7 +432,7 @@ class setting_option_menu:
         self.Account_screen.grid_forget()#even if its not grid already its simply pass so needa worry
         self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)
     
-    def __shift_button_button2(self,event):#add button action
+    def __shift_button_button2(self,event):
         self.nevigation_button1.config(bg = self.var.theme2)
         self.nevigation_button1.itemconfig(self._text_nev_button1, fill = self.var.theme1)
         self.nevigation_button2.config(bg = self.var.theme1)
