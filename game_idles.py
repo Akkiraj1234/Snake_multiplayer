@@ -124,7 +124,6 @@ class Food:
         self.y=0
         self.new_coordinates()
         self.new_food(food_type)
-        self.food_type_list = ("oval","square")
         
     def _create_food_oval(self):
         """Create an oval-shaped food item."""

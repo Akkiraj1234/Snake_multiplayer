@@ -2,12 +2,10 @@ from game_idles import Snake,Food,Heart
 from game_screens import inisial_screens
 
 from tkinter import Tk,Canvas,Button,Label,Frame
-from random import choice , randint
 # from other import setting_window
 
 import json
 import time
-
 
 class variable:
     """
@@ -39,41 +37,44 @@ class variable:
         """
         self.getting_and_extracting_info()
         #game basic info that stay same for every user by changing it change but for all user
-        self.background_color = self._game_setting["basic_info"]["background_color"]
-        self.font_color = self._game_setting["basic_info"]["font_color"]
         self.game_width = self._game_setting["basic_info"]["game_width"]
         self.game_height = self._game_setting["basic_info"]["game_height"]
-        self.box_size = self._game_setting["basic_info"]["box_size"]
-        self.speed = self._game_setting["basic_info"]["speed"]
+        self.home_boxsize = self._game_setting["basic_info"]["box_size"]
+        self.home_speed = self._game_setting["basic_info"]["speed"]
+        self.home_text_size = self._game_setting["basic_info"]["text_size"]
+        self.volume_level = self._game_setting["basic_info"]["volume_level"]
+        
+        self.theme1 = self._game_setting["theme"]["theme1"]
+        self.theme2 = self._game_setting["theme"]["theme2"]
+        self.game_speed = self._game_setting["game_info"]["game_speed"]
+        self.game_box_size = self._game_setting["game_info"]["box_size"]
         
         #user info that changes by every new_users
-        self.game_box_size = self._game_setting["game_info"]["box_size"]
-        self.game_speed = self._game_setting["game_info"]["game_speed"]
-        self.snake_color = self._player_acc_info["snake_color"]
-        self.food_color = self._player_acc_info["food_color"]
-        self.nevigation_color = self._player_acc_info["nevigation_color"]
-        self.nevigation_text_color = self._player_acc_info["navigation_text_color"]
-        self.heart_color = self._player_acc_info["heart_color"]
+        self.active_user_name = self._player_acc_info["name"]
+        self.PLAYERP_COINE = self._player_acc_info["points"]
+        self.HIGHT_SCORE = self._player_acc_info["HIGH_SCORE"]
+        self.NEV_COLOR = self._player_acc_info["Cur_nev_color"]
+        self.TEXT_COLOR = self._player_acc_info["cur_text_color"]
+        self.HEART_COLOR = self._player_acc_info["cur_heart_color"]
+        self.CANVAS_COLOR = self._player_acc_info["cur_canvas_color"]
+        self.FOOD_COLOR = self._player_acc_info["cur_food_color"]
+        self.SNAKE_COLOR = self._player_acc_info["cur_snake_color"]
+        self.INISISAL_HEART = self._player_acc_info["inisial_heart"]
+        self.SNAKE_LOSS_COUNTDOWN = self._player_acc_info["countdown_time_s"]
+        
+        self.owned_nev_color = self._player_acc_info["inisial_heart"]
+        self.owned_heart_color = self._player_acc_info["owned_heart_color"]
+        self.owned_canvas_color = self._player_acc_info["owned_canvas_color"]
+        self.owned_food_color = self._player_acc_info["owned_food_color"]
+        self.owned_snake_color = self._player_acc_info["owned_snake_color"]
         
         #fixed and constant variables
         self.SNAKE_LENGHT = 3
         self.SNAKE_CORDINATES = (0,0)
-        self.SNAKE_LOSS_COUNTDOWN = 2
         self.FONT_STYLE = "Press Start 2P"
         self.INISIAL_HOME_TEXT = "Sneck suffarie :0"
         
-        self.FOOD_TYPE = self._player_acc_info["food_type"]
-        self.INISISAL_HEART = self._player_acc_info["INISISAL_HEART"]
-        self.SNAKE_TYPE = self._player_acc_info["sneck_type"]
-        
-        #the variable constantally changing are (*change by users)
-        self.HIGHT_SCORE = self._player_acc_info["HIGH_SCORE"]
-        self.POINTES = self._player_acc_info["points"]
-        self.ACCOUNT_NAME = self._player_acc_info["name"]
-        
         #Theme colors
-        self.theme1 = self._game_setting["theme"]["theme1"]
-        self.theme2 = self._game_setting["theme"]["theme2"]
     
     def getting_and_extracting_info(self) -> None:
         """
@@ -89,10 +90,10 @@ class variable:
             self._game_setting = json.load(Game_settings)
             
         #gathering player account_name
-        self.account_name = self._game_setting["game_info"]["Account"]
+        self._active_account = self._game_setting["game_info"]["Account"]
             
         # Extracting player information by id
-        with open(f"player_info\\{self.account_name}.json","r",encoding="utf-8") as Account_details:
+        with open(f"player_info\\{self._active_account}.json","r",encoding="utf-8") as Account_details:
             self._player_acc_info = json.load(Account_details)
         
     def update_user_settings(self) -> None:
@@ -100,19 +101,25 @@ class variable:
         Update user settings in the player account JSON file 
         by anything changes on the variable.
         """
-        self._player_acc_info["name"] = self.ACCOUNT_NAME
-        self._player_acc_info["snake_color"] = self.snake_color
-        self._player_acc_info["food_color"] = self.food_color
-        self._player_acc_info["nevigation_color"] = self.nevigation_color
-        self._player_acc_info["navigation_text_color"] = self.nevigation_text_color
-        self._player_acc_info["heart_color"] = self.heart_color
-        self._player_acc_info["INISISAL_HEART"] = self.INISISAL_HEART
-        self._player_acc_info["food_type"] = self.FOOD_TYPE
-        self._player_acc_info["sneck_type"] = self.SNAKE_TYPE
+        self._player_acc_info["name"] = self.active_user_name
         self._player_acc_info["HIGH_SCORE"] = self.HIGHT_SCORE
-        self._player_acc_info["points"] = self.POINTES
+        self._player_acc_info["points"] = self.PLAYERP_COINE
+        self._player_acc_info["Cur_nev_color"] = self.NEV_COLOR
+        self._player_acc_info["cur_text_color"] = self.TEXT_COLOR
+        self._player_acc_info["cur_heart_color"] = self.HEART_COLOR
+        self._player_acc_info["cur_canvas_color"] = self.CANVAS_COLOR
+        self._player_acc_info["cur_food_color"] = self.FOOD_COLOR
+        self._player_acc_info["cur_snake_color"] = self.SNAKE_COLOR
+        self._player_acc_info["inisial_heart"] = self.INISISAL_HEART
+        self._player_acc_info["countdown_time_s"] = self.SNAKE_LOSS_COUNTDOWN
         
-        with open(f"player_info\\{self.account_name}.json", "w", encoding="utf-8") as player_file:
+        self._player_acc_info["owned_nev_color"] = self.owned_nev_color
+        self._player_acc_info["owned_heart_color"] = self.owned_heart_color
+        self._player_acc_info["owned_canvas_color"] = self.owned_canvas_color
+        self._player_acc_info["owned_food_color"] = self.owned_food_color
+        self._player_acc_info["owned_snake_color"] = self.owned_snake_color
+        
+        with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
             json.dump(self._player_acc_info, player_file,)
         
     def updaing_game_setting(self) -> None:
@@ -120,15 +127,18 @@ class variable:
         Update game settings in the 'setting.json' file.
         by anything chnageed on the variable
         """
-        self._game_setting["basic_info"]["background_color"] = self.background_color
-        self._game_setting["basic_info"]["font_color"] = self.font_color
         self._game_setting["basic_info"]["game_width"] = self.game_width
         self._game_setting["basic_info"]["game_height"] = self.game_height
-        self._game_setting["basic_info"]["box_size"] = self.box_size
-        self._game_setting["basic_info"]["speed"] = self.speed
+        self._game_setting["basic_info"]["box_size"] = self.home_boxsize
+        self._game_setting["basic_info"]["speed"] = self.home_speed
+        self._game_setting["basic_info"]["text_size"] = self.home_text_size
+        self._game_setting["basic_info"]["volume_level"] = self.volume_level
+        
+        self._game_setting["game_info"]["theme1"] = self.theme1
+        self._game_setting["game_info"]["theme2"] = self.theme2
         self._game_setting["game_info"]["box_size"] = self.game_box_size
         self._game_setting["game_info"]["game_speed"] = self.game_speed
-        self._game_setting["game_info"]["Account"] = self.ACCOUNT_NAME
+        self._game_setting["game_info"]["Account"] = self._active_account
         
         with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
             json.dump(self._game_setting,game_setting)
@@ -152,7 +162,7 @@ class variable:
         self.update_user_settings()
         self.updaing_game_setting()
         
-        
+          
 class Game_screen:
     """
     Class to manage the game screen, including navigation setup,
@@ -257,7 +267,7 @@ class Game_screen:
         
         self.NEVIGATION_CANVAS = Canvas(
             master = self.MASTER,
-            bg = self.var.nevigation_color,
+            bg = self.var.NEV_COLOR,
             width = self.game_width,
             height = self._nevigation_height
             )
@@ -266,7 +276,7 @@ class Game_screen:
             canvas = self.NEVIGATION_CANVAS,
             cordnites = (self.game_width - Heart_size,pady),
             box_size = Heart_size,
-            color = self.var.heart_color,
+            color = self.var.HEART_COLOR,
             inisial_heart = self.var.INISISAL_HEART
             )
         
@@ -275,7 +285,7 @@ class Game_screen:
             braking_into_4 * 2,
             font = ("Arial",braking_into_4 * 2,"bold"),
             text = f"Score: 0",
-            fill = self.var.nevigation_text_color
+            fill = self.var.TEXT_COLOR
             )
         
         self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
@@ -283,7 +293,7 @@ class Game_screen:
             braking_into_4 * 2,
             font = ("Arial", braking_into_4 * 2, "bold"),
             text = "Menu",
-            fill = self.var.nevigation_text_color
+            fill = self.var.TEXT_COLOR
             )
     
     def game_canvas_setup(self) -> None:
@@ -295,7 +305,7 @@ class Game_screen:
         """
         self.GAME_CANVAS = Canvas(
             master = self.MASTER,
-            bg = self.var.background_color,
+            bg = self.var.CANVAS_COLOR,
             width = self.game_width,
             height = self._game_bord_height
             )
@@ -304,17 +314,16 @@ class Game_screen:
             canvas = self.GAME_CANVAS,
             lenght = self.var.SNAKE_LENGHT,
             coordinates = self.var.SNAKE_CORDINATES,
-            color = self.var.snake_color,
+            color = self.var.SNAKE_COLOR,
             box_size = self.var.game_box_size
             )
         
         self.FOOD = Food(
             canvas = self.GAME_CANVAS,
             box_size = self.var.game_box_size,
-            color = self.var.food_color,
+            color = self.var.FOOD_COLOR,
             game_width = self.game_width,
-            game_height = self._game_bord_height,
-            food_type = self.var.FOOD_TYPE
+            game_height = self._game_bord_height
             )
     
     def update_things(self,**kwargs):
@@ -580,7 +589,6 @@ class Game_engion:
         self.var.update_user_settings()
         self.PAUSE_GAME(status)
             
-            
     def PAUSE_GAME(self,status:str) -> None:
         """
         Pauses the game and displays relevant information based on the game status.
@@ -629,8 +637,7 @@ class Game_engion:
                 resume.config(state='disabled')
                 
             self.pause_screen.add_to_master()
-                
-                
+                        
     def set_everrything_to_default(self) -> None:
         """
         Resets all game-related variables and components to their default states.
@@ -690,10 +697,6 @@ class Game_engion:
         self.stop_game_animation = False
 
 
-
-
-   
-
 def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     """
     Initialize the home screen with specified parameters and widgets.
@@ -710,11 +713,11 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     # using var obj pack is true
     Home_window = inisial_screens(
         master = Master,
-        background_color = var.background_color,
+        background_color = var.CANVAS_COLOR,
         game_width = var.game_width,
-        box_size = var.box_size,
         game_height = var.game_height,
-        speed = var.speed,
+        box_size = var.home_boxsize,
+        speed = var.home_speed,
         pack = True
         )
     
@@ -730,8 +733,8 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     lable = Label(
         master = Home_window.child_window,
         text = var.INISIAL_HOME_TEXT,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE,30),
         relief = "flat"
         )
@@ -742,8 +745,8 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
         text = "Play",
         command = play_home,
         width = 10,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE,10),
         relief="groove"
         )
@@ -754,8 +757,8 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
         text = "Settings",
         command = setting_home,
         width = 10,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE,10),
         relief = "groove"
         )
@@ -766,8 +769,8 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
         text = "Shop",
         command = shop_home,
         width = 10,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE,10),
         relief = "groove"
         )
@@ -778,8 +781,8 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
         text = "about me",
         command = about_me_home,
         width = 10,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE,10),
         relief = "groove"
         )
@@ -788,7 +791,6 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     # returning the instance of the home_window
     Home_window.add_button(lable, button, button1, button2 ,button3)
     return Home_window
-
 
 def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
     """
@@ -813,10 +815,10 @@ def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
     """
     pause_game_screen = inisial_screens(
         master = master,
-        background_color = var.background_color,
+        background_color = var.CANVAS_COLOR,
         game_width = var.game_width,
         game_height = var.game_height,
-        box_size = var.box_size,
+        box_size = var.home_boxsize,
         speed = var.game_speed,
         pack = False
     )
@@ -825,8 +827,8 @@ def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
     Label1 = Label(
         master = pause_game_screen.child_window,
         text = "Game is Paused",
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE,15),
         relief = "flat"
     )
@@ -835,8 +837,8 @@ def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
         text = "Resume",
         command = resume_pause_menu,
         width = 10,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE, 10),
         relief = "groove"
     )
@@ -846,8 +848,8 @@ def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
         text = "Restart",
         command = restart_pause_menu,
         width = 10,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE, 10),
         relief = "groove"
     )
@@ -857,8 +859,8 @@ def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
         text = "Home",
         command = home_pause_menu,
         width = 10,
-        bg = var.background_color,
-        fg = var.font_color,
+        bg = var.CANVAS_COLOR,
+        fg = var.TEXT_COLOR,
         font = (var.FONT_STYLE, 10),
         relief = "groove"
     )
@@ -866,7 +868,6 @@ def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
     #adding button to pause_game_screen and returning its instanse
     pause_game_screen.add_button(Label1,Button1,Button2,Button3)
     return pause_game_screen
-
 
 def play_home():
     """
