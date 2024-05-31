@@ -3,17 +3,17 @@
         "game_width": 720,
         "game_height": 360,
         "box_size": 45,
-        "speed": 150,
-        "text_size":10,
-        "volume_level":80
+        "speed": 100,
+        "text_size": 8,
+        "volume_level": 80
     },
-"theme": {
-    "theme1":"#e6f2ff",
-    "theme2":"#111111"
-},
-"game_info": {
-    "box_size": 30,
-    "game_speed": 120,
-    "Account": "demo_player"
-}
+    "theme": {
+        "theme1": "#e6f2ff",
+        "theme2": "#111111"
+    },
+    "game_info": {
+        "box_size": 30,
+        "game_speed": 120,
+        "Account": "demo_player"
+    }
 }

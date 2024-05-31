@@ -1,7 +1,7 @@
 from game_idles import Snake,Food,Heart
 from game_screens import inisial_screens
 
-from tkinter import Tk,Canvas,Button,Label,Frame
+from tkinter import Tk,Canvas,Button,Label,Frame,Entry,StringVar,Scale,OptionMenu
 # from other import setting_window
 
 import json
@@ -133,9 +133,8 @@ class variable:
         self._game_setting["basic_info"]["speed"] = self.home_speed
         self._game_setting["basic_info"]["text_size"] = self.home_text_size
         self._game_setting["basic_info"]["volume_level"] = self.volume_level
-        
-        self._game_setting["game_info"]["theme1"] = self.theme1
-        self._game_setting["game_info"]["theme2"] = self.theme2
+        self._game_setting["theme"]["theme1"] = self.theme1
+        self._game_setting["theme"]["theme2"] = self.theme2
         self._game_setting["game_info"]["box_size"] = self.game_box_size
         self._game_setting["game_info"]["game_speed"] = self.game_speed
         self._game_setting["game_info"]["Account"] = self._active_account
@@ -143,7 +142,107 @@ class variable:
         with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
             json.dump(self._game_setting,game_setting)
     
-    def update_password(self) -> None:
+    def basic_setting_screen_var(self,canvas , button_method):
+        '''
+        inisalize variable and widgets required to show in basic 
+        setting screen canvs
+        '''
+        option1 = ("Slow", "Normal", "Fast", "Extreme")
+        option2 = ("Small", "Medium", "Large", "Extra Large")
+        
+        lable1 = Label(canvas ,text="Game Width  :", font=('Arial',self.home_text_size,'bold'))
+        lable2 = Label(canvas ,text="Game Height :", font=('Arial',self.home_text_size,'bold'))
+        lable3 = Label(canvas ,text="Speed (Home):", font=('Arial',self.home_text_size,'bold'))
+        lable4 = Label(canvas ,text="Size (Home)  :",font=('Arial',self.home_text_size,'bold'))
+        lable5 = Label(canvas ,text="text size   :", font=('Arial',self.home_text_size,'bold'))
+        lable6 = Label(canvas ,text="Volume level:", font=('Arial',self.home_text_size,'bold'))
+        
+        self.bssv_back_button = Button(
+            canvas ,text="Account Setting",font=('Arial',self.home_text_size,'bold'),
+            relief="groove", width=30 , command=button_method
+        )
+        self.bssv_width_entry = Entry(canvas, width=15, font=('Arial',self.home_text_size,'bold'))
+        self.bssv_height_entry = Entry(canvas ,width=15, font=('Arial',self.home_text_size,'bold'))
+        
+        self.bssv_speed_get = StringVar(canvas)
+        self.bssv_size_get = StringVar(canvas)
+        
+        self.bssv_text_get = Scale(
+            canvas, from_= 5 , to = 20 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',self.home_text_size,'bold'))
+        self.bssv_volume_get = Scale(
+            canvas ,from_= 0 , to = 100 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',self.home_text_size,'bold'))
+        
+        Speed_get = OptionMenu(canvas, self.bssv_speed_get,*option1)
+        size_get = OptionMenu(canvas , self.bssv_size_get, *option2)
+        
+        #insializing values in widgets :
+        self.bssv_width_entry.insert(0,self.game_width)
+        self.bssv_height_entry.insert(0,self.game_height)
+        size = self.home_boxsize
+        self.bssv_speed_get.set('Small'if size == 15 else "Medium" if size == 30 else 'Large' if size == 45 else 'Extra Large')
+        speed = self.home_speed
+        self.bssv_size_get.set('Extreme' if speed == 100 else 'Fast' if speed == 150 else 'Normal' if speed == 200 else 'Slow')
+        self.bssv_text_get.set(self.home_text_size)
+        self.bssv_volume_get.set(self.volume_level)
+        
+        #retuning the values :
+        return (
+            (lable1 , lable2),
+            (self.bssv_width_entry , self.bssv_height_entry),
+            (lable3 , Speed_get),
+            (lable4 , size_get),
+            (lable5 , self.bssv_text_get),
+            (lable6 , self.bssv_volume_get),
+            (self.bssv_back_button , None)
+        )
+    
+    def setting_option_menu_var(self,canvas, changepass_method,createnewacc_method,changeaccount_method,goback_method):
+        '''
+        inisalize variable and widgets required to show in 
+        account setting screen
+        '''
+        #adding_windows:==========================================================
+        lable1 = Label(canvas, text="Name  :",font=('Arial',self.home_text_size,'bold'))
+        lable2 = Label(canvas, text="Heigh Score",font=('Arial',self.home_text_size,'bold'))
+        lable3 = Label(canvas, text="Money",font=('Arial',self.home_text_size,'bold'))
+        
+        self.somv_name_get = Entry(canvas, width=15,font=('Arial',self.home_text_size,'bold'))
+        self.somv_heightscore_lable = Label(canvas, text="",font=('Arial',self.home_text_size,'bold'))
+        self.somv_coin_lable = Label(canvas, text="",font=('Arial',self.home_text_size,'bold'))
+        
+        change_password = Button(
+            canvas, text="Change password", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=30,command=changepass_method)
+        create_new_account = Button(
+            canvas, text="new account", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=14,command=createnewacc_method)
+        change_account = Button(
+            canvas, text="change account", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=14,command=changeaccount_method)
+        go_back = Button(
+            canvas, text="<- go back", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=30,command=goback_method)
+        
+        #adding_value;0
+        self.somv_name_get.insert(0,self.active_user_name)
+        self.somv_heightscore_lable.config(text=self.HIGHT_SCORE)
+        self.somv_coin_lable.config(text=self.PLAYERP_COINE)
+        
+        #returning the value 
+        return (
+            (lable1 , self.somv_name_get),
+            (lable2 , self.somv_heightscore_lable),
+            (lable3 , self.somv_coin_lable),
+            (change_password , None),
+            (create_new_account , change_account),
+            (go_back , None)
+        )
+        
+        
+    
+    def update_password(self,password) -> None:
         """
         Update the player's account password.
 
@@ -152,8 +251,11 @@ class variable:
         any actual password update operation. Future implementation should include
         appropriate security measures for updating passwords.
         """
-        # self._player_acc_info["password"] = password
-        pass
+        self._player_acc_info["password"] = password
+        
+        with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
+            json.dump(self._player_acc_info, player_file,)
+        
     
     def update(self) -> None:
         """
@@ -754,18 +856,6 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     # Create and configure 'Settings' button widget
     button1 = Button(
         Home_window.child_window,
-        text = "Settings",
-        command = setting_home,
-        width = 10,
-        bg = var.CANVAS_COLOR,
-        fg = var.TEXT_COLOR,
-        font = (var.FONT_STYLE,10),
-        relief = "groove"
-        )
-    
-    # Create and configure 'shop' button widget
-    button2 = Button(
-        master = Home_window.child_window,
         text = "Shop",
         command = shop_home,
         width = 10,
@@ -776,7 +866,7 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
         )
     
     # Create and configure 'about me' button widget
-    button3 = Button(
+    button2 = Button(
         master = Home_window.child_window,
         text = "about me",
         command = about_me_home,
@@ -789,7 +879,7 @@ def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     
     # adding buttons to the home_window canvas and then
     # returning the instance of the home_window
-    Home_window.add_button(lable, button, button1, button2 ,button3)
+    Home_window.add_button(lable, button, button1, button2)
     return Home_window
 
 def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
@@ -882,15 +972,6 @@ def play_home():
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
     print("hmm lets play")
-
-def setting_home():
-    """
-    Display settings options.
-
-    Behavior:
-    - Prints a message indicating the user's intent to access settings.
-    """
-    print("hmmm u wanna change something")
 
 def shop_home():
     """

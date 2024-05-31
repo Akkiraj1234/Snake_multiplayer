@@ -2,30 +2,242 @@ from tkinter import *
 from main import variable
 from main import Game_screen
 from tkinter import messagebox
-from tkinter import simpledialog
 
 
-class modfication_screen:
-    def __init__(self) -> None:
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
+class setting_window_screen:
+    def __init__(self,master:Frame , height:int , width:int ,theme:tuple[str,str] ,font_size:int) -> None:
+        self.master = master
+        self.height = height
+        self.widths = width
+        self.theme1 = theme[0]
+        self.theme2 = theme[1]
+        self.font_s = font_size
+
+    def Inisial_screen(self , text:str = "demo texxt"):
+        inisial_screen = Canvas(
+            master = self.master,
+            height = self.height,
+            width = self.widths,
+            bg = self.theme1
         )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text1",
-            fill = self.var.theme2
+        inisial_screen.create_text(
+            self.widths // 2 , self.height // 2,
+            font = ("Arial",self.font_s,'bold'),
+            text = text,
+            fill = self.theme2
         )
-        self.change_screen(_inisial_screen)
-        return _inisial_screen
+        return inisial_screen
     
+    def creating_form_on_canvas(self,height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
+        '''
+        this method create a form on a canvas and return it
+        
+        Argument:
+            - width and height of the window
+            - a canvas type obj by tk
+            - takes tupple as an argument containing 2 obj
+            - 1st obj => the left side of window
+            - 2nd obj => the ryt side of window
+        
+        Return:
+            - the canvas containg a form
+        
+        Note:
+            - if u wanna add a window in middle horigentally so just 
+                add one window in a tuple or add other artibute as none
+                ex :- (window , None) or (None , window)
+        
+        Example:
+            >>> tuple_obj = (window1 ,window2) or (window1 , None)
+            >>> canvas = creating_form_on_canvas(
+                canvas = canvas , (window1 , window2) ,
+                (winodw2 , window3 ) , (window4 , None)
+            )
+        '''
+        #calculation of diameters :0
+        middle1 = width // 4
+        middle2 = middle1 *3
+        distance = height // len(args)-1
+        start = distance * 2 // 3
+        
+        # adding to the window :0
+        for left , right in args:
+            
+            if not (left and right):
+                canvas.create_window(middle1 *2 ,start ,window =left or right)
+                start += distance
+                continue
+            #addig_both_window_left and ryt
+            canvas.create_window(middle1 , start , window = left)
+            canvas.create_window(middle2 , start , window = right)
+            start += distance
+        
+        #returning the canvas         
+        return canvas
     
+    def create_top_level_screen(self, title:str, color:str, width:int, height:int):
+        """
+        Create a temporary top-level window and return it.
 
+        This method creates a top-level window with the specified title, background color, width, and height.
+        The main window (root) is disabled while the top-level window is open, and re-enabled when it is closed.
 
+        Parameters:
+        title (str): The window title.
+        color (str): The background color.
+        width (int): The window width.
+        height (int): The window height.
 
+        Returns:
+        Toplevel: The created top-level window.
+        
+        Note:
+        Assumes the main window is named 'root'.
+        """
+        window = Toplevel(root, bg = color)
+        window.title(title)
+        window.geometry(f"{width}x{height}")
+        root.attributes('-disabled', True)
+        
+        def on_close():
+            root.attributes('-disabled', False)
+            window.destroy()
+        
+        window.protocol("WM_DELETE_WINDOW", on_close)
+        window.grab_set()
+        window.focus_set()
+        return window
+
+    def taking_password_for_verification_window(self):
+        '''
+        this method create a window for taking password input from user
+        '''
+        self.__value = None
+        
+        window = self.create_top_level_screen(
+            title = "Verify Password",
+            width = 200,
+            height = 90,
+            color = "#e6f2ff"
+        )
+        
+        frame1 = Frame(window , bg = "#e6f2ff" , padx= 5 ,pady=5)
+        
+        lable1 = Label(
+            master = frame1, 
+            relief="flat", 
+            text="password"+" :",
+            font = ("Myanmar Text",8,"bold"),
+            bg="#e6f2ff",fg= "black" 
+        )
+        password1 = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font=("Myanmar Text",8,"bold")
+        )
+        button = Button(
+            master = frame1,
+            relief="solid",
+            text= "continue",
+            bg= "#e6f2ff" ,fg="black",
+            font = ("Myanmar Text",8,"bold"),
+            command= lambda : self.__capture_and_close(password1 , window = window ,root_enable = True)
+        )
+        
+        lable1.grid(row=0, column=0 , padx= 5, pady= 5)
+        password1.grid(row=0 , column=1 , padx=5, pady=5)
+        button.grid(row=1,column=0,columnspan=2,sticky='ew', padx=5)
+        frame1.pack()
+        window.wait_window(window)
+        
+        return self.__value[0]
+
+    def change_password_window(self):
+        window = self.create_top_level_screen(
+            title = "Update Password",
+            width = 260,
+            height = 130,
+            color = "#e6f2ff"
+        )
+        frame1 = Frame(window ,bg = "#e6f2ff")
+        
+        label1 = Label(
+            master = frame1,
+            text = "Enter New Password",
+            relief = "flat",
+            bg ="#e6f2ff",fg ="black",
+            font = ("Myanmar Text",8,"bold")
+        )
+        label2 = Label(
+            master = frame1,
+            text = "Verify New Password",
+            relief = "flat",
+            bg ="#e6f2ff",fg ="black",
+            font = ("Myanmar Text",8,"bold")
+        )
+        password1 = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font=("Myanmar Text",8,"bold")
+        )
+        password2 = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font=("Myanmar Text",8,"bold")
+        )
+        button = Button(
+            master = frame1,
+            relief="solid",
+            text= "continue",
+            bg= "#e6f2ff" ,fg="black",
+            font = ("Myanmar Text",8,"bold"),
+            command= lambda : self.__capture_and_close(password1 , password2 , window = window , root_enable = True)
+        )
+        label1.grid(row=0,column=0,padx=5,pady=5)
+        label2.grid(row=1,column=0,padx=5,pady=5)
+        password1.grid(row=0,column=1,padx=5,pady=5)
+        password2.grid(row=1,column=1,padx=5,pady=5)
+        button.grid(row=2,column=0,columnspan=2,sticky='ew', padx=5, pady=5)
+        
+        frame1.pack()
+        window.wait_window(window)
+        
+        return self.__value
+    
+    def create_new_account_window(self):
+        print("will come soon")
+        
+    def change_account_window(self):
+        print("will come soon")
+               
+    def __capture_and_close(self, *entry_widget, window ,root_enable:bool):
+        """
+        Capture the entry value from the entry widget, close the window, and optionally enable the root window.
+
+        Args:
+            entry_widget (tk.Entry): The entry widget from which to capture the value.
+            window (tk.Toplevel): The window to be closed.
+            root (tk.Tk): The root window to be enabled if root_enable is True.
+            root_enable (bool): A flag indicating whether to enable the root window.
+        """
+        self.__value = [widget.get()  for widget in entry_widget]
+        window.destroy()
+        
+        if root_enable:
+            root.attributes('-disabled', False)
+            root.grab_set()
+            root.focus_set()
+        
+        
 class setting_option_menu:
     '''
     this class will inisalize option menu for the setting where they can change settings
@@ -42,12 +254,62 @@ class setting_option_menu:
         self.height_main_canvs = (self._canvas_height - self._nevigation_height) - self._game_button_height
         self.width_main_canvs  = self._canvas_width - 14
         
-        self.curent_screen = self.INISIAL_SCREEN()
-        self.INISALIZING_SETTING_SCREEN()
-        self._basic_setting_screen()
-        self._account_setting_screen()
+        self.curent_screen = None
         
-    
+        #creating_instance
+        self.windows = setting_window_screen(
+            master = self._master,
+            height = self._canvas_height,
+            width = self._canvas_width,
+            theme = (self.var.theme1 , self.var.theme2),
+            font_size = self.var.home_text_size
+        )
+        
+        self.INISALIZING_SETTING_SCREEN()
+        self.inisalizing_windows()
+        
+    def inisalizing_windows(self) -> None:
+        basic_setting_screen = Canvas(
+            master = self._master,
+            height = self.height_main_canvs,
+            width = self.width_main_canvs,
+            bg = self.var.theme1
+        )
+        
+        args = self.var.basic_setting_screen_var(
+            basic_setting_screen,
+            self.__acoount_setting_calling_func
+        )
+        
+        self.basic_setting_screen = self.windows.creating_form_on_canvas(
+            self.height_main_canvs,
+            self.width_main_canvs,
+            basic_setting_screen,
+            *args
+        )
+        account_setting_screen = Canvas(
+            master = self._master,
+            height = self.height_main_canvs,
+            width = self.width_main_canvs,
+            bg = self.var.theme1
+        )
+        
+        args = self.var.setting_option_menu_var(
+            account_setting_screen,
+            self.__change_password_func,
+            self.__create_new_account,
+            self.__change_account,
+            self.__go_back
+        )
+        
+        #setting_widget_in Canvas
+        self.account_setting_screen = self.windows.creating_form_on_canvas(
+            self.height_main_canvs,
+            self.width_main_canvs,
+            account_setting_screen,
+            *args
+        )
+        
     def INISALIZING_SETTING_SCREEN(self) -> None:
         '''
         inisalize the setting screen with all obj requird in screen
@@ -106,219 +368,13 @@ class setting_option_menu:
             text = "Save",
             fill = self.var.theme1
         )
-    
-    def INISIAL_SCREEN(self) -> Canvas:
-        '''
-        Creates and returns a Canvas widget representing the initial screen of the application.
-
-        The Canvas widget is configured with the following properties:
-        - Height is calculated by subtracting the navigation and game button heights from the total canvas height.
-        - Width is calculated by subtracting 14 units from the total canvas width.
-        - Background color is set to yellow.
-        - Contains a centered text element with a specified font, text, and color.
-
-        Returns:
-            Canvas: The configured Canvas widget.
-        '''
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text",
-            fill = self.var.theme2
-        )
-        return _inisial_screen
-    
-    def _basic_setting_screen(self):
-        """
-        Initializes and configures the basic settings screen for the application.
-
-        This method creates a Canvas widget and populates it with various settings 
-        controls, such as labels, entry fields, option menus, and sliders. It also 
-        sets the initial values of these controls based on the application's current 
-        configuration.
-
-        The following settings are included:
-        - Game Width: An entry field for setting the game's width.
-        - Game Height: An entry field for setting the game's height.
-        - Speed: An option menu for selecting the game's speed (Slow, Normal, Fast, Extreme).
-        - Size: An option menu for selecting the size of game elements (Small, Medium, Large, Extra Large).
-        - Text Size: A slider for adjusting the text size used in the game.
-        - Volume Level: A slider for adjusting the game's volume level.
-        - Account Setting: A button that navigates to the account settings screen.
-
-        The method performs the following steps:
-        1. Initializes the Canvas widget with specified dimensions and background color.
-        2. Calculates positioning metrics for placing widgets on the Canvas.
-        3. Creates and configures the widgets.
-        4. Sets the initial values of the widgets based on the application's settings.
-        5. Places the widgets on the Canvas at calculated positions.
-
-        Attributes:
-        -----------
-        basic_setting_screen : Canvas
-            The Canvas widget that contains all the settings controls.
-        __width_get : Entry
-            Entry field for the game's width.
-        __Height_get : Entry
-            Entry field for the game's height.
-        __Speed_get : StringVar
-            Variable for the game's speed option menu.
-        __Size_get : StringVar
-            Variable for the game element size option menu.
-        __Text_get : Scale
-            Slider for adjusting text size.
-        __Volume_get : Scale
-            Slider for adjusting volume level.
-        """
-        self.basic_setting_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
         
-        #calculating things
-        middle1 = self.width_main_canvs//4
-        middle2 = middle1 * 3
-        distance = self.height_main_canvs//7#7 is num of window i am gonna add
-        padx = (distance//3 )
-        start = padx *2
-        
-        #adding_widgets=====================================================================
-        lable1 = Label(self.basic_setting_screen,text="Game Width  :",font=('Arial',self.var.home_text_size,'bold'))
-        lable2 = Label(self.basic_setting_screen,text="Game Height :",font=('Arial',self.var.home_text_size,'bold'))
-        lable3 = Label(self.basic_setting_screen,text="Speed (Home):",font=('Arial',self.var.home_text_size,'bold'))
-        lable4 = Label(self.basic_setting_screen,text="Size (Home)  :",font=('Arial',self.var.home_text_size,'bold'))
-        lable5 = Label(self.basic_setting_screen,text="text size   :",font=('Arial',self.var.home_text_size,'bold'))
-        lable6 = Label(self.basic_setting_screen,text="Volume level:",font=('Arial',self.var.home_text_size,'bold'))
-        lable7 = Button(self.basic_setting_screen,text="Account Setting",font=('Arial',self.var.home_text_size,'bold'),relief="groove",width=30 , command=self.__acoount_setting_calling_func)
-
-        self.__width_get = Entry(self.basic_setting_screen,width=15,font=('Arial',self.var.home_text_size,'bold'))
-        self.__Height_get = Entry(self.basic_setting_screen,width=15,font=('Arial',self.var.home_text_size,'bold'))
-        
-        option1 = ("Slow", "Normal", "Fast", "Extreme")
-        self.__Speed_get = StringVar(self.basic_setting_screen)
-        Speed_get = OptionMenu(self.basic_setting_screen,self.__Speed_get,*option1)
-        
-        option2 = ("Small", "Medium", "Large", "Extra Large")
-        self.__Size_get = StringVar(self.basic_setting_screen)
-        size_get = OptionMenu(self.basic_setting_screen,self.__Size_get,*option2)
-        
-        self.__Text_get = Scale(
-            self.basic_setting_screen,from_= 5 , to = 20 , length = 107, orient="horizontal",
-            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',self.var.home_text_size,'bold'))
-        self.__Volume_get = Scale(
-            self.basic_setting_screen,from_= 0 , to = 100 , length = 107, orient="horizontal",
-            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',self.var.home_text_size,'bold'))
-        
-        #setting up the inisial values :-=====================================================-:
-        self.__width_get.insert(0,self.var.game_width)
-        self.__Height_get.insert(0,self.var.game_height)
-        size = self.var.home_boxsize
-        self.__Size_get.set('Small'if size == 15 else "Medium" if size == 30 else 'Large' if size == 45 else 'Extra Large')
-        speed = self.var.home_speed
-        self.__Speed_get.set('Extreme' if speed == 100 else 'Fast' if speed == 150 else 'Normal' if speed == 200 else 'Slow')
-        self.__Text_get.set(self.var.home_text_size)
-        self.__Volume_get.set(self.var.volume_level)
-        
-        #setting_widget_in Canvas :=============================================================:
-        self.basic_setting_screen.create_window(
-            middle1 , start , window=lable1)
-        self.basic_setting_screen.create_window(
-            middle2 , start , window=lable2)
-        self.basic_setting_screen.create_window(
-            middle1 , start := start + padx*2 , window=self.__width_get)
-        self.basic_setting_screen.create_window(
-            middle2 , start , window=self.__Height_get)
-        self.basic_setting_screen.create_window(
-            middle1 , start := start + distance , window=lable3)
-        self.basic_setting_screen.create_window(
-            middle2 , start , window= Speed_get)
-        self.basic_setting_screen.create_window(
-            middle1 , start := start + distance , window=lable4)
-        self.basic_setting_screen.create_window(
-            middle2 , start , window= size_get)
-        self.basic_setting_screen.create_window(
-            middle1 , start := start + distance , window=lable5)
-        self.basic_setting_screen.create_window(
-            middle2 , start , window=self.__Text_get)
-        self.basic_setting_screen.create_window(
-            middle1 , start := start + distance , window=lable6)
-        self.basic_setting_screen.create_window(
-            middle2 , start , window=self.__Volume_get)
-        self.basic_setting_screen.create_window(
-            middle1*2 , start := start + distance , window=lable7)
-    
-    def _account_setting_screen(self):
-        self.account_setting_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        #calculating things:=====================================================
-        middle1 = self.width_main_canvs//4
-        middle2 = middle1 * 3
-        distance = self.height_main_canvs//7#7 is num of window i am gonna add
-        padx = (distance//3 )
-        start = padx *2
-        
-        #adding_windows:==========================================================
-        lable1 = Label(self.account_setting_screen,text="Name  :",font=('Arial',self.var.home_text_size,'bold'))
-        lable2 = Label(self.account_setting_screen,text="Heigh Score",font=('Arial',self.var.home_text_size,'bold'))
-        lable3 = Label(self.account_setting_screen,text="Money",font=('Arial',self.var.home_text_size,'bold'))
-        
-        self.__name_get = Entry(self.account_setting_screen,width=15,font=('Arial',self.var.home_text_size,'bold'))
-        lable4 = Label(self.account_setting_screen,text="",font=('Arial',self.var.home_text_size,'bold'))
-        lable5 = Label(self.account_setting_screen,text="",font=('Arial',self.var.home_text_size,'bold'))
-                
-        change_password = Button(self.account_setting_screen,text="Change password",font=('Arial',self.var.home_text_size,'bold'),relief="groove",width=30,command=self.__change_password_func)
-        create_new_account = Button(self.account_setting_screen,text="new account",font=('Arial',self.var.home_text_size,'bold'),relief="groove",width=14,command=self.__create_new_account)
-        change_account = Button(self.account_setting_screen,text="change account",font=('Arial',self.var.home_text_size,'bold'),relief="groove",width=14,command=self.__change_account)
-        go_back = Button(self.account_setting_screen,text="<- go back",font=('Arial',self.var.home_text_size,'bold'),relief="groove",width=30,command=self.__go_back)
-        
-        #setting up the inisial values :-=========================================================================
-        self.__name_get.insert(0,self.var.active_user_name)
-        lable4.config(text=self.var.HIGHT_SCORE)
-        lable5.config(text=self.var.PLAYERP_COINE)
-        
-        #setting_widget_in Canvas
-        self.account_setting_screen.create_window(
-            middle1 , start , window=lable1)
-        self.account_setting_screen.create_window(
-            middle2 , start , window=self.__name_get)
-        self.account_setting_screen.create_window(
-            middle1 , start := start + padx*2 , window=lable2)
-        self.account_setting_screen.create_window(
-            middle2 , start , window=lable3)
-        self.account_setting_screen.create_window(
-            middle1 , start := start + distance , window=lable4)
-        self.account_setting_screen.create_window(
-            middle2 , start , window= lable5)
-        self.account_setting_screen.create_window(
-            middle1*2 , start := start + distance , window=change_password)
-        self.account_setting_screen.create_window(
-            middle1 , start := start + distance , window= create_new_account)
-        self.account_setting_screen.create_window(
-            middle2 , start , window=change_account)
-        self.account_setting_screen.create_window(
-            middle1*2 , start := start + distance , window=go_back)
-    
-    
-    
-    
     def __acoount_setting_calling_func(self) ->None:
         '''
         this function helps to confirm user password and also if password
         ryt then take them to account setting canvas:0
         '''
-        get_pass = simpledialog.askstring("password", "Please enter your password: ")
+        get_pass = self.windows.taking_password_for_verification_window()
         if get_pass == self.var._player_acc_info["password"]:
             messagebox.showinfo("password matched","password matched now u can modify you account")
             self.basic_setting_screen.grid_forget()
@@ -326,23 +382,29 @@ class setting_option_menu:
         else:
             messagebox.showinfo("wrong password","wrong password u cant modify your account")
     
-    def __change_password_func():
-        pass
+    def __change_password_func(self):
+        value1 , value2 = self.windows.change_password_window()
+        if not (value1 == value2):
+            messagebox.showwarning("Password Mismatch", "The new password and confirmation do not match.")
+            return None
+        
+        self.var.update_password(value1)
+        
+        if value1 == self.var._player_acc_info["password"]:
+            messagebox.showinfo("Password Changed Successfully", "Your password has been updated successfully.")
+        else:
+            messagebox.showerror("Password Change Failed", "There was an error updating your password. Please try again.")
+        
+    def __create_new_account(self):
+        self.windows.create_new_account_window()
     
-    def __create_new_account():
-        pass
-    
-    def __change_account():
-        pass
+    def __change_account(self):
+        self.windows.change_account_window()
     
     def __go_back(self):
         self.account_setting_screen.grid_forget()
         self.basic_setting_screen.grid(row = 1 , column = 0,columnspan = 2)
-            
-    
-    
-    
-    
+        
     def save_fucn(self,event):#need to fix
         # getting_value
         width = self.__width_get.get()
@@ -372,9 +434,6 @@ class setting_option_menu:
         
         self.var.update()
         
-        
-        
-        
         #amm just for check u know
         print("=========================")
         print(width)
@@ -383,116 +442,34 @@ class setting_option_menu:
         print(size)
         
     def change_screen(self,canvas:Canvas):
+        """
+        Change the current screen to a new canvas in the application.
+
+        This method performs the following actions:
+        1. Invokes the `__shift_button_button1` method with `None` as the argument.
+        2. Removes the currently displayed screen (stored in `self.curent_screen`) from the grid.
+        3. Updates `self.curent_screen` to the provided `canvas`.
+        4. Displays the new canvas by placing it in the grid at row 1, column 0, spanning two columns.
+
+        Args:
+            canvas (Canvas): The new canvas to be displayed on the screen.
+        """
         self.__shift_button_button1(None)
         self.curent_screen.grid_forget()
         self.curent_screen = canvas
-        self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)
-    
-    
-    
-    
-    
-    def nevigation_canvas_setting(self) -> Canvas:
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text1",
-            fill = self.var.theme2
-        )
-        self.change_screen(_inisial_screen)
-        return _inisial_screen
-    
-    def heart_settings(self) -> Canvas:
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text2",
-            fill = self.var.theme2
-        )
-        self.change_screen(_inisial_screen)
-        return _inisial_screen
-    
-    def nevigation_text_setting(self) -> Canvas:
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text3",
-            fill = self.var.theme2
-        )
-        self.change_screen(_inisial_screen)
-        return _inisial_screen
-    
-    def game_canvas_setting(self) -> Canvas:
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text4",
-            fill = self.var.theme2
-        )
-        self.change_screen(_inisial_screen)
-        return _inisial_screen
-
-    def snake_setting(self) -> Canvas:
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text5",
-            fill = self.var.theme2
-        )
-        self.change_screen(_inisial_screen)
-        return _inisial_screen
-
-    def food_setting(self) -> Canvas:
-        _inisial_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        _inisial_screen.create_text(
-            self.width_main_canvs // 2, self.height_main_canvs // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "here its comes demo text6",
-            fill = self.var.theme2
-        )
-        self.change_screen(_inisial_screen)
-        return _inisial_screen
-    
-    
-    
-    
+        self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)    
     
     def __shift_button_button1(self,event):
+        """
+        Handle the event when navigation button 1 is clicked.
+
+        This method updates the background colors and text colors of two navigation buttons to reflect
+        the active state of button 1. It also switches the visible screen by hiding the basic setting 
+        and account setting screens, and displaying the current screen.
+
+        Args:
+            event: The event that triggered this method.
+        """
         self.nevigation_button1.config(bg = self.var.theme1)
         self.nevigation_button1.itemconfig(self._text_nev_button2, fill = self.var.theme2)
         self.nevigation_button2.config(bg = self.var.theme2)
@@ -503,6 +480,16 @@ class setting_option_menu:
         self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)
     
     def __shift_button_button2(self,event):
+        """
+        Handle the event when navigation button 2 is clicked.
+
+        This method updates the background colors and text colors of two navigation buttons to reflect
+        the active state of button 2. It also switches the visible screen by hiding the current screen 
+        and account setting screens, and displaying the basic setting screen.
+
+        Args:
+            event: The event that triggered this method.
+        """
         self.nevigation_button1.config(bg = self.var.theme2)
         self.nevigation_button1.itemconfig(self._text_nev_button1, fill = self.var.theme1)
         self.nevigation_button2.config(bg = self.var.theme1)
@@ -591,8 +578,6 @@ class setting_screen:
         #inisalizing frame and important variables
         self.master = master
         self.var = var
-        self.back_button_color = "black"
-        self.back_button_text_color = "white"
         #creating frames
         self.child_frame = Frame(master= self.master, relief= "flat", bg= "black")
         self.gane_screen_frame = Frame(self.child_frame)
@@ -622,7 +607,17 @@ class setting_screen:
             canvas_width = self._settingscreen_width,
             nevigation_height = self.game_screen._nevigation_height,
             button_height = self._gameexit_button_height
-            )
+        )
+        
+        self.windows = setting_window_screen(
+            master = self.setting_screen_frame,
+            height = self.window_screen.height_main_canvs,
+            width = self.window_screen.width_main_canvs,
+            theme = (self.var.theme1,self.var.theme2),
+            font_size = self.var.home_text_size
+        )
+        #adding inisial shop screen
+        self.window_screen.curent_screen = self.windows.Inisial_screen("please click on anything in game canvas to start with")
         
     def _add_back_button(self) -> None:
         '''
@@ -633,14 +628,14 @@ class setting_screen:
             master = self.gane_screen_frame,
             height = self._gameexit_button_height,
             width = self._game_screen_width,
-            bg = self.back_button_color
+            bg = self.var.theme2
         )
         
         self.back_button_text_id = self.back_button.create_text(
             self._game_screen_width // 2,self._gameexit_button_height // 2,
             font = ("Arial",self.var.home_text_size,'bold'),
             text = "Back",
-            fill = self.back_button_text_color
+            fill = self.var.theme1
         )
         
     def back_button_func(self,event) -> None:
@@ -648,8 +643,8 @@ class setting_screen:
         the function for going back the function
         '''
         print("hola amigos")
-        self.back_button.config(bg = self.back_button_text_color)
-        self.back_button.itemconfig(self.back_button_text_id, fill = self.back_button_color)
+        self.back_button.config(bg = self.var.theme1)
+        self.back_button.itemconfig(self.back_button_text_id, fill = self.var.theme2)
         self.REMOVE_TO_MASTER()
         
     def binding_keys(self) -> None:
@@ -716,19 +711,27 @@ class setting_screen:
         """
         if screen == 1:
             if self.__check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
-                self.window_screen.nevigation_canvas_setting()
+                window = self.windows.Inisial_screen("text1")
+                
             elif self.__check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
-                self.window_screen.heart_settings()
+                window = self.windows.Inisial_screen("text2")
+                
             else:
-                self.window_screen.nevigation_text_setting()
-
+                window = self.windows.Inisial_screen("text3")
+                
         elif screen == 2:
             if self.__check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
-                self.window_screen.game_canvas_setting()
+                window = self.windows.Inisial_screen("text4")
+                
             elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
-                self.window_screen.snake_setting()
+                window = self.windows.Inisial_screen("text5")
+                
             else:
-                self.window_screen.food_setting()
+                window = self.windows.Inisial_screen("text6")
+        
+        #setting up the window acording to window they selected
+        self.window_screen.change_screen(window)
+                
     
     def __check_cords_in_range(self, list_cords:list[tuple,tuple], coordinates:tuple[int,int]) -> bool:
         """
