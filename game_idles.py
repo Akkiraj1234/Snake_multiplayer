@@ -79,7 +79,11 @@ class Snake:
         for body in self.snake_body:
             self.canvas.delete(body)
         self.snake_coordinates = []
-            
+    
+    def update_color(self,color:str):
+        self.color = color
+        for body in self.snake_body:
+            self.canvas.itemconfig(body,fill = self.color)
     
     
 class Food:
@@ -169,6 +173,10 @@ class Food:
             self._create_food_square()
         else:
             self._create_food_oval()
+    
+    def update_color(self,color:str):
+        self.color = color
+        self.canvas.itemconfig(self.food,fill = self.color)
          
         
             
@@ -283,6 +291,13 @@ class Heart:
         secoend = self.canvas.create_arc(new_x1,new_y1-radious,x2,new_y1+radious,fill=self.color,start=0,extent=180)
         third = self.canvas.create_polygon(x1,new_y1,x2,new_y1,(x1+x2)/2,y2,fill=self.color)
         self.hearts_list.append((first,secoend,third))
+    
+    def update_color(self,color:str):
+        self.color = color
+        for hearts in self.hearts_list:
+            self.canvas.itemconfig(hearts[0],fill = self.color)
+            self.canvas.itemconfig(hearts[1],fill = self.color)
+            self.canvas.itemconfig(hearts[2],fill = self.color)
         
 
 class goofy_Snakes:

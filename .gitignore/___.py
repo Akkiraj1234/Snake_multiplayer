@@ -1,36 +1,491 @@
-from variable import Variable
-from game_screens import inisial_screens,Game_screen , setting_option_menu #, old, list1
-from tkinter import Tk,Frame,Button,Label,Canvas
+from game_idles import Snake,Food,Heart
+from game_screens import inisial_screens
+import psutil
+import os 
+
+from tkinter import Tk,Canvas,Button,Label,Frame,Entry,StringVar,Scale,OptionMenu
+# from other import setting_window
+
+import json
 import time
 
+instail = 0
 
+lol = []
 
-# import psutil
-# import os 
-# import time
-
-
-
-
-# def get_memory_usage():
-#     global old
-#     process = psutil.Process(os.getpid())
-#     mem_info = process.memory_info()
-#     ll=mem_info.rss
-#     if not (old == ll):
-#         list1.append((ll,time.time_ns()))
-#         old = ll
-#     os.system('cls')
-#     print(ll, f"-  {ll / (1024 * 1024):.2f} MB")
-#     print(list1)
+def get_memory_usage():
+    global instail
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    ll=mem_info.rss
+    if not (instail == ll):
+        lol.append(ll)
+        instail = ll
     
-    
+    os.system('cls')
+    print(ll, f"-  {ll / (1024 * 1024):.2f} MB")
+    print(lol)
 
-#there is an issue how i am gonna update the variable 
-#so for that i have 2 ways 
-# 1. is to create each canvas when we calling it again and again
-# 2. is to make a update function that will update each time when we call them:0
-#idk which one to use?
+
+class variable:
+    """
+    A class for managing game-related variables and settings.
+
+    This class serves the purpose of centralizing game variables, 
+    preventing unnecessary copies, and providing control over variables
+    in one place. It handles the following tasks:
+
+    1. **Initialization**: Loads game variables from JSON files.
+    2. **Updates**: Manages updates to game variables.
+    3. **Settings**: Handles user settings and game settings.
+
+    Use this class to streamline variable management and ensure
+    consistency across your game.
+    
+    METHODS:
+        - __init__(): this method inisalize the all game variables
+        - getting_and_extracting_info(): this method gather all json data
+        - update_user_settings(): this method update user_setting json
+        - updaing_game_setting(): this method update game_setting json
+        - update_password(): this method update user password
+        - update(): this method update both user info and game info
+    """
+    
+    def __init__(self) -> None:
+        """
+        Initialize the game and user variables by loading data from JSON files.
+        """
+        self.getting_and_extracting_info()
+        #game basic info that stay same for every user by changing it change but for all user
+        self.game_width = self._game_setting["basic_info"]["game_width"]
+        self.game_height = self._game_setting["basic_info"]["game_height"]
+        self.home_boxsize = self._game_setting["basic_info"]["box_size"]
+        self.home_speed = self._game_setting["basic_info"]["speed"]
+        self.home_text_size = self._game_setting["basic_info"]["text_size"]
+        self.volume_level = self._game_setting["basic_info"]["volume_level"]
+        
+        self.theme1 = self._game_setting["theme"]["theme1"]
+        self.theme2 = self._game_setting["theme"]["theme2"]
+        
+        
+        self.game_speed = 120
+        self.game_box_size = 30
+        
+        
+        #user info that changes by every new_users
+        self.active_user_name = self._player_acc_info["name"]
+        self.PLAYERP_COINE = self._player_acc_info["points"]
+        self.HIGHT_SCORE = self._player_acc_info["HIGH_SCORE"]
+        self.NEV_COLOR = self._player_acc_info["Cur_nev_color"]
+        self.TEXT_COLOR = self._player_acc_info["cur_text_color"]
+        self.HEART_COLOR = self._player_acc_info["cur_heart_color"]
+        self.CANVAS_COLOR = self._player_acc_info["cur_canvas_color"]
+        self.FOOD_COLOR = self._player_acc_info["cur_food_color"]
+        self.SNAKE_COLOR = self._player_acc_info["cur_snake_color"]
+        self.INISISAL_HEART = self._player_acc_info["inisial_heart"]
+        self.SNAKE_LOSS_COUNTDOWN = self._player_acc_info["countdown_time_s"]
+        
+        self.owned_nev_color = self._player_acc_info["inisial_heart"]
+        self.owned_heart_color = self._player_acc_info["owned_heart_color"]
+        self.owned_canvas_color = self._player_acc_info["owned_canvas_color"]
+        self.owned_food_color = self._player_acc_info["owned_food_color"]
+        self.owned_snake_color = self._player_acc_info["owned_snake_color"]
+        
+        #fixed and constant variables
+        self.SNAKE_LENGHT = 3
+        self.SNAKE_CORDINATES = (0,0)
+        self.FONT_STYLE =  "Press Start 2P" 
+        self.Form_font = "Myanmar Text"
+        self.INISIAL_HOME_TEXT = "Sneck suffarie :0"
+        
+        #Theme colors
+    
+    def getting_and_extracting_info(self) -> None:
+        """
+        Extract information from JSON files.
+
+        This method extracts game settings information from a 'setting.json' file
+        and player account details from a file named after the player's account name.
+        It initializes the class attributes '_game_setting' and '_player_acc_info'
+        with the extracted data.
+        """
+        # Extracting game setting info
+        with open("Game_assets\\setting.json","r",encoding="utf-8") as Game_settings:
+            self._game_setting = json.load(Game_settings)
+            
+        #gathering player account_name
+        self._active_account = self._game_setting["game_info"]["Account"]
+            
+        # Extracting player information by id
+        with open(f"player_info\\{self._active_account}.json","r",encoding="utf-8") as Account_details:
+            self._player_acc_info = json.load(Account_details)
+        
+    def update_user_settings(self) -> None:
+        """
+        Update user settings in the player account JSON file 
+        by anything changes on the variable.
+        """
+        self._player_acc_info["name"] = self.active_user_name
+        self._player_acc_info["HIGH_SCORE"] = self.HIGHT_SCORE
+        self._player_acc_info["points"] = self.PLAYERP_COINE
+        self._player_acc_info["Cur_nev_color"] = self.NEV_COLOR
+        self._player_acc_info["cur_text_color"] = self.TEXT_COLOR
+        self._player_acc_info["cur_heart_color"] = self.HEART_COLOR
+        self._player_acc_info["cur_canvas_color"] = self.CANVAS_COLOR
+        self._player_acc_info["cur_food_color"] = self.FOOD_COLOR
+        self._player_acc_info["cur_snake_color"] = self.SNAKE_COLOR
+        self._player_acc_info["inisial_heart"] = self.INISISAL_HEART
+        self._player_acc_info["countdown_time_s"] = self.SNAKE_LOSS_COUNTDOWN
+        
+        self._player_acc_info["owned_nev_color"] = self.owned_nev_color
+        self._player_acc_info["owned_heart_color"] = self.owned_heart_color
+        self._player_acc_info["owned_canvas_color"] = self.owned_canvas_color
+        self._player_acc_info["owned_food_color"] = self.owned_food_color
+        self._player_acc_info["owned_snake_color"] = self.owned_snake_color
+        
+        with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
+            json.dump(self._player_acc_info, player_file,)
+        
+    def updaing_game_setting(self) -> None:
+        """
+        Update game settings in the 'setting.json' file.
+        by anything chnageed on the variable
+        """
+        self._game_setting["basic_info"]["game_width"] = self.game_width
+        self._game_setting["basic_info"]["game_height"] = self.game_height
+        self._game_setting["basic_info"]["box_size"] = self.home_boxsize
+        self._game_setting["basic_info"]["speed"] = self.home_speed
+        self._game_setting["basic_info"]["text_size"] = self.home_text_size
+        self._game_setting["basic_info"]["volume_level"] = self.volume_level
+        self._game_setting["theme"]["theme1"] = self.theme1
+        self._game_setting["theme"]["theme2"] = self.theme2
+        self._game_setting["game_info"]["box_size"] = self.game_box_size
+        self._game_setting["game_info"]["game_speed"] = self.game_speed
+        self._game_setting["game_info"]["Account"] = self._active_account
+        
+        with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
+            json.dump(self._game_setting,game_setting)
+    
+    def basic_setting_screen_var(self,canvas , button_method):
+        '''
+        inisalize variable and widgets required to show in basic 
+        setting screen canvs
+        '''
+        option1 = ("Slow", "Normal", "Fast", "Extreme")
+        option2 = ("Small", "Medium", "Large", "Extra Large")
+        
+        lable1 = Label(canvas ,text="Game Width  :", font=('Arial',self.home_text_size,'bold'))
+        lable2 = Label(canvas ,text="Game Height :", font=('Arial',self.home_text_size,'bold'))
+        lable3 = Label(canvas ,text="Speed (Home):", font=('Arial',self.home_text_size,'bold'))
+        lable4 = Label(canvas ,text="Size (Home)  :",font=('Arial',self.home_text_size,'bold'))
+        lable5 = Label(canvas ,text="text size   :", font=('Arial',self.home_text_size,'bold'))
+        lable6 = Label(canvas ,text="Volume level:", font=('Arial',self.home_text_size,'bold'))
+        
+        self.bssv_back_button = Button(
+            canvas ,text="Account Setting",font=('Arial',self.home_text_size,'bold'),
+            relief="groove", width=30 , command=button_method
+        )
+        self.bssv_width_entry = Entry(canvas, width=15, font=('Arial',self.home_text_size,'bold'))
+        self.bssv_height_entry = Entry(canvas ,width=15, font=('Arial',self.home_text_size,'bold'))
+        
+        self.bssv_speed_get = StringVar(canvas)
+        self.bssv_size_get = StringVar(canvas)
+        
+        self.bssv_text_get = Scale(
+            canvas, from_= 5 , to = 20 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',self.home_text_size,'bold'))
+        self.bssv_volume_get = Scale(
+            canvas ,from_= 0 , to = 100 , length = 107, orient="horizontal",
+            relief="groove",sliderlength=10, sliderrelief="flat",font=('Arial',self.home_text_size,'bold'))
+        
+        Speed_get = OptionMenu(canvas, self.bssv_speed_get,*option1)
+        size_get = OptionMenu(canvas , self.bssv_size_get, *option2)
+        
+        #insializing values in widgets :
+        self.bssv_width_entry.insert(0,self.game_width)
+        self.bssv_height_entry.insert(0,self.game_height)
+        size = self.home_boxsize
+        self.bssv_speed_get.set('Small'if size == 15 else "Medium" if size == 30 else 'Large' if size == 45 else 'Extra Large')
+        speed = self.home_speed
+        self.bssv_size_get.set('Extreme' if speed == 100 else 'Fast' if speed == 150 else 'Normal' if speed == 200 else 'Slow')
+        self.bssv_text_get.set(self.home_text_size)
+        self.bssv_volume_get.set(self.volume_level)
+        
+        #retuning the values :
+        return (
+            (lable1 , lable2),
+            (self.bssv_width_entry , self.bssv_height_entry),
+            (lable3 , Speed_get),
+            (lable4 , size_get),
+            (lable5 , self.bssv_text_get),
+            (lable6 , self.bssv_volume_get),
+            (self.bssv_back_button , None)
+        )
+    
+    def setting_option_menu_var(self,canvas, changepass_method,createnewacc_method,changeaccount_method,goback_method):
+        '''
+        inisalize variable and widgets required to show in 
+        account setting screen
+        '''
+        #adding_windows:==========================================================
+        lable1 = Label(canvas, text="Name  :",font=('Arial',self.home_text_size,'bold'))
+        lable2 = Label(canvas, text="Heigh Score",font=('Arial',self.home_text_size,'bold'))
+        lable3 = Label(canvas, text="Money",font=('Arial',self.home_text_size,'bold'))
+        
+        self.somv_name_get = Entry(canvas, width=15,font=('Arial',self.home_text_size,'bold'))
+        self.somv_heightscore_lable = Label(canvas, text="",font=('Arial',self.home_text_size,'bold'))
+        self.somv_coin_lable = Label(canvas, text="",font=('Arial',self.home_text_size,'bold'))
+        
+        change_password = Button(
+            canvas, text="Change password", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=30,command=changepass_method)
+        create_new_account = Button(
+            canvas, text="new account", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=14,command=createnewacc_method)
+        change_account = Button(
+            canvas, text="change account", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=14,command=changeaccount_method)
+        go_back = Button(
+            canvas, text="<- go back", font=('Arial',self.home_text_size,'bold'),
+            relief="groove",width=30,command=goback_method)
+        
+        #adding_value;0
+        self.somv_name_get.insert(0,self.active_user_name)
+        self.somv_heightscore_lable.config(text=self.HIGHT_SCORE)
+        self.somv_coin_lable.config(text=self.PLAYERP_COINE)
+        
+        #returning the value 
+        return (
+            (lable1 , self.somv_name_get),
+            (lable2 , self.somv_heightscore_lable),
+            (lable3 , self.somv_coin_lable),
+            (change_password , None),
+            (create_new_account , change_account),
+            (go_back , None)
+        )
+        
+        
+    
+    def update_password(self,password) -> None:
+        """
+        Update the player's account password.
+
+        This method updates the password associated with the player's account.
+        However, it's currently implemented as a placeholder and does not perform
+        any actual password update operation. Future implementation should include
+        appropriate security measures for updating passwords.
+        """
+        self._player_acc_info["password"] = password
+        
+        with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
+            json.dump(self._player_acc_info, player_file,)
+        
+    
+    def update(self) -> None:
+        """
+        Update both user and game settings.
+        """
+        self.update_user_settings()
+        self.updaing_game_setting()
+        
+          
+class Game_screen:
+    """
+    Class to manage the game screen, including navigation setup,
+    game canvas setup, updating game elements, and adding/removing
+    from the master widget.
+
+    Attributes:
+        var (variable): An object containing game variables.
+        MASTER (Tk): The parent Tkinter window.
+        NEVIGATION_CANVAS (Canvas): The canvas for navigation elements.
+        GAME_CANVAS (Canvas): The canvas for game elements.
+        SNAKE (Snake): The snake object.
+        FOOD (Food): The food object.
+        HEART (Heart): The heart object.
+        MENU_OPTION (Text): The menu option text.
+        SCORE_TEXT (Text): The score text.
+        _game_bord_height (int): Height of the game board.
+        _nevigation_height (int): Height of the navigation canvas.
+
+    Methods:
+        __init__(Master, var): Initializes the game screen.
+        adjust_window_size(): Adjusts window size based on game and navigation heights.
+        nevigation_setup(): Sets up the navigation canvas with heart, score text, and menu option.
+        game_canvas_setup(): Sets up the game canvas with snake and food.
+        update_things(**kwargs): Updates game elements based on provided keyword arguments.
+        add_to_Master(): Packs the navigation and game canvases.
+        remove_to_Master(): Removes navigation and game canvases from master widget.
+    """
+   
+    def __init__(self,Master:Tk,var:variable) -> None:
+        """Initialize the game screen. 
+        with main game canvas and nevigation panel
+        and sneck ,  food in hevigation heart score board,
+        and menu option
+
+        Args:
+            Master (Tk): The parent Tkinter window.
+            var (variable): An object containing game variables.
+        """
+   
+        self.var = var
+        self.master = Master
+        self.MASTER = Frame(self.master)
+        
+        self.NEVIGATION_CANVAS = None
+        self.GAME_CANVAS = None
+        self.SNAKE = None
+        self.FOOD = None
+        self.HEART = None
+        self.MENU_OPTION = None
+        self.SCORE_TEXT = None
+        
+        #game_variables
+        self.game_height = self.var.game_height
+        self.game_width = self.var.game_width
+        self._game_bord_height = None
+        self._nevigation_height = None
+        
+    def set_up(self) -> None:
+        """
+        genrate the game canvas by adjusting 
+        window_size and nevigation_size create the
+        game_canvas with all things set up
+        """
+        self.adjust_window_size()
+        self.nevigation_setup()
+        self.game_canvas_setup()
+        
+    
+    def adjust_window_size(self) -> None:
+        """
+        Adjust the window size based on game height and navigation heights.
+        
+        Note:
+            The navigation height is calculated as one-eighth of the game height,
+            but if the calculated height is less than or equal to the size of game
+            boxes, it defaults to the size of game boxes.
+        
+        Attributes created:
+            _nevigation_height (int): The height of the navigation canvas.
+            _game_bord_height (int): The height of the game board canvas.
+        """
+        nevigation_height = self.game_height // 8
+        nevigation_height = nevigation_height // self.var.game_box_size
+        
+        if not nevigation_height:
+            self._nevigation_height = self.var.game_box_size * nevigation_height
+        else:
+            self._nevigation_height = self.var.game_box_size
+            
+        self._game_bord_height = self.game_height - self._nevigation_height
+    
+    def nevigation_setup(self) -> None:
+        """
+        This method sets up the navigation canvas with essential elements such as a heart icon
+        representing the player's remaining lives, a score text displaying the current score,
+        and a menu option for accessing game options or pausing the game.
+        """
+        braking_into_4 =  self._nevigation_height // 4
+        Heart_size = braking_into_4 * 3
+        pady = braking_into_4 // 4
+        
+        self.NEVIGATION_CANVAS = Canvas(
+            master = self.MASTER,
+            bg = self.var.NEV_COLOR,
+            width = self.game_width,
+            height = self._nevigation_height
+            )
+        
+        self.HEART = Heart(
+            canvas = self.NEVIGATION_CANVAS,
+            cordnites = (self.game_width - Heart_size,pady),
+            box_size = Heart_size,
+            color = self.var.HEART_COLOR,
+            inisial_heart = self.var.INISISAL_HEART
+            )
+        
+        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
+            self.game_width // 2,
+            braking_into_4 * 2,
+            font = ("Arial",braking_into_4 * 2,"bold"),
+            text = f"Score: 0",
+            fill = self.var.TEXT_COLOR
+            )
+        
+        self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
+            30,
+            braking_into_4 * 2,
+            font = ("Arial", braking_into_4 * 2, "bold"),
+            text = "Menu",
+            fill = self.var.TEXT_COLOR
+            )
+    
+    def game_canvas_setup(self) -> None:
+        """
+        This method sets up the game canvas with the snake and food objects.
+        It creates a canvas widget with the specified background color, width,
+        and height. Then, it initializes the snake and food objects on the canvas
+        using the provided game variables.
+        """
+        self.GAME_CANVAS = Canvas(
+            master = self.MASTER,
+            bg = self.var.CANVAS_COLOR,
+            width = self.game_width,
+            height = self._game_bord_height
+            )
+        
+        self.SNAKE = Snake(
+            canvas = self.GAME_CANVAS,
+            lenght = self.var.SNAKE_LENGHT,
+            coordinates = self.var.SNAKE_CORDINATES,
+            color = self.var.SNAKE_COLOR,
+            box_size = self.var.game_box_size
+            )
+        
+        self.FOOD = Food(
+            canvas = self.GAME_CANVAS,
+            box_size = self.var.game_box_size,
+            color = self.var.FOOD_COLOR,
+            game_width = self.game_width,
+            game_height = self._game_bord_height
+            )
+    
+    def update_things(self,**kwargs):
+        """
+        Update game elements based on provided keyword arguments.
+
+        Args:
+            **kwargs: Keyword arguments to update game elements. Available args:
+                      - score: Score to be updated.
+        """
+        if "score" in kwargs:
+            self.NEVIGATION_CANVAS.itemconfig(
+                self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
+            )
+    
+    def add_to_Master(self,side = "left",side_status = True)->None:
+        """
+        Pack the navigation and game canvases and add it to master
+        """
+        if side_status:
+            self.MASTER.pack()
+        else:
+            self.MASTER.pack(side=side)
+            
+        self.NEVIGATION_CANVAS.pack()
+        self.GAME_CANVAS.pack()
+
+    def remove_to_Master(self)-> None:
+        """
+        remove the navigation and game canvases. from master
+        """
+        self.NEVIGATION_CANVAS.pack_forget()
+        self.GAME_CANVAS.pack_forget()
+        self.MASTER.pack_forget()
+
+
 class Game_engion:
     """
     This class controls the main game.
@@ -57,7 +512,7 @@ class Game_engion:
     - ADD_TO_SCREEN(): Adds the game screen to the master window.
     """
     
-    def __init__(self, Master:Tk, var:Variable) -> None:
+    def __init__(self, Master:Tk, var:variable) -> None:
         """
         Initializes the Game_engion object.
 
@@ -76,7 +531,7 @@ class Game_engion:
         self._old_time_ = 0
         
         #creating screen
-        self.GAME_FRAME = Game_screen(self.MASTER, self.var)
+        self.GAME_FRAME = Game_screen(self.MASTER,self.var)
         self.GAME_FRAME.set_up()
         self.pause_screen = None
         
@@ -224,7 +679,7 @@ class Game_engion:
         # create new food and add up score
         if sneckx == foodx and snecky == foody:
             remove = False
-            self.GAME_FRAME.FOOD.new_food()
+            self.GAME_FRAME.FOOD.new_food("oval")#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! food styles modification
             self.SCORE +=1
         
         #updaing things and collection after id
@@ -239,6 +694,8 @@ class Game_engion:
         #checking if game pause is called or not
         if self.stop_game_animation:
             self.MASTER.after_cancel(self.master_after_ids)
+        
+        get_memory_usage()
             
     def UPDATION_AFTER_GAME_OVER(self) -> None:
         """
@@ -363,292 +820,12 @@ class Game_engion:
         Note:
         - This method should be called when starting or resuming the game.
         """
-        self.GAME_FRAME.update()
         self.GAME_FRAME.add_to_Master()
         self._bild_key()
         self.stop_game_animation = False
 
 
-
-class setting_screen:
-    '''
-    this classs help us inisalizing gui game screen 
-    that can use to modify code
-    
-    return:
-        None
-    '''
-    def __init__(self , master:Tk , var:Variable ,back_fucn) -> None:
-        '''
-        Initialize the Game GUI.
-
-        This method initializes the game GUI by creating the main frame, calculating screen dimensions,
-        setting up screens for the game, and positioning the snake and other elements.
-
-        Parameters:
-        - master (Tk): The Tkinter root window.
-        - var (variable): An instance of the variable class containing game variables.
-
-        Returns:
-        None
-        '''
-        #inisalizing frame and important variables
-        self.master = master
-        self.var = var
-        self.back_func = back_fucn
-        
-        #creating frames
-        self.child_frame = Frame(master= self.master, relief= "flat", bg= "black")
-        self.gane_screen_frame = Frame(self.child_frame)
-        self.setting_screen_frame = Frame(self.child_frame)
-        
-        #setting up screen for the game and resulatiion
-        self._gameexit_button_height = None
-        self._game_screen_height = None
-        self._game_screen_width = None
-        self._settingscreen_height = None
-        self._settingscreen_width = None
-        self._calculate_screen_dimensions()
-        
-        #setting up screens for the game
-        self.game_screen = Game_screen(Master=self.gane_screen_frame, var=self.var)
-        self.game_screen.game_height = self._game_screen_height
-        self.game_screen.game_width = self._game_screen_width
-        self.game_screen.set_up()
-        self.possision_snack_and_idels()
-        self._add_back_button()
-
-        #adding setting screen for the game
-        self.window_screen = setting_option_menu(
-            master = self.setting_screen_frame,
-            var = var,
-            canvas_height = self._settingscreen_height,
-            canvas_width = self._settingscreen_width,
-            nevigation_height = self.game_screen._nevigation_height,
-            button_height = self._gameexit_button_height,
-            root = root
-        )
-        
-        self.windows = self.window_screen.windows
-        #adding inisial shop screen
-        self.window_screen.curent_screen = self.windows.Inisial_screen(self.setting_screen_frame,"please click on anything in game canvas to start with")
-        
-    def _add_back_button(self) -> None:
-        '''
-        set up the back button for the game
-        '''
-        #add back button for the game 
-        self.back_button = Canvas(
-            master = self.gane_screen_frame,
-            height = self._gameexit_button_height,
-            width = self._game_screen_width,
-            bg = self.var.theme2
-        )
-        
-        self.back_button_text_id = self.back_button.create_text(
-            self._game_screen_width // 2,self._gameexit_button_height // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "Back",
-            fill = self.var.theme1
-        )
-        
-    def back_button_func(self,event) -> None:
-        '''
-        the function for going back the function
-        '''
-        self.REMOVE_TO_MASTER()
-        self.back_func()
-        
-    def binding_keys(self) -> None:
-        '''
-        this method bind keys for the screen
-        '''
-        self.__get_idels_cordinates()
-        self.__binding_keys_id = [
-            self.game_screen.NEVIGATION_CANVAS.bind(
-                "<Button-1>",lambda event: self._check_bind_event_on_game_screen(event , 1)
-                ),
-            self.game_screen.GAME_CANVAS.bind(
-                "<Button-1>",lambda event: self._check_bind_event_on_game_screen(event , 2)
-                )
-        ]
-        self.back_button.bind("<Button-1>",self.back_button_func)
-    
-    def remove_binding_keys(self) -> None:
-        '''
-        this method removes binds keys for the screen
-        '''
-        self.game_screen.NEVIGATION_CANVAS.unbind("<Button-1>",self.__binding_keys_id[0])
-        self.game_screen.GAME_CANVAS.unbind("<Button-1>",self.__binding_keys_id[1])
-        self.back_button.unbind_all("<Button-1>")
-    
-    def __get_idels_cordinates(self) -> None:
-        '''
-        Get the coordinates of various elements on the game screen.
-
-        This method retrieves the coordinates of different elements on the game screen, such as menu options, score text, hearts, food, and snake body segments.
-
-        Returns:
-        - None
-        '''
-        self._cordinates_home_and_score = [
-            self.game_screen.NEVIGATION_CANVAS.bbox(self.game_screen.MENU_OPTION),
-            self.game_screen.NEVIGATION_CANVAS.bbox(self.game_screen.SCORE_TEXT)
-        ]
-        
-        self._hearts_cordinates = [
-            self.game_screen.NEVIGATION_CANVAS.bbox(body)
-            for heart in self.game_screen.HEART.hearts_list
-            for body in heart
-        ]
-
-        self._cordinates_food = [
-            self.game_screen.GAME_CANVAS.bbox(self.game_screen.FOOD.food)
-        ]
-        
-        self._cordinates_sneck = [
-            self.game_screen.GAME_CANVAS.bbox(snack)
-            for snack in self.game_screen.SNAKE.snake_body
-        ]
-        
-    def _check_bind_event_on_game_screen(self, event , screen:int) -> None:#fix things here too !!!!!!!!!!!!!!!!!!!!!!
-        """Check and handle events based on the current game screen and event coordinates.
-
-        Args:
-            event: The event object containing information about the event.
-            screen (int): The current game screen (1 or 2).
-
-        Prints:
-            A message indicating the type of action based on the event coordinates and the game screen.
-        """
-        if screen == 1:
-            if self.__check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text1")
-                
-            elif self.__check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text2")
-                
-            else:
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text3")
-                
-        elif screen == 2:
-            if self.__check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text4")
-                
-            elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text5")
-                
-            else:
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text6")
-        
-        #setting up the window acording to window they selected
-        self.window_screen.change_screen(window)
-                
-    
-    def __check_cords_in_range(self, list_cords:list[tuple,tuple], coordinates:tuple[int,int]) -> bool:
-        """
-        Check if the given coordinates fall within any of the ranges specified in the list of coordinates.
-
-        Parameters:
-        - list_cords (list[tuple, tuple]): A list of tuples representing coordinate ranges. Each tuple contains
-            four integers (x1, y1, x2, y2), defining a rectangular area.
-        - coordinates (tuple[int, int]): A tuple representing the coordinates to be checked.
-
-        Returns:
-        - bool: True if the coordinates fall within any of the specified ranges, False otherwise.
-        """
-        x , y = coordinates
-        for group in list_cords:
-            x1 , y1 , x2 , y2 = group
-            if x1 < x < x2 and y1 < y < y2:
-                return True
-        return False
-    
-    def _calculate_screen_dimensions(self) -> None:#FIX IT THE EXIT BUTTON HEIGHT
-        '''
-        Calculate the screen dimensions for the game and settings screen.
-
-        This method calculates the height and width of both the game screen and the settings screen.
-        The game screen height is set to the same value as the game height stored in the class variable.
-        The settings screen height is also set to the game height.
-        The game screen width is calculated as half of the game width plus one eighth of the game width.
-        The settings screen width is calculated as the difference between the game width and the game screen width.
-
-        Parameters:
-            None
-
-        Returns:
-            None
-        '''
-        self._gameexit_button_height = 30
-        self._game_screen_height = self.var.game_height - self._gameexit_button_height - 14
-        self._settingscreen_height = self.var.game_height -14
-        self._game_screen_width = (self.var.game_width // 2) + (self.var.game_width // 8)
-        self._settingscreen_width = self.var.game_width - self._game_screen_width
-    
-    def possision_snack_and_idels(self) -> None:
-        '''
-        possison the sneck and idels like food and heart and stuff
-        and postion etc........
-        '''
-        self.game_screen.SNAKE.delete_all_snake()
-        center_borderx = self._game_screen_width // 2
-        center_bordery = self.game_screen._game_bord_height // 2
-        box_size = self.var.game_box_size
-        
-        self.game_screen.SNAKE.snake_coordinates = [(center_borderx,center_bordery-box_size)]
-        self.game_screen.SNAKE.snake_body = [self.game_screen.SNAKE._create_body(
-            center_borderx,center_bordery - box_size)
-        ]
-        # adding snacke body to left
-        x = center_borderx
-        for _ in range(4):
-            x += box_size
-            self.game_screen.SNAKE.move_snake(x - box_size , center_bordery - box_size,False)
-        
-        #adding snacke body to right
-        x = center_borderx
-        for _ in range(4):
-            x -= box_size
-            self.game_screen.SNAKE.move_snake(x+box_size , center_bordery,False)
-
-        #adding food:
-        snake_cords = self.game_screen.SNAKE.snake_coordinates
-        self.game_screen.FOOD.new_food(cordinates = snake_cords)
-        
-    def ADD_TO_MASTER(self) -> None:
-        '''
-        add the setting screen to master
-        '''
-        self.child_frame.grid()
-        self.gane_screen_frame.grid(row = 0,column=0)
-        self.setting_screen_frame.grid(row = 0,column = 1)
-        
-        self.game_screen.add_to_Master()
-        self.back_button.pack()
-        self.window_screen.PACK_CURRENT_SCREEN()
-        self.binding_keys()
-    
-    def REMOVE_TO_MASTER(self):
-        '''
-        remove the setting screen from the master
-        '''
-        self.remove_binding_keys()
-        self.game_screen.remove_to_Master()
-        self.window_screen.REMOVE_CURRENT_SCREEN()
-        self.gane_screen_frame.grid_forget()
-        self.setting_screen_frame.grid_forget()
-        self.child_frame.grid_forget()
-
-
-
-
-
-
-
-
-
-def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
+def home_screen_inisalization(Master:Tk, var:variable) -> inisial_screens:
     """
     Initialize the home screen with specified parameters and widgets.
 
@@ -731,8 +908,7 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     Home_window.add_button(lable, button, button1, button2)
     return Home_window
 
-
-def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
+def pause_menu_stabalization(master:Tk, var:variable) -> inisial_screens:
     """
     Creates a pause menu screen for the game.
 
@@ -809,33 +985,6 @@ def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
     pause_game_screen.add_button(Label1,Button1,Button2,Button3)
     return pause_game_screen
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def play_home():
     """
     Transition to the game screen from the home screen.
@@ -857,9 +1006,7 @@ def shop_home():
     Behavior:
     - Prints a message indicating the user's intent to access shopping.
     """
-    home_screen.remove_from_master()
-    shop.ADD_TO_MASTER()
-    
+    print("what u wanna shop :0")
     
 def about_me_home():
     """
@@ -915,9 +1062,6 @@ def home_pause_menu():
     home_screen.start_animation()
     print("hmm.... u wanna go home oki ! ")
 
-
-
-
 def main(): 
     """
     Main function to initialize the game application.
@@ -933,26 +1077,17 @@ def main():
     game.pause_screen = pause_menu
     home_screen.start_animation()
     
-def lolololtest():
-    home_screen.add_to_master()
-    home_screen.start_animation()
-    
 
 
 if __name__ == "__main__":
     root = Tk()
-    var = Variable()
+    var = variable()
     
     home_screen = home_screen_inisalization(root, var)
     pause_menu = pause_menu_stabalization(root, var)
     game = Game_engion(Master=root, var=var)
-    shop = setting_screen(root , var ,lolololtest)
     
     main()
     
     root.update()
     root.mainloop()
-    
-        
-        
-        

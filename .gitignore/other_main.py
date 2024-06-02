@@ -1,242 +1,9 @@
 from tkinter import * 
-from main import variable
+from main import Variable
 from main import Game_screen
 from tkinter import messagebox
+from game_screens import WindowGenerator
 
-
-class setting_window_screen:
-    def __init__(self,master:Frame , height:int , width:int ,theme:tuple[str,str] ,font_size:int) -> None:
-        self.master = master
-        self.height = height
-        self.widths = width
-        self.theme1 = theme[0]
-        self.theme2 = theme[1]
-        self.font_s = font_size
-
-    def Inisial_screen(self , text:str = "demo texxt"):
-        inisial_screen = Canvas(
-            master = self.master,
-            height = self.height,
-            width = self.widths,
-            bg = self.theme1
-        )
-        inisial_screen.create_text(
-            self.widths // 2 , self.height // 2,
-            font = ("Arial",self.font_s,'bold'),
-            text = text,
-            fill = self.theme2
-        )
-        return inisial_screen
-    
-    def creating_form_on_canvas(self,height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
-        '''
-        this method create a form on a canvas and return it
-        
-        Argument:
-            - width and height of the window
-            - a canvas type obj by tk
-            - takes tupple as an argument containing 2 obj
-            - 1st obj => the left side of window
-            - 2nd obj => the ryt side of window
-        
-        Return:
-            - the canvas containg a form
-        
-        Note:
-            - if u wanna add a window in middle horigentally so just 
-                add one window in a tuple or add other artibute as none
-                ex :- (window , None) or (None , window)
-        
-        Example:
-            >>> tuple_obj = (window1 ,window2) or (window1 , None)
-            >>> canvas = creating_form_on_canvas(
-                canvas = canvas , (window1 , window2) ,
-                (winodw2 , window3 ) , (window4 , None)
-            )
-        '''
-        #calculation of diameters :0
-        middle1 = width // 4
-        middle2 = middle1 *3
-        distance = height // len(args)-1
-        start = distance * 2 // 3
-        
-        # adding to the window :0
-        for left , right in args:
-            
-            if not (left and right):
-                canvas.create_window(middle1 *2 ,start ,window =left or right)
-                start += distance
-                continue
-            #addig_both_window_left and ryt
-            canvas.create_window(middle1 , start , window = left)
-            canvas.create_window(middle2 , start , window = right)
-            start += distance
-        
-        #returning the canvas         
-        return canvas
-    
-    def create_top_level_screen(self, title:str, color:str, width:int, height:int):
-        """
-        Create a temporary top-level window and return it.
-
-        This method creates a top-level window with the specified title, background color, width, and height.
-        The main window (root) is disabled while the top-level window is open, and re-enabled when it is closed.
-
-        Parameters:
-        title (str): The window title.
-        color (str): The background color.
-        width (int): The window width.
-        height (int): The window height.
-
-        Returns:
-        Toplevel: The created top-level window.
-        
-        Note:
-        Assumes the main window is named 'root'.
-        """
-        window = Toplevel(root, bg = color)
-        window.title(title)
-        window.geometry(f"{width}x{height}")
-        root.attributes('-disabled', True)
-        
-        def on_close():
-            root.attributes('-disabled', False)
-            window.destroy()
-        
-        window.protocol("WM_DELETE_WINDOW", on_close)
-        window.grab_set()
-        window.focus_set()
-        return window
-
-    def taking_password_for_verification_window(self):
-        '''
-        this method create a window for taking password input from user
-        '''
-        self.__value = None
-        
-        window = self.create_top_level_screen(
-            title = "Verify Password",
-            width = 200,
-            height = 90,
-            color = "#e6f2ff"
-        )
-        
-        frame1 = Frame(window , bg = "#e6f2ff" , padx= 5 ,pady=5)
-        
-        lable1 = Label(
-            master = frame1, 
-            relief="flat", 
-            text="password"+" :",
-            font = ("Myanmar Text",8,"bold"),
-            bg="#e6f2ff",fg= "black" 
-        )
-        password1 = Entry(
-            master = frame1,
-            width = 15,bd = 1,
-            relief="solid",
-            justify="center",
-            show = "*",
-            font=("Myanmar Text",8,"bold")
-        )
-        button = Button(
-            master = frame1,
-            relief="solid",
-            text= "continue",
-            bg= "#e6f2ff" ,fg="black",
-            font = ("Myanmar Text",8,"bold"),
-            command= lambda : self.__capture_and_close(password1 , window = window ,root_enable = True)
-        )
-        
-        lable1.grid(row=0, column=0 , padx= 5, pady= 5)
-        password1.grid(row=0 , column=1 , padx=5, pady=5)
-        button.grid(row=1,column=0,columnspan=2,sticky='ew', padx=5)
-        frame1.pack()
-        window.wait_window(window)
-        
-        return self.__value[0]
-
-    def change_password_window(self):
-        window = self.create_top_level_screen(
-            title = "Update Password",
-            width = 260,
-            height = 130,
-            color = "#e6f2ff"
-        )
-        frame1 = Frame(window ,bg = "#e6f2ff")
-        
-        label1 = Label(
-            master = frame1,
-            text = "Enter New Password",
-            relief = "flat",
-            bg ="#e6f2ff",fg ="black",
-            font = ("Myanmar Text",8,"bold")
-        )
-        label2 = Label(
-            master = frame1,
-            text = "Verify New Password",
-            relief = "flat",
-            bg ="#e6f2ff",fg ="black",
-            font = ("Myanmar Text",8,"bold")
-        )
-        password1 = Entry(
-            master = frame1,
-            width = 15,bd = 1,
-            relief="solid",
-            justify="center",
-            show = "*",
-            font=("Myanmar Text",8,"bold")
-        )
-        password2 = Entry(
-            master = frame1,
-            width = 15,bd = 1,
-            relief="solid",
-            justify="center",
-            show = "*",
-            font=("Myanmar Text",8,"bold")
-        )
-        button = Button(
-            master = frame1,
-            relief="solid",
-            text= "continue",
-            bg= "#e6f2ff" ,fg="black",
-            font = ("Myanmar Text",8,"bold"),
-            command= lambda : self.__capture_and_close(password1 , password2 , window = window , root_enable = True)
-        )
-        label1.grid(row=0,column=0,padx=5,pady=5)
-        label2.grid(row=1,column=0,padx=5,pady=5)
-        password1.grid(row=0,column=1,padx=5,pady=5)
-        password2.grid(row=1,column=1,padx=5,pady=5)
-        button.grid(row=2,column=0,columnspan=2,sticky='ew', padx=5, pady=5)
-        
-        frame1.pack()
-        window.wait_window(window)
-        
-        return self.__value
-    
-    def create_new_account_window(self):
-        print("will come soon")
-        
-    def change_account_window(self):
-        print("will come soon")
-               
-    def __capture_and_close(self, *entry_widget, window ,root_enable:bool):
-        """
-        Capture the entry value from the entry widget, close the window, and optionally enable the root window.
-
-        Args:
-            entry_widget (tk.Entry): The entry widget from which to capture the value.
-            window (tk.Toplevel): The window to be closed.
-            root (tk.Tk): The root window to be enabled if root_enable is True.
-            root_enable (bool): A flag indicating whether to enable the root window.
-        """
-        self.__value = [widget.get()  for widget in entry_widget]
-        window.destroy()
-        
-        if root_enable:
-            root.attributes('-disabled', False)
-            root.grab_set()
-            root.focus_set()
-        
         
 class setting_option_menu:
     '''
@@ -257,12 +24,12 @@ class setting_option_menu:
         self.curent_screen = None
         
         #creating_instance
-        self.windows = setting_window_screen(
-            master = self._master,
-            height = self._canvas_height,
-            width = self._canvas_width,
+        self.windows = WindowGenerator(
+            root = root,
             theme = (self.var.theme1 , self.var.theme2),
-            font_size = self.var.home_text_size
+            font_size = self.var.home_text_size,
+            height = self.height_main_canvs,
+            width = self.width_main_canvs
         )
         
         self.INISALIZING_SETTING_SCREEN()
@@ -384,6 +151,10 @@ class setting_option_menu:
     
     def __change_password_func(self):
         value1 , value2 = self.windows.change_password_window()
+        
+        if value1 is None:
+            return None
+        
         if not (value1 == value2):
             messagebox.showwarning("Password Mismatch", "The new password and confirmation do not match.")
             return None
@@ -431,6 +202,7 @@ class setting_option_menu:
         self.var.home_boxsize = size
         self.var.home_text_size = text
         self.var.volume_level = volume
+        
         
         self.var.update()
         
@@ -609,15 +381,9 @@ class setting_screen:
             button_height = self._gameexit_button_height
         )
         
-        self.windows = setting_window_screen(
-            master = self.setting_screen_frame,
-            height = self.window_screen.height_main_canvs,
-            width = self.window_screen.width_main_canvs,
-            theme = (self.var.theme1,self.var.theme2),
-            font_size = self.var.home_text_size
-        )
+        self.windows = self.window_screen.windows
         #adding inisial shop screen
-        self.window_screen.curent_screen = self.windows.Inisial_screen("please click on anything in game canvas to start with")
+        self.window_screen.curent_screen = self.windows.Inisial_screen(self.setting_screen_frame,"please click on anything in game canvas to start with")
         
     def _add_back_button(self) -> None:
         '''
@@ -711,23 +477,23 @@ class setting_screen:
         """
         if screen == 1:
             if self.__check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
-                window = self.windows.Inisial_screen("text1")
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"text1")
                 
             elif self.__check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
-                window = self.windows.Inisial_screen("text2")
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"text2")
                 
             else:
-                window = self.windows.Inisial_screen("text3")
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"text3")
                 
         elif screen == 2:
             if self.__check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
-                window = self.windows.Inisial_screen("text4")
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"text4")
                 
             elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
-                window = self.windows.Inisial_screen("text5")
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"text5")
                 
             else:
-                window = self.windows.Inisial_screen("text6")
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"text6")
         
         #setting up the window acording to window they selected
         self.window_screen.change_screen(window)
@@ -832,7 +598,7 @@ class setting_screen:
 
 
 root = Tk()
-var = variable()
+var = Variable()
 root.geometry(f"{var.game_width}x{var.game_height}")
 # root.config(bg = "black")
 

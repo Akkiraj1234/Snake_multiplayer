@@ -12,8 +12,6 @@
         "theme2": "#111111"
     },
     "game_info": {
-        "box_size": 30,
-        "game_speed": 120,
         "Account": "demo_player"
     }
 }
