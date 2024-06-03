@@ -15,9 +15,20 @@ class Snake:
         _create_snake(): Create the snake on the canvas.
         move_snake(x, y, remove): Move the snake to the new coordinates.
         _create_body(x, y): Create a segment of the snake.
+        delete_all_snake(): Delete all snake segments from the canvas.
+        get_to_initial_position(): Reset the snake to its initial position.
+        update_color(color): Update the color of the snake.
     """
-    
-    def __init__(self,canvas:Canvas,lenght:int,coordinates:tuple,color:str,box_size:int) -> None :
+
+    def __init__(
+        self,
+        canvas : Canvas,
+        lenght : int,
+        box_size : int,
+        color : str,
+        coordinates : tuple
+        ) -> None :
+        
         """Initialize the Snake object on the canvas.
 
         Args:
@@ -37,9 +48,10 @@ class Snake:
     def _create_snake(self)-> None:
         """Create the snake on the canvas."""
         self.snake_coordinates=[self.coordinates]*self.lenght
-        self.snake_body=[self._create_body(x,y) for x,y in self.snake_coordinates]
         
-    def move_snake(self,x:int,y:int,remove:bool)-> None:
+        self.snake_body=[ self._create_body(x , y) for x , y in self.snake_coordinates]
+        
+    def move_snake(self , x:int , y:int, remove:bool)-> None:
         """Move the snake to the new coordinates.
 
         Args:
@@ -47,14 +59,14 @@ class Snake:
             y (int): The y-coordinate of the new position.
             remove (bool): Whether to remove the last segment of the snake.
         """
-        self.snake_coordinates.insert(0,(x,y))
-        self.snake_body.insert(0,self._create_body(x,y))
+        self.snake_coordinates.insert(0 , (x , y))
+        self.snake_body.insert(0 , self._create_body(x , y))
         
         if remove:
             self.snake_coordinates.pop()
             self.canvas.delete(self.snake_body.pop())
     
-    def _create_body(self,x:int,y:int)-> None:
+    def _create_body(self , x:int , y:int)-> int:
         """Create a segment of the snake.
 
         Args:
@@ -64,23 +76,31 @@ class Snake:
         Returns:
             int: The id of the created segment on the canvas.
         """
-        square= self.canvas.create_rectangle(x,y,x+self.box_size,y+self.box_size,fill=self.color)
+        square= self.canvas.create_rectangle(x , y, x+self.box_size , y+self.box_size, fill=self.color)
         return square
     
-    def get_to_inisial_posision(self):
-        self.coordinates = (0,0)
-        
+    def delete_all_snake(self) -> None:
+        """Delete all snake segments from the canvas."""
         for body in self.snake_body:
+            
             self.canvas.delete(body)
+            
+        self.snake_coordinates = []
         
+    def get_to_inisial_posision(self) -> None:
+        """Reset the snake to its initial position."""
+        
+        self.coordinates = (0 , 0)
+        self.delete_all_snake()
         self._create_snake()
     
-    def delete_all_snake(self):
-        for body in self.snake_body:
-            self.canvas.delete(body)
-        self.snake_coordinates = []
-    
-    def update_color(self,color:str):
+    def update_color(self, color:str):
+        """Update the color of the snake.
+
+        Args:
+            color (str): The new color of the snake.
+        """
+        
         self.color = color
         for body in self.snake_body:
             self.canvas.itemconfig(body,fill = self.color)
@@ -107,7 +127,14 @@ class Food:
         _delete_food(): Delete the current food item from the canvas.
         new_food(food_type): Create a new food item of the specified type.
     """
-    def __init__(self, canvas:Canvas, box_size:int, color:str ,game_width:int ,game_height:int, food_type:str="oval")-> None:
+    def __init__(
+        self,
+        canvas : Canvas,
+        color : str,
+        box_size : int,
+        game_width : int,
+        game_height : int,
+        )-> None:
         """Initialize the Food object.
 
         Args:
@@ -127,32 +154,39 @@ class Food:
         self.x=0
         self.y=0
         self.new_coordinates()
-        self.new_food(food_type)
+        self.new_food()
         
-    def _create_food_oval(self):
+    def _create_food_oval(self) -> None:
         """Create an oval-shaped food item."""
-        self.food=self.canvas.create_oval(self.x,self.y,self.x+self.box_size,self.y+self.box_size,fill=self.color)
-    
-    def _create_food_square(self):
-        """Create a square-shaped food item."""
-        # self.food=self.canvas.create_polygon(self.x,self.y,self.x+self.box_size,self.y+self.box_size,fill=self.color)
-        self.food = self.canvas.create_polygon(self.x, self.y, self.x + self.box_size, self.y + self.box_size, fill=self.color)
         
-    def new_coordinates(self):
+        iteme_id = self.canvas.create_oval(
+            self.x , self.y, #x1 and y1
+            self.x + self.box_size, #x2
+            self.y + self.box_size, #y2
+            fill=self.color #color
+        )
+        self.food = iteme_id
+    
+    def _delete_food(self) -> None:
+        """Delete the current food item from the canvas."""
+        self.canvas.delete(self.food)
+        
+    def new_coordinates(self) -> None:
         """Generate new random coordinates for the food item."""
+        
+        # The approach divides the screen into a grid of cells, where each cell represents a possible position for the food.
+        # The grid is defined by the box_size, which determines the size of each cell.
+        # To select a random cell, we choose a random integer index along the x-axis (vertical lines) and y-axis (horizontal lines).
+        # We then multiply these indices by the box_size to obtain the exact coordinates within the canvas where the food can be placed.
+        
         self.x = randint(0, (self.game_width // self.box_size)-1)* self.box_size
         self.y =  randint(0, (self.game_height // self.box_size)-1)* self.box_size
     
-    def _delete_food(self):
-        """Delete the current food item from the canvas."""
-        self.canvas.delete(self.food)
-    
-    def new_food(self,food_type:str="oval" , cordinates:list|tuple|None = None):
+    def new_food(self, cordinates:list|tuple|None = None):
         """
         Create a new food item of the specified type and optionally at specified coordinates.
 
         Args:
-            food_type (str): The type of the food item ("oval" or "square" or "any", default is "oval").
             coordinates (list or tuple or None): Optional coordinates to place the food item.
                 If provided, the food item will be placed at these coordinates.
         """
@@ -167,20 +201,13 @@ class Food:
         if self.food:
             self._delete_food()
         
-        if food_type == "oval":
-            self._create_food_oval()
-        elif food_type == "square":
-            self._create_food_square()
-        else:
-            self._create_food_oval()
+        self._create_food_oval()
     
-    def update_color(self,color:str):
+    def update_color(self , color:str):
         self.color = color
         self.canvas.itemconfig(self.food,fill = self.color)
          
         
-            
-            
 class Heart:
     """
     Represents a heart shape drawn on a canvas.
