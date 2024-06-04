@@ -43,7 +43,16 @@ class Snake:
         self.canvas = canvas
         self.lenght=lenght
         self.coordinates = coordinates
+        self.validate_cordinates()
         self._create_snake()
+        
+    def validate_cordinates(self):
+        x , y = self.coordinates
+        
+        x -= x % self.box_size
+        y -= y % self.box_size
+        
+        self.coordinates = (x , y)
         
     def _create_snake(self)-> None:
         """Create the snake on the canvas."""
@@ -59,12 +68,21 @@ class Snake:
             y (int): The y-coordinate of the new position.
             remove (bool): Whether to remove the last segment of the snake.
         """
-        self.snake_coordinates.insert(0 , (x , y))
-        self.snake_body.insert(0 , self._create_body(x , y))
+        # self.snake_coordinates.insert(0 , (x , y))
+        # self.snake_body.insert(0 , self._create_body(x , y))
+        
+        # if remove:
+        #     self.snake_coordinates.pop()
+        #     self.canvas.delete(self.snake_body.pop())
+        
+        self.snake_coordinates.insert(0, (x, y))
         
         if remove:
             self.snake_coordinates.pop()
-            self.canvas.delete(self.snake_body.pop())
+            self.canvas.coords(self.snake_body[-1], x, y, x + self.box_size, y + self.box_size)
+            self.snake_body.insert(0, self.snake_body.pop())
+        else:
+            self.snake_body.insert(0, self._create_body(x, y))
     
     def _create_body(self , x:int , y:int)-> int:
         """Create a segment of the snake.
@@ -94,7 +112,7 @@ class Snake:
         self.delete_all_snake()
         self._create_snake()
     
-    def update_color(self, color:str):
+    def update_color(self, color:str) -> None:
         """Update the color of the snake.
 
         Args:
@@ -104,6 +122,16 @@ class Snake:
         self.color = color
         for body in self.snake_body:
             self.canvas.itemconfig(body,fill = self.color)
+            
+    def update_size(self, box_size) -> None:
+        
+        self.box_size = box_size
+        
+        self.validate_cordinates()
+        self.delete_all_snake()
+        self._create_snake()
+        
+        
     
     
 class Food:
@@ -190,6 +218,7 @@ class Food:
             coordinates (list or tuple or None): Optional coordinates to place the food item.
                 If provided, the food item will be placed at these coordinates.
         """
+        print(self.food)
         if cordinates is not None:
             for x , y  in cordinates:
                 if self.x != x and self.y != y:
@@ -197,12 +226,18 @@ class Food:
                     break
         else:
             self.new_coordinates()
-                
-        if self.food:
-            self._delete_food()
         
-        self._create_food_oval()
+        if self.food:
+            self.move_resize_food()
+        else:
+            self._create_food_oval()
+        
     
+    def move_resize_food(self) -> None:
+        self.canvas.coords(
+            self.food, self.x, self.y, self.x + self.box_size, self.y + self.box_size 
+        )
+        
     def update_color(self , color:str):
         """Update the color of the Food.
 
@@ -210,7 +245,17 @@ class Food:
             color (str): The new color of the Food.
         """
         self.color = color
-        self.canvas.itemconfig(self.food,fill = self.color)
+        self.canvas.itemconfig(self.food, fill = self.color)
+    
+    def update_size(self , box_size:int) -> None:
+        self.box_size = box_size
+        
+        self.x -= self.x % self.box_size
+        self.y -= self.y % self.box_size
+        
+        self.canvas.coords(
+            self.food, self.x, self.y, self.x + self.box_size, self.y + self.box_size 
+        )
          
         
 class Heart:
@@ -349,6 +394,17 @@ class Heart:
             self.canvas.itemconfig(hearts[0],fill = self.color)
             self.canvas.itemconfig(hearts[1],fill = self.color)
             self.canvas.itemconfig(hearts[2],fill = self.color)
+    
+    def update_size(self , box_size:int) -> None:
+        self.box_size = box_size
+        
+        self.calulating_diameters()
+        
+        heart = len(self.hearts_list)
+        
+        self.remove_all_heart()
+        self.add_heart_in_range(heart)
+        
         
 
 class goofy_Snakes:
@@ -438,7 +494,7 @@ class goofy_Snakes:
         canvas_height = self.master.winfo_height()
         
         x = canvas_width if x < 0 else 0 if x > canvas_width else x
-        y = canvas_height if y < 0 else 0 if y > canvas_height else y
+        y = canvas_width if y < 0 else 0 if y > canvas_height else y
         
         self.coordinates = (x,y)
     
@@ -456,3 +512,7 @@ class goofy_Snakes:
         """
         self.color = color
         self.snake.update_color(self.color)
+        
+    def update_size(self , box_size):
+        self.box_size = box_size
+        self.snake.update_size(self.box_size)
