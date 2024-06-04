@@ -47,8 +47,8 @@ class Snake:
         
     def _create_snake(self)-> None:
         """Create the snake on the canvas."""
-        self.snake_coordinates=[self.coordinates]*self.lenght
         
+        self.snake_coordinates=[self.coordinates]*self.lenght
         self.snake_body=[ self._create_body(x , y) for x , y in self.snake_coordinates]
         
     def move_snake(self , x:int , y:int, remove:bool)-> None:
@@ -204,6 +204,11 @@ class Food:
         self._create_food_oval()
     
     def update_color(self , color:str):
+        """Update the color of the Food.
+
+        Args:
+            color (str): The new color of the Food.
+        """
         self.color = color
         self.canvas.itemconfig(self.food,fill = self.color)
          
@@ -223,7 +228,14 @@ class Heart:
         hearts_list (list): A list to store the IDs of the heart shapes drawn on the canvas.
         limit (int or None): The maximum number of hearts allowed on the canvas. If set, adding more hearts will be limited.
     """
-    def __init__(self,canvas:Canvas , cordnites:tuple , box_size:int , color:str , inisial_heart=1):
+    def __init__(
+        self,
+        canvas : Canvas,
+        cordnites : tuple,
+        box_size : int,
+        color : str,
+        inisial_heart = 1
+        ) -> None:
         """
         Initialize a Heart object.
 
@@ -238,13 +250,17 @@ class Heart:
         self.cordinates = cordnites
         self.box_size = box_size
         self.color = color
-        self.distance = self.box_size // 4
-        self.hearts_list = []
-        self.inisial_heart = inisial_heart
         self.limit = None
-        self.heart()
-        for _ in range(self.inisial_heart-1):
+        self.inisial_heart = inisial_heart
+        self.calulating_diameters()
+        
+        self.hearts_list = []
+        for _ in range(self.inisial_heart):
             self.add_one_heart()
+    
+    def calulating_diameters(self):
+        '''calculate the diameters'''
+        self.distance = self.box_size // 4
     
     def add_one_heart(self):
         """
@@ -257,8 +273,8 @@ class Heart:
         """
         if self.limit and len(self.hearts_list)>= self.limit:
             return None
-        self.cordinates = (self.cordinates[0]-self.box_size-self.distance , self.cordinates[1])
         self.heart()
+        self.cordinates = (self.cordinates[0]-self.box_size-self.distance , self.cordinates[1])
         
     def remmove_heart(self):
         """
@@ -269,8 +285,10 @@ class Heart:
         """
         if self.hearts_list == []:
             return None
+        
         for ids in self.hearts_list.pop():
             self.canvas.delete(ids)
+            
         self.cordinates = (self.cordinates[0]+self.box_size+self.distance , self.cordinates[1])
         
     def remove_all_heart(self):
@@ -320,7 +338,13 @@ class Heart:
         self.hearts_list.append((first,secoend,third))
     
     def update_color(self,color:str):
+        """Update the color of the Heart.
+
+        Args:
+            color (str): The new color of the Heart.
+        """
         self.color = color
+        
         for hearts in self.hearts_list:
             self.canvas.itemconfig(hearts[0],fill = self.color)
             self.canvas.itemconfig(hearts[1],fill = self.color)
@@ -347,7 +371,15 @@ class goofy_Snakes:
         move_the_snakes(): Move the snake to the new coordinates.
     """
     
-    def __init__(self,master:Canvas, color:str ,coordinates:tuple, lenght:int ,inisial_direction:str, box_size:int)-> None:
+    def __init__(
+        self,
+        master : Canvas,
+        color : str,
+        coordinates : tuple,
+        lenght : int,
+        inisial_direction : str,
+        box_size : int
+        ) -> None:
         """Initialize a new goofy_Snakes object.
 
         Args:
@@ -364,11 +396,19 @@ class goofy_Snakes:
         self.lenght = lenght
         self.direction = inisial_direction
         self.box_size = box_size
-        self.snake = Snake(self.master, self.lenght, self.coordinates, self.color, self.box_size)
         
+        self.snake = Snake(
+            canvas = self.master,
+            lenght = self.lenght,
+            color  = self.color,
+            box_size = self.box_size,
+            coordinates = self.coordinates
+        )
+
     def random_direction(self):
         """Randomly choose a new direction for the snake."""
         new_direction = choice(("down","right","down","right","down","left","up","down"))
+        
         if new_direction in ("down","up") and self.direction in ("down","up"):
             pass
         elif new_direction in ("right","left") and self.direction in ("right","left"):
@@ -378,19 +418,25 @@ class goofy_Snakes:
     def calculate_new_coordinates(self):
         """Calculate new coordinates for the snake's head based on its current direction."""
         self.random_direction()
+        
         x , y =self.snake.snake_coordinates[0]
+        
         if self.direction == "up":
             y -= self.box_size
+            
         elif self.direction == "down":
             y += self.box_size
+            
         elif self.direction == "right":
             x += self.box_size
+            
         elif self.direction == "left":
             x -= self.box_size
         
         #adjusting screen :0
         canvas_width = self.master.winfo_width()
         canvas_height = self.master.winfo_height()
+        
         x = canvas_width if x < 0 else 0 if x > canvas_width else x
         y = canvas_height if y < 0 else 0 if y > canvas_height else y
         
@@ -401,3 +447,12 @@ class goofy_Snakes:
         self.calculate_new_coordinates()
         x , y = self.coordinates
         self.snake.move_snake(x,y,True)
+        
+    def update_color(self , color):
+        """Update the color of the goofy snake.
+
+        Args:
+            color (str): The new color of the goofy snake.
+        """
+        self.color = color
+        self.snake.update_color(self.color)
