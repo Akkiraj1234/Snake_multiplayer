@@ -1,5 +1,10 @@
 from tkinter import Canvas
 from random import randint,choice
+
+# notes: -
+# 1. we are using canvas height or width to keep track of height and width 
+#    we not taking it as argumrnt :0
+
 class Snake:
     """Represents a snake in the game.
 
@@ -42,23 +47,27 @@ class Snake:
         self.color = color
         self.canvas = canvas
         self.lenght=lenght
-        self.coordinates = coordinates
-        self.validate_cordinates()
+        self.coordinates = self.validate_cordinates(coordinates)
         self._create_snake()
         
-    def validate_cordinates(self):
-        x , y = self.coordinates
+    def validate_cordinates(self ,cords ,box_size:int=None) -> tuple:
+        '''validate the cordinates by box_size'''
+        x , y = cords
+        box_size = self.box_size if box_size is None else box_size
         
-        x -= x % self.box_size
-        y -= y % self.box_size
+        x -= x % box_size
+        y -= y % box_size
         
-        self.coordinates = (x , y)
+        return (x , y)
         
     def _create_snake(self)-> None:
         """Create the snake on the canvas."""
-        
         self.snake_coordinates=[self.coordinates]*self.lenght
         self.snake_body=[ self._create_body(x , y) for x , y in self.snake_coordinates]
+    
+    def _update_snake_cords(self ,snake_body, x, y) -> None:
+        """update the cords of snake"""
+        self.canvas.coords(snake_body, x, y, x + self.box_size, y + self.box_size)
         
     def move_snake(self , x:int , y:int, remove:bool)-> None:
         """Move the snake to the new coordinates.
@@ -68,18 +77,11 @@ class Snake:
             y (int): The y-coordinate of the new position.
             remove (bool): Whether to remove the last segment of the snake.
         """
-        # self.snake_coordinates.insert(0 , (x , y))
-        # self.snake_body.insert(0 , self._create_body(x , y))
-        
-        # if remove:
-        #     self.snake_coordinates.pop()
-        #     self.canvas.delete(self.snake_body.pop())
-        
         self.snake_coordinates.insert(0, (x, y))
         
         if remove:
             self.snake_coordinates.pop()
-            self.canvas.coords(self.snake_body[-1], x, y, x + self.box_size, y + self.box_size)
+            self._update_snake_cords(self.snake_body[-1], x,y)
             self.snake_body.insert(0, self.snake_body.pop())
         else:
             self.snake_body.insert(0, self._create_body(x, y))
@@ -112,6 +114,44 @@ class Snake:
         self.delete_all_snake()
         self._create_snake()
     
+    def update_cords(self,new_box_size):
+        """
+        Update the coordinates of the snake segments based on the new box size.
+
+        This method adjusts the positions of the snake's segments to fit within the new box size while maintaining their
+        relative positions. It calculates the increment (positive or negative) based on the difference between the new 
+        and old box sizes and applies this increment to each segment's coordinates accordingly.
+
+        Parameters:
+        new_box_size (int): The new size of each box segment of the snake.
+        """
+        increment = new_box_size - self.box_size
+        
+        x_increase = 0
+        y_increase = 0
+        
+        initial_coords = self.validate_cordinates(self.snake_coordinates[0],new_box_size)  # Starting point of the snake
+        
+        for num in range(1, len(self.snake_coordinates)):
+            oldx ,oldy = self.snake_coordinates[num-1]
+            x , y = self.snake_coordinates[num]
+            
+            if x > initial_coords[0]:
+                value = (x + increment + x_increase , oldy)
+                x_increase += increment
+            elif x < initial_coords[0]:
+                value = (x - increment - x_increase , oldy)
+                x_increase -= increment
+            elif y > initial_coords[1]:
+                value = (oldx , y + increment + y_increase)
+                y_increase += increment
+            elif y < initial_coords[1]:
+                value = (oldx , y - increment - y_increase)
+                y_increase -= increment
+            
+            self.snake_coordinates[num] = value
+            initial_coords = (x,y)
+        
     def update_color(self, color:str) -> None:
         """Update the color of the snake.
 
@@ -125,11 +165,13 @@ class Snake:
             
     def update_size(self, box_size) -> None:
         
+        self.update_cords(box_size)
         self.box_size = box_size
         
-        self.validate_cordinates()
-        self.delete_all_snake()
-        self._create_snake()
+        for num in range(len(self.snake_coordinates)):
+            x,y = self.snake_coordinates[num]
+            body = self.snake_body[num]
+            self._update_snake_cords(body , x , y)
         
         
     
