@@ -31,3 +31,40 @@ Sneck Safari is a Python-based snake game developed using the tkinter library. I
 3. **Improved UI/UX:** Continuously refining the user interface and user experience to make the game more visually appealing and intuitive to navigate.
 
 ---
+
+## need to improve :0
+
+1. in `game_idles.py` under `Food class` there is `new_food(...)` method which creating new cordinates method is wrong which need to fix :0
+
+```python
+def new_coordinates(self, occupied_coordinates):
+    """Generate new random coordinates for the food item, ensuring they do not overlap with occupied coordinates."""
+    # Define grid dimensions based on game width and height
+    num_columns = self.game_width // self.box_size
+    num_rows = self.game_height // self.box_size
+    
+    # Create sets to track available coordinates
+    available_columns = set(range(num_columns))
+    available_rows = set(range(num_rows))
+    
+    # Remove occupied coordinates from available sets
+    for x, y in occupied_coordinates:
+        if x in available_columns:
+            available_columns.remove(x)
+        if y in available_rows:
+            available_rows.remove(y)
+    
+    # Check if any available coordinates remain
+    if not available_columns or not available_rows:
+        # No available coordinates
+        return
+    
+    # Choose a random available column and row
+    new_x = choice(list(available_columns)) * self.box_size
+    new_y = choice(list(available_rows)) * self.box_size
+    
+    # Update food coordinates
+    self.x, self.y = new_x, new_y
+```
+
+thinking to use this after modification :0

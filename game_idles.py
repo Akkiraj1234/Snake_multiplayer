@@ -130,27 +130,29 @@ class Snake:
         x_increase = 0
         y_increase = 0
         
-        initial_coords = self.validate_cordinates(self.snake_coordinates[0],new_box_size)  # Starting point of the snake
+        initial_coords = self.snake_coordinates[0] # Starting point of the snake
         
         for num in range(1, len(self.snake_coordinates)):
             oldx ,oldy = self.snake_coordinates[num-1]
             x , y = self.snake_coordinates[num]
             
             if x > initial_coords[0]:
-                value = (x + increment + x_increase , oldy)
+                value = (x + (increment + x_increase) , oldy)
                 x_increase += increment
             elif x < initial_coords[0]:
-                value = (x - increment - x_increase , oldy)
+                value = (x - (increment - x_increase) , oldy)
                 x_increase -= increment
             elif y > initial_coords[1]:
-                value = (oldx , y + increment + y_increase)
+                value = (oldx , y + (increment + y_increase))
                 y_increase += increment
             elif y < initial_coords[1]:
-                value = (oldx , y - increment - y_increase)
+                value = (oldx , y - (increment - y_increase))
                 y_increase -= increment
             
             self.snake_coordinates[num] = value
             initial_coords = (x,y)
+        
+        self.snake_coordinates = [self.validate_cordinates(cords , new_box_size) for cords in self.snake_coordinates ]
         
     def update_color(self, color:str) -> None:
         """Update the color of the snake.
@@ -165,6 +167,7 @@ class Snake:
             
     def update_size(self, box_size) -> None:
         
+        print(self.snake_coordinates)
         self.update_cords(box_size)
         self.box_size = box_size
         
@@ -172,6 +175,7 @@ class Snake:
             x,y = self.snake_coordinates[num]
             body = self.snake_body[num]
             self._update_snake_cords(body , x , y)
+        print(self.snake_coordinates)
         
         
     
