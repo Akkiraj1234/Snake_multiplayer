@@ -1,5 +1,6 @@
 from tkinter import Canvas
 from random import randint,choice
+# import gc #use gc.collect()
 
 # notes: -
 # 1. we are using canvas height or width to keep track of height and width 
@@ -199,9 +200,7 @@ class Snake:
             body = self.snake_body[num]
             self._update_snake_cords(body , x , y)
         
-        
-    
-    
+
 class Food:
     """Represents a food item in the game.
 
@@ -223,37 +222,46 @@ class Food:
         _delete_food(): Delete the current food item from the canvas.
         new_food(food_type): Create a new food item of the specified type.
     """
-    def __init__(
-        self,
-        canvas : Canvas,
-        color : str,
-        box_size : int,
-        game_width : int,
-        game_height : int,
-        )-> None:
-        """Initialize the Food object.
+    def __init__(self, canvas:Canvas, color:str, box_size:int)-> None:
+        """
+        Initialize the Food object.
 
         Args:
             canvas (Canvas): The canvas on which the food item will be drawn.
             box_size (int): The size of each box representing the food item.
             color (str): The color of the food item.
-            game_width (int): The width of the game area.
-            game_height (int): The height of the game area.
-            food_type (str, optional): The type of the food item ("oval" or "square"). Defaults to "oval".
+        
+        Attributes:
+            food (int): The ID of the current food item on the canvas
+            x (int): The x cordinate of current food 
+            y (int): The y cordinate of current food
         """
         self.canvas = canvas
         self.box_size = box_size
         self.color = color
-        self.game_width = game_width
-        self.game_height = game_height
+        
         self.food=None
         self.x=0
         self.y=0
+        
+        self.calculate_dimensions()
         self.new_coordinates()
         self.new_food()
+    
+    def calculate_dimensions(self):
+        """
+        Calculate and store the width and height of the canvas.
+        """
+        self.canvas_width = int(self.canvas.cget("width"))
+        self.canvas_height = int(self.canvas.cget("height"))
+        #calculating grid
+        self.__width_grid_size = (self.canvas_width // self.box_size) - 1
+        self.__height_grid_size = (self.canvas_height // self.box_size) - 1
         
     def _create_food_oval(self) -> None:
-        """Create an oval-shaped food item."""
+        """
+        Create an oval-shaped food item.
+        """
         
         iteme_id = self.canvas.create_oval(
             self.x , self.y, #x1 and y1
@@ -264,19 +272,33 @@ class Food:
         self.food = iteme_id
     
     def _delete_food(self) -> None:
-        """Delete the current food item from the canvas."""
+        """
+        Delete the current food item from the canvas.
+        """
         self.canvas.delete(self.food)
+    
+    def move_resize_food(self) -> None:
+        """
+        Update the position and size of the food item on the canvas.
+        
+        Moves the food item to (self.x, self.y) and resizes it to self.box_size.
+        """
+        self.canvas.coords(
+            self.food, self.x, self.y, self.x + self.box_size, self.y + self.box_size 
+        )
         
     def new_coordinates(self) -> None:
-        """Generate new random coordinates for the food item."""
+        """
+        Generate new random coordinates for the food item.
+        """
         
         # The approach divides the screen into a grid of cells, where each cell represents a possible position for the food.
         # The grid is defined by the box_size, which determines the size of each cell.
         # To select a random cell, we choose a random integer index along the x-axis (vertical lines) and y-axis (horizontal lines).
         # We then multiply these indices by the box_size to obtain the exact coordinates within the canvas where the food can be placed.
         
-        self.x = randint(0, (self.game_width // self.box_size)-1)* self.box_size
-        self.y =  randint(0, (self.game_height // self.box_size)-1)* self.box_size
+        self.x = randint(0, self.__width_grid_size)* self.box_size
+        self.y =  randint(0, self.__height_grid_size)* self.box_size
     
     def new_food(self, cordinates:list|tuple|None = None):
         """
@@ -300,12 +322,6 @@ class Food:
         else:
             self._create_food_oval()
         
-    
-    def move_resize_food(self) -> None:
-        self.canvas.coords(
-            self.food, self.x, self.y, self.x + self.box_size, self.y + self.box_size 
-        )
-        
     def update_color(self , color:str):
         """Update the color of the Food.
 
@@ -318,12 +334,8 @@ class Food:
     def update_size(self , box_size:int) -> None:
         self.box_size = box_size
         
-        self.x -= self.x % self.box_size
-        self.y -= self.y % self.box_size
-        
-        self.canvas.coords(
-            self.food, self.x, self.y, self.x + self.box_size, self.y + self.box_size 
-        )
+        self.x , self.y = validate_cordinates((self.x , self.y), self.box_size)
+        self.move_resize_food()
          
         
 class Heart:
@@ -558,8 +570,8 @@ class goofy_Snakes:
             x -= self.box_size
         
         #adjusting screen :0
-        canvas_width = self.master.winfo_width()
-        canvas_height = self.master.winfo_height()
+        canvas_width = int(self.master.cget("width"))
+        canvas_height = int(self.master.cget("height"))
         
         x = canvas_width if x < 0 else 0 if x > canvas_width else x
         y = canvas_width if y < 0 else 0 if y > canvas_height else y

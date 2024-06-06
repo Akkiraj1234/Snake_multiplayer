@@ -2,7 +2,7 @@
     "basic_info": {
         "game_width": 720,
         "game_height": 360,
-        "box_size": 45,
+        "box_size": 40,
         "speed": 100,
         "text_size": 8,
         "volume_level": 80
