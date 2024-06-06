@@ -1,36 +1,9 @@
 from variable import Variable
-from game_screens import inisial_screens,Game_screen , setting_option_menu #, old, list1
+from game_screens import inisial_screens, Game_screen , setting_option_menu
 from tkinter import Tk,Frame,Button,Label,Canvas
 import time
 
 
-
-# import psutil
-# import os 
-# import time
-
-
-
-
-# def get_memory_usage():
-#     global old
-#     process = psutil.Process(os.getpid())
-#     mem_info = process.memory_info()
-#     ll=mem_info.rss
-#     if not (old == ll):
-#         list1.append((ll,time.time_ns()))
-#         old = ll
-#     os.system('cls')
-#     print(ll, f"-  {ll / (1024 * 1024):.2f} MB")
-#     print(list1)
-    
-    
-
-#there is an issue how i am gonna update the variable 
-#so for that i have 2 ways 
-# 1. is to create each canvas when we calling it again and again
-# 2. is to make a update function that will update each time when we call them:0
-#idk which one to use?
 class Game_engion:
     """
     This class controls the main game.
@@ -224,7 +197,7 @@ class Game_engion:
         # create new food and add up score
         if sneckx == foodx and snecky == foody:
             remove = False
-            self.GAME_FRAME.FOOD.new_food()
+            self.GAME_FRAME.FOOD.new_food(self.GAME_FRAME.SNAKE.snake_coordinates)
             self.SCORE +=1
         
         #updaing things and collection after id
@@ -678,7 +651,7 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     Home_window.add_snakes("grey", (1,3), 3, "right")
     Home_window.add_snakes("blue", (4,4), 4, "up")
     Home_window.add_snakes("yellow", (2,1), 3, "down")
-    Home_window.add_food("red", "any", True)
+    Home_window.add_food("red", True)
     
     # Create and configure label widget
     lable = Label(
@@ -883,6 +856,12 @@ def resume_pause_menu():
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
     print("wowow u clicked resume")
+    
+    
+    for window in home_screen.snakes:
+        window.update_size(10)
+        
+    home_screen.food.update_size(10)
 
 def restart_pause_menu():
     """
@@ -898,6 +877,11 @@ def restart_pause_menu():
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
     print("hmmm u wanna play again")
+    
+    for window in home_screen.snakes:
+        window.update_size(30)
+    
+    home_screen.food.update_size(30)
 
 def home_pause_menu():
     """
@@ -913,6 +897,7 @@ def home_pause_menu():
     game.set_everrything_to_default()
     home_screen.add_to_master()
     home_screen.start_animation()
+    
     print("hmm.... u wanna go home oki ! ")
 
 

@@ -51,23 +51,56 @@ Sneck Safari is a Python-based snake game developed using the tkinter library. I
     - After ensuring that the new coordinates do not overlap with existing ones, you return the newly generated x and y coordinates.
 
     ```python
-    def get_new_cords(dict1 ,width_box ,height_box ,box_size):
-        y = randint(0 , width_box)
-        x = randint(0 , height_box)
+    def generate_non_overlapping_coordinates(self, list1, width_box, height_box, box_size):
+        """
+        Generate new coordinates within a grid that do not overlap with existing coordinates.
+
+        Args:
+            list1 (list of tuples): List of current coordinates.
+            width_box (int): Width of the grid in terms of boxes.
+            height_box (int): Height of the grid in terms of boxes.
+            box_size (int): Size of each box.
+
+        Returns:
+            tuple: New x, y coordinates in terms of pixels if available, otherwise None.
         
-        orignal_x = x
-        while (x in dict1) and (len(dict1[x]) == width_box+1):
-            x = (x+1) if x < width_box else 0
-            if orignal_x == x:
+        Time Complexity: 𝑂(𝑛 + width_box + height_box)
+        Space Complexity: 𝑂(𝑛)
+
+        """
+        
+        def x_y_dict(list1, box_size) -> dict:
+            """
+            Convert a list of coordinates into a dictionary for quick lookup.
+            """
+            dict1 = {}
+            for x, y in list1:
+                x //= box_size
+                y //= box_size
+                
+                if x in dict1:
+                    dict1[x].add(y)
+                else:
+                    dict1[x] = {y}
+            return dict1
+        
+        x = randint(0, width_box)
+        y = randint(0, height_box)
+        
+        dict1 = x_y_dict(list1, box_size)
+        original_x = x
+        while (x in dict1) and (len(dict1[x]) == width_box + 1):
+            x = (x + 1) if x < width_box else 0
+            if original_x == x:
                 return None
             
-        orignal_y = y
+        original_y = y
         while (x in dict1) and (y in dict1[x]):
-            y = (y+1) if y < height_box else 0
-            if orignal_y == y:
+            y = (y + 1) if y < height_box else 0
+            if original_y == y:
                 return None
         
-        return x * box_size , y * box_size
+        return x * box_size, y * box_size
 
     ```
 
@@ -84,7 +117,7 @@ Sneck Safari is a Python-based snake game developed using the tkinter library. I
     - After updating the coordinates, the function validates the new coordinates to ensure they fit within the grid's boundaries.
 
     ```python
-    def update_cords(self, new_box_size: int) -> None:
+    def update_cords(self, new_box_size:int) -> None:
         """
         Update the coordinates of the snake segments based on the new box size.
 
@@ -94,31 +127,35 @@ Sneck Safari is a Python-based snake game developed using the tkinter library. I
 
         Args:
             new_box_size (int): The new size of each box segment of the snake.
+            
+        Time Complexity: O(n), where n is the number of snake segments.
+        Space Complexity: O(n), where n is the number of snake segments.
         """
         increment = new_box_size - self.box_size
-        initial_coords = self.snake_coordinates[0]  # Starting point of the snake
+        initial_coords = self.snake_coordinates[0] # Starting point of the snake
         x_increase = 0
         y_increase = 0
-
+        
         for num in range(1, len(self.snake_coordinates)):
-            oldx, oldy = self.snake_coordinates[num-1]
-            x, y = self.snake_coordinates[num]
-
+            
+            oldx ,oldy = self.snake_coordinates[num-1]
+            x , y = self.snake_coordinates[num]
+            
             if x > initial_coords[0]:
-                value = (x + (increment + x_increase), oldy)
+                value = (x + (increment + x_increase) , oldy)
                 x_increase += increment
             elif x < initial_coords[0]:
-                value = (x - (increment - x_increase), oldy)
+                value = (x - (increment - x_increase) , oldy)
                 x_increase -= increment
             elif y > initial_coords[1]:
-                value = (oldx, y + (increment + y_increase))
+                value = (oldx , y + (increment + y_increase))
                 y_increase += increment
             elif y < initial_coords[1]:
-                value = (oldx, y - (increment - y_increase))
+                value = (oldx , y - (increment - y_increase))
                 y_increase -= increment
-
+            
             self.snake_coordinates[num] = value
-            initial_coords = (x, y)
-
-        self.snake_coordinates = [validate_cordinates(cords, new_box_size) for cords in self.snake_coordinates]
+            initial_coords = (x , y)
+        
+        self.snake_coordinates = [validate_cordinates(cords , new_box_size) for cords in self.snake_coordinates]
     ```

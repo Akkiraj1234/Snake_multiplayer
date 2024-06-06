@@ -121,6 +121,9 @@ class Snake:
 
         Args:
             new_box_size (int): The new size of each box segment of the snake.
+            
+        Time Complexity: O(n), where n is the number of snake segments.
+        Space Complexity: O(n), where n is the number of snake segments.
         """
         increment = new_box_size - self.box_size
         initial_coords = self.snake_coordinates[0] # Starting point of the snake
@@ -240,9 +243,9 @@ class Food:
         self.box_size = box_size
         self.color = color
         
-        self.food=None
-        self.x=0
-        self.y=0
+        self.food = None
+        self.x = 0
+        self.y = 0
         
         self.calculate_dimensions()
         self.new_coordinates()
@@ -299,6 +302,58 @@ class Food:
         
         self.x = randint(0, self.__width_grid_size)* self.box_size
         self.y =  randint(0, self.__height_grid_size)* self.box_size
+
+    def generate_non_overlapping_coordinates(self, list1, width_box, height_box, box_size):
+        """
+        Generate new coordinates within a grid that do not overlap with existing coordinates.
+
+        Args:
+            list1 (list of tuples): List of current coordinates.
+            width_box (int): Width of the grid in terms of boxes.
+            height_box (int): Height of the grid in terms of boxes.
+            box_size (int): Size of each box.
+
+        Returns:
+            tuple: New x, y coordinates in terms of pixels if available, otherwise None.
+        
+        Time Complexity: 𝑂(𝑛 + width_box + height_box)
+        Space Complexity: 𝑂(𝑛)
+
+        """
+        
+        def x_y_dict(list1, box_size) -> dict:
+            """
+            Convert a list of coordinates into a dictionary for quick lookup.
+            """
+            dict1 = {}
+            for x, y in list1:
+                x //= box_size
+                y //= box_size
+                
+                if x in dict1:
+                    dict1[x].add(y)
+                else:
+                    dict1[x] = {y}
+            return dict1
+        
+        x = randint(0, width_box)
+        y = randint(0, height_box)
+        
+        dict1 = x_y_dict(list1, box_size)
+        original_x = x
+        while (x in dict1) and (len(dict1[x]) == width_box + 1):
+            x = (x + 1) if x < width_box else 0
+            if original_x == x:
+                return None
+            
+        original_y = y
+        while (x in dict1) and (y in dict1[x]):
+            y = (y + 1) if y < height_box else 0
+            if original_y == y:
+                return None
+        
+        return x * box_size, y * box_size
+
     
     def new_food(self, cordinates:list|tuple|None = None):
         """
@@ -308,17 +363,16 @@ class Food:
             coordinates (list or tuple or None): Optional coordinates to place the food item.
                 If provided, the food item will be placed at these coordinates.
         """
-        print(self.food)
         if cordinates is not None:
-            for x , y  in cordinates:
-                if self.x != x and self.y != y:
-                    self.new_coordinates()
-                    break
+            self.x , self.y = self.generate_non_overlapping_coordinates(
+                cordinates, self.__width_grid_size, self.__height_grid_size, self.box_size
+            )
         else:
             self.new_coordinates()
-        
+        print(self.x , self.y)
         if self.food:
             self.move_resize_food()
+            
         else:
             self._create_food_oval()
         

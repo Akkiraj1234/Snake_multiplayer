@@ -1,5 +1,20 @@
-from tkinter import Canvas, Frame, Button, Label, Entry, Toplevel, Tk , messagebox
-from game_idles import Food,goofy_Snakes,Snake,Heart
+from tkinter import (
+    Canvas,
+    Frame,
+    Button,
+    Label,
+    Entry,
+    Toplevel,
+    Tk ,
+    messagebox
+)
+
+from game_idles import(
+    Food,
+    goofy_Snakes,
+    Snake,Heart
+)
+
 from variable import Variable
 from random import choice
 
@@ -49,7 +64,17 @@ class inisial_screens:
         initial_screen.add_button(button1, button2, button3)
     """
     
-    def __init__(self,master,background_color:str,game_width:int,box_size:int, game_height:int,speed:int,pack=True) -> None:
+    def __init__(
+        self,
+        master : Tk | Frame ,
+        background_color : str,
+        game_width : int,
+        box_size : int,
+        game_height : int,
+        speed : int,
+        pack:bool = True 
+        ) -> None:
+        
         """Initialize the initial screen of the game.
 
         Args:
@@ -68,14 +93,33 @@ class inisial_screens:
         self.box_size = box_size
         self.speed=speed
         
-        self.child_window = Canvas(self.master,bg=self.background_color,height=self.game_height,width=self.game_width)
-        if pack: self.child_window.pack()
+        #inisalizing child window
+        self.child_window = Canvas(
+            master = self.master,
+            bg = self.background_color,
+            height = self.game_height,
+            width = self.game_width
+        )
+        
+        if pack: 
+            self.child_window.pack()
+            
         self.food = None
         self.snakes = []
         self.Windows_list = []
         self.animation_after_ids=None
     
-    def add_snakes(self, color:str ,coordinates:tuple, lenght:int, direction:str)-> None:
+    def update(self):
+        pass
+    
+    def add_snakes(
+        self,
+        color : str ,
+        coordinates : tuple,
+        lenght : int,
+        direction : str
+        ) -> None:
+        
         """Add a snake to the game screen.
 
         Args:
@@ -84,12 +128,21 @@ class inisial_screens:
             length (int): The length of the snake.
             direction (str): The initial direction of the snake ('up', 'down', 'left', 'right').
         """
+        
         coordinates = [i * self.box_size for i in coordinates]
+        
         self.snakes.append(
-            goofy_Snakes(self.child_window,color,coordinates,lenght,direction,self.box_size)
+            goofy_Snakes(
+                master = self.child_window,
+                color = color,
+                lenght = lenght,
+                box_size = self.box_size,
+                coordinates = coordinates,
+                inisial_direction = direction
+            )
         )
     
-    def add_food(self, color:str, food_type="oval",randome_color=False):
+    def add_food(self, color:str , randome_color=False) -> None:
         """Add a food item to the game screen.
 
         Args:
@@ -97,11 +150,15 @@ class inisial_screens:
             food_type (str): The type of food item ('oval' or 'rectangle', default is 'oval').
             random_color (bool): Whether to randomize the color of the food item (default is False).
         """
-        self.food_type=food_type
         self.random_color=randome_color
-        self.food=Food(self.child_window, self.box_size, color, self.game_width, self.game_height, food_type)
         
-    def add_button(self,*args):
+        self.food=Food(
+            canvas = self.child_window,
+            box_size = self.box_size,
+            color = color
+        )
+        
+    def add_button(self,*args) -> None:
         """Add button widgets to the game screen.
 
         Args:
@@ -109,33 +166,52 @@ class inisial_screens:
         """
         self.Windows_list = args
         
-        num = self.box_size-(self.box_size*2)
+        # getting the box size in negative
+        num = self.box_size - (self.box_size * 2)
+        
         for button in args:
-            self.child_window.create_window(self.game_width//2,self.game_height//2+num,window=button)
+            
+            self.child_window.create_window(
+                self.game_width//2, # x value
+                self.game_height//2+num, # y value
+                window=button
+            )
+            
             num += self.box_size
         
-    def start_animation(self):
+    def start_animation(self) -> None:
         """Start the animation loop for moving snakes and updating the game state."""
+        
         for snake in self.snakes:
+            
             snake.move_the_snakes()
-            x,y= snake.coordinates
-            foodx,foody=self.food.x,self.food.y
+            
+            #cordinates of snake and food
+            x , y = snake.coordinates
+            foodx , foody = self.food.x, self.food.y
+            
             if x == foodx and y == foody:
+                
                 if self.random_color:
                     self.food.color = choice(("blue","yellow","red","pink"))
-                self.food.new_food(self.food_type)
-        self.animation_after_ids=self.child_window.after(self.speed,self.start_animation)
+                    
+                self.food.new_food()
+                
+        self.animation_after_ids = self.child_window.after(
+            ms = self.speed,
+            func = self.start_animation
+        )
     
-    def stop_animation(self):
+    def stop_animation(self) -> None:
         """Stop the animation loop."""
         if self.animation_after_ids:
             self.child_window.after_cancel(self.animation_after_ids)
         
-    def add_to_master(self):
+    def add_to_master(self) -> None:
         '''add to the master'''
         self.child_window.pack()
         
-    def remove_from_master(self):
+    def remove_from_master(self) -> None:
         '''remove window from master'''
         self.stop_animation()
         self.child_window.pack_forget()
@@ -609,9 +685,7 @@ class Game_screen:
         self.FOOD = Food(
             canvas = self.GAME_CANVAS,
             box_size = self.var.game_box_size,
-            color = self.var.FOOD_COLOR,
-            game_width = self.game_width,
-            game_height = self._game_bord_height
+            color = self.var.FOOD_COLOR
             )
     
     def update_things(self,**kwargs):
