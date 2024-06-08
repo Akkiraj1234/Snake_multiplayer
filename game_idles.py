@@ -405,7 +405,6 @@ class Food:
         else:
             self._create_food_oval()
             
-            
 class Heart:
     """
     This class helps create hearts, remove hearts, and manipulate heart shapes on a canvas.
@@ -514,6 +513,7 @@ class Heart:
         
         for heart in self.hearts:
             self.canvas.delete(heart)
+        self.hearts = None
         
     def new_heart(self, coordinates):
         """
@@ -525,10 +525,10 @@ class Heart:
         Returns:
             None
         """
-        if self.hearts:
-            self._move_resize_heart_shape(coordinates)
-        else:
+        if self.hearts is None:
             self.__create_heart_shape(coordinates)
+        else:
+            self._move_resize_heart_shape(coordinates)
             
     def change_color(self, color: str):
         """
@@ -562,7 +562,6 @@ class Heart:
         
         if self.hearts is None:
             return None
-        
         self._move_resize_heart_shape(self.coords)
         
         
