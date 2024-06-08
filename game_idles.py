@@ -284,6 +284,9 @@ class Food:
         """
         Delete the current food item from the canvas.
         """
+        if self.food is None:
+            return None
+        
         self.canvas.delete(self.food)
     
     def move_resize_food(self) -> None:
@@ -401,9 +404,169 @@ class Food:
             self.move_resize_food()
         else:
             self._create_food_oval()
-         
-        
+            
+            
 class Heart:
+    """
+    This class helps create hearts, remove hearts, and manipulate heart shapes on a canvas.
+    This class will not perform any calculations for coordinates.
+    
+    Attributes:
+        canvas (Canvas): The canvas on which the heart shapes will be drawn.
+        box_size (int): The size of the heart shape.
+        color (str): The color of the heart shape.
+        hearts (tuple): A tuple containing the IDs of the components of the heart shape on the canvas.
+        coords (tuple): The coordinates of the heart shape.
+    """
+    def __init__(self, canvas:Canvas, box_size:int, color:str) -> None:
+        """
+        Initializes a Heart object with the given canvas, box size, and color.
+
+        Args:
+            canvas (Canvas): The canvas on which the heart shape will be drawn.
+            box_size (int): The size of the heart shape.
+            color (str): The color of the heart shape.
+
+        Returns:
+            None
+        """
+        self.canvas = canvas
+        self.box_size = box_size
+        self.color = color
+        
+        self.hearts = None
+        self.coords = None
+            
+    def __create_heart_shape(self, coordinates:tuple[int, int]) -> None:
+        """
+        Draws a heart shape on the canvas.
+
+        Args:
+            coordinates (tuple[int, int]): The x and y coordinates where the heart will be drawn.
+
+        Returns:
+            None
+
+        Note:
+            This method is private because it can potentially cause data leakage.
+        """
+        x1, y1 = coordinates
+        x2, y2 = x1 + self.box_size, y1 + self.box_size
+        self.coords = (x1, y1)
+
+        new_y1 = (self.box_size / 2) + y1
+        new_x1 = (self.box_size / 2) + x1
+        radius = (new_y1 - y1) / 2
+        
+        first = self.canvas.create_arc(x1, new_y1 - radius, new_x1, new_y1 + radius, fill=self.color, start=0, extent=180)
+        second = self.canvas.create_arc(new_x1, new_y1 - radius, x2, new_y1 + radius, fill=self.color, start=0, extent=180)
+        third = self.canvas.create_polygon(x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2, fill=self.color)
+        self.hearts = (first, second, third)
+    
+    def _move_resize_heart_shape(self, coordinates:tuple[int, int]) -> None:
+        """
+        Moves and resizes the heart shape on the canvas.
+
+        Args:
+            coordinates (tuple[int, int]): The new x and y coordinates for the heart shape.
+
+        Returns:
+            None
+        """
+        x1, y1 = coordinates
+        x2, y2 = x1 + self.box_size, y1 + self.box_size
+
+        new_y1 = (self.box_size / 2) + y1
+        new_x1 = (self.box_size / 2) + x1
+        radius = (new_y1 - y1) / 2
+        self.coords = (x1, y1)
+        
+        self.canvas.coords(self.hearts[0],
+            x1, new_y1 - radius, new_x1, new_y1 + radius
+        )
+        self.canvas.coords(self.hearts[1],
+            new_x1, new_y1 - radius, x2, new_y1 + radius
+        )
+        self.canvas.coords(self.hearts[2],
+            x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2
+        )
+        
+        for heart in self.hearts:
+            self.canvas.itemconfig(heart, state='normal', fill=self.color)
+        
+    def delete_heart(self, hide: bool = True) -> None:
+        """
+        Deletes or hides the heart shape from the canvas.
+
+        Args:
+            hide (bool): If True, hides the heart shape instead of deleting it.
+
+        Returns:
+            None
+        """
+        if self.hearts is None:
+            return None
+        
+        if hide:
+            for heart in self.hearts:
+                self.canvas.itemconfig(heart, state="hidden")
+            return None
+        
+        for heart in self.hearts:
+            self.canvas.delete(heart)
+        
+    def new_heart(self, coordinates):
+        """
+        Creates a new heart shape on the canvas.
+
+        Args:
+            coordinates (tuple[int, int]): The x and y coordinates where the heart will be drawn.
+
+        Returns:
+            None
+        """
+        if self.hearts:
+            self._move_resize_heart_shape(coordinates)
+        else:
+            self.__create_heart_shape(coordinates)
+            
+    def change_color(self, color: str):
+        """
+        Changes the color of the heart shape.
+
+        Args:
+            color (str): The new color of the heart shape.
+
+        Returns:
+            None
+        """
+        self.color = color
+        
+        if self.hearts is None:
+            return None
+        
+        for heart in self.hearts:
+            self.canvas.itemconfig(heart, fill=self.color)
+    
+    def change_size(self, box_size: int):
+        """
+        Changes the size of the heart shape.
+
+        Args:
+            box_size (int): The new size of the heart shape.
+
+        Returns:
+            None
+        """
+        self.box_size = box_size
+        
+        if self.hearts is None:
+            return None
+        
+        self._move_resize_heart_shape(self.coords)
+        
+        
+class Heart_NEV:
     """
     Represents a heart shape drawn on a canvas.
 

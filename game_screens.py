@@ -12,7 +12,7 @@ from tkinter import (
 from game_idles import(
     Food,
     goofy_Snakes,
-    Snake,Heart
+    Snake,Heart_NEV
 )
 
 from variable import Variable
@@ -636,7 +636,7 @@ class Game_screen:
             height = self._nevigation_height
             )
         
-        self.HEART = Heart(
+        self.HEART = Heart_NEV(
             canvas = self.NEVIGATION_CANVAS,
             cordnites = (self.game_width - Heart_size,pady),
             box_size = Heart_size,
