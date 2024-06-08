@@ -211,19 +211,25 @@ class Food:
         canvas (Canvas): The canvas on which the food item will be drawn.
         box_size (int): The size of each box representing the food item.
         color (str): The color of the food item.
-        game_width (int): The width of the game area.
-        game_height (int): The height of the game area.
+        canvas_width (int): The width of the game area.
+        canvas_height (int): The height of the game area.
         food (int): The ID of the current food item on the canvas.
         x (int): The x-coordinate of the food item.
         y (int): The y-coordinate of the food item.
 
     Methods:
-        __init__(canvas, box_size, color, game_width, game_height, food_type="oval"): Initialize a new Food object.
-        _create_food_oval(): Create an oval-shaped food item on the canvas.
-        _create_food_square(): Create a square-shaped food item on the canvas.
-        new_coordinates(): Generate new random coordinates for the food item.
-        _delete_food(): Delete the current food item from the canvas.
-        new_food(food_type): Create a new food item of the specified type.
+        __init__(canvas, color, box_size): Initialize a new Food object.\n
+        _calculate_dimensions: Calculate width height and more for Food obj\n
+        _create_food_oval(): Create an oval-shaped food item on the canvas.\n
+        _delete_food(): Delete the current food item from the canvas.\n
+        move_resize_food(): Move current Food obj to new coordinates\n
+        new_coordinates(): Generate new random coordinates for the food item.\n
+        generate_non_overlapping_coordinates(coordinates:tuple|list):
+        genrate coordinates that does not overlap given cords[(int,int),(int,int)] list\n
+        new_food(coordinates:tuple|list|None = None): Create a new food items\n
+        update_color(color): update the color of Food and for obj\n
+        update_size(box_size); update the box_size of Food \n
+        
     """
     def __init__(self, canvas:Canvas, color:str, box_size:int)-> None:
         """
@@ -247,11 +253,11 @@ class Food:
         self.x = 0
         self.y = 0
         
-        self.calculate_dimensions()
+        self._calculate_dimensions()
         self.new_coordinates()
         self.new_food()
     
-    def calculate_dimensions(self):
+    def _calculate_dimensions(self) -> None:
         """
         Calculate and store the width and height of the canvas.
         """
@@ -294,7 +300,6 @@ class Food:
         """
         Generate new random coordinates for the food item.
         """
-        
         # The approach divides the screen into a grid of cells, where each cell represents a possible position for the food.
         # The grid is defined by the box_size, which determines the size of each cell.
         # To select a random cell, we choose a random integer index along the x-axis (vertical lines) and y-axis (horizontal lines).
@@ -303,7 +308,7 @@ class Food:
         self.x = randint(0, self.__width_grid_size)* self.box_size
         self.y =  randint(0, self.__height_grid_size)* self.box_size
 
-    def generate_non_overlapping_coordinates(self, list1, width_box, height_box, box_size):
+    def generate_non_overlapping_coordinates(self, coordinates:list|tuple) -> tuple[int,int]:
         """
         Generate new coordinates within a grid that do not overlap with existing coordinates.
 
@@ -321,12 +326,12 @@ class Food:
 
         """
         
-        def x_y_dict(list1, box_size) -> dict:
+        def x_y_dict(coordinates, box_size) -> dict:
             """
             Convert a list of coordinates into a dictionary for quick lookup.
             """
             dict1 = {}
-            for x, y in list1:
+            for x, y in coordinates:
                 x //= box_size
                 y //= box_size
                 
@@ -336,26 +341,28 @@ class Food:
                     dict1[x] = {y}
             return dict1
         
-        x = randint(0, width_box)
-        y = randint(0, height_box)
+        #genrating random cordss in box_size
+        x = randint(0, self.__width_grid_size)
+        y = randint(0, self.__height_grid_size)
         
-        dict1 = x_y_dict(list1, box_size)
+        dict1 = x_y_dict(coordinates, self.box_size)
+        
         original_x = x
-        while (x in dict1) and (len(dict1[x]) == width_box + 1):
-            x = (x + 1) if x < width_box else 0
+        while (x in dict1) and (len(dict1[x]) == self.__width_grid_size + 1):
+            x = (x + 1) if x < self.__width_grid_size else 0
             if original_x == x:
                 return None
             
         original_y = y
         while (x in dict1) and (y in dict1[x]):
-            y = (y + 1) if y < height_box else 0
+            y = (y + 1) if y < self.__height_grid_size else 0
             if original_y == y:
                 return None
         
-        return x * box_size, y * box_size
+        return x * self.box_size, y * self.box_size
 
     
-    def new_food(self, cordinates:list|tuple|None = None):
+    def new_food(self, cordinates:list|tuple|None = None) -> None:
         """
         Create a new food item of the specified type and optionally at specified coordinates.
 
@@ -364,32 +371,36 @@ class Food:
                 If provided, the food item will be placed at these coordinates.
         """
         if cordinates is not None:
-            self.x , self.y = self.generate_non_overlapping_coordinates(
-                cordinates, self.__width_grid_size, self.__height_grid_size, self.box_size
-            )
+            self.x , self.y = self.generate_non_overlapping_coordinates(cordinates)
         else:
             self.new_coordinates()
-        print(self.x , self.y)
+            
         if self.food:
             self.move_resize_food()
-            
         else:
             self._create_food_oval()
         
-    def update_color(self , color:str):
+    def update_color(self , color:str) -> None:
         """Update the color of the Food.
 
         Args:
             color (str): The new color of the Food.
         """
         self.color = color
-        self.canvas.itemconfig(self.food, fill = self.color)
+        if self.food:
+            self.canvas.itemconfig(self.food, fill = self.color)
+        else:
+            self._create_food_oval()
     
     def update_size(self , box_size:int) -> None:
         self.box_size = box_size
-        
+        self._calculate_dimensions()
         self.x , self.y = validate_cordinates((self.x , self.y), self.box_size)
-        self.move_resize_food()
+        
+        if self.food:
+            self.move_resize_food()
+        else:
+            self._create_food_oval()
          
         
 class Heart:
@@ -407,14 +418,7 @@ class Heart:
         hearts_list (list): A list to store the IDs of the heart shapes drawn on the canvas.
         limit (int or None): The maximum number of hearts allowed on the canvas. If set, adding more hearts will be limited.
     """
-    def __init__(
-        self,
-        canvas : Canvas,
-        cordnites : tuple,
-        box_size : int,
-        color : str,
-        inisial_heart = 1
-        ) -> None:
+    def __init__(self, canvas:Canvas, cordnites:tuple, box_size:int, color:str, inisial_heart=1) -> None:
         """
         Initialize a Heart object.
 
