@@ -24,6 +24,58 @@ def validate_cordinates(cords ,box_size:int) -> tuple[int:int]:
     
     return (x , y)
 
+def lighten_hex_color(hex_color, lighten_factor=0.1) -> str:
+    """
+    Lightens a given hex color.
+
+    Args:
+        hex_color (str): The hex color string to lighten, e.g., '#RRGGBB'.
+        lighten_factor (float): The factor by which to lighten the color, where 0 is no change
+                                and 1 is white. Default is 0.1 (10% lighter).
+
+    Returns:
+        str: The lightened hex color string.
+    """
+    if hex_color.startswith('#'):
+        hex_color = hex_color[1:]
+    r = int(hex_color[:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:], 16)
+    r = int(r + (255 - r) * lighten_factor)
+    g = int(g + (255 - g) * lighten_factor)
+    b = int(b + (255 - b) * lighten_factor)
+    r = min(255, max(0, r))
+    g = min(255, max(0, g))
+    b = min(255, max(0, b))
+    lightened_hex_color = f'#{r:02X}{g:02X}{b:02X}'
+    return lightened_hex_color
+
+def darken_hex_color(hex_color, darken_factor=0.1) -> str:
+    """
+    Darkens a given hex color.
+
+    Args:
+        hex_color (str): The hex color string to darken, e.g., '#RRGGBB'.
+        darken_factor (float): The factor by which to darken the color, where 0 is no change
+                               and 1 is black. Default is 0.1 (10% darker).
+
+    Returns:
+        str: The darkened hex color string.
+    """
+    if hex_color.startswith('#'):
+        hex_color = hex_color[1:]
+    r = int(hex_color[:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:], 16)
+    r = int(r * (1 - darken_factor))
+    g = int(g * (1 - darken_factor))
+    b = int(b * (1 - darken_factor))
+    r = min(255, max(0, r))
+    g = min(255, max(0, g))
+    b = min(255, max(0, b))
+    darkened_hex_color = f'#{r:02X}{g:02X}{b:02X}'
+    return darkened_hex_color
+
 
 class Snake:
     """
@@ -570,9 +622,155 @@ class Heart:
         self._move_resize_heart_shape(self.coords)
 
 
+class Coin:
+    """
+    Represents a coin object that can be drawn on a canvas.
 
+    Attributes:
+    canvas (Canvas): The canvas on which the coin will be drawn.
+    box_size (int): The size of the coin.
+    color (str): The color of the coin.
+    inner_color (str): The color of the inner part of the coin.
+    coin (tuple): The coin shape consisting of graphical elements.
+    coords (tuple): The coordinates of the top-left corner of the coin.
+    """
+    def __init__(self, canvas:Canvas, box_size:int, color:str) -> None:
+        """
+        Initializes a Coin object.
+
+        Parameters:
+        canvas (Canvas): The canvas on which the coin will be drawn.
+        box_size (int): The size of the coin.
+        color (str): The color of the coin.
+        """
+        self.canvas = canvas
+        self.box_size = box_size
+        self.color = color
+        self.inner_color = darken_hex_color(self.color , 0.1)
         
+        self.coin = None
+        self.coords = None
         
+    def _create_coin(self, coordinates:tuple[int,int]):
+        """
+        Creates a new coin at the specified coordinates.
+
+        Parameters:
+        coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
+        """
+        x1 ,y1 = coordinates
+        self.coords = coordinates
+        #innerx1 and box_szie
+        innerx1 = (self.box_size // 10) + x1
+        innery1 = (self.box_size // 10) + y1
+        inner_boxsize = self.box_size - (self.box_size // 10) * 2
+        #inner_smile_cords
+        middlex1 = innerx1+(inner_boxsize//2)
+        middley1 = innery1+(inner_boxsize//2)
+        #text_size = pixels * (72 / dpi(96))==0.75
+        text_size = inner_boxsize // 5
+        text_size = int(text_size * 7.5)//2
+        
+        first = self.canvas.create_oval(x1, y1, x1+self.box_size, y1+self.box_size,fill = self.color, outline = "black")
+        secoend = self.canvas.create_oval(innerx1, innery1, innerx1+inner_boxsize, innery1+inner_boxsize, outline="black", fill=self.inner_color)
+        third = self.canvas.create_text(middlex1 , middley1, text="!",justify="center",fill="black",font=("Arial",text_size,"bold"))
+        self.coin = (first , secoend , third)
+    
+    def _move_resize_coin_shape(self, coordinates:tuple[int, int]) -> None:
+        """
+        Moves and resizes the coin shape to the specified coordinates.
+
+        Parameters:
+        coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
+        """
+        x1 ,y1 = coordinates
+        self.coords = coordinates
+        #innerx1 and box_szie
+        innerx1 = (self.box_size // 10) + x1
+        innery1 = (self.box_size // 10) + y1
+        inner_boxsize = self.box_size - (self.box_size // 10) * 2
+        #inner_smile_cords
+        middlex1 = innerx1+(inner_boxsize//2)
+        middley1 = innery1+(inner_boxsize//2)
+        #text_size = pixels * (72 / dpi(96))==0.75
+        text_size = inner_boxsize // 5
+        text_size = int(text_size * 7.5)//2
+        
+        self.canvas.coords(self.coin[0],
+            x1, y1, x1+self.box_size, y1+self.box_size
+        )
+        self.canvas.coords(self.coin[1],
+            innerx1, innery1, innerx1+inner_boxsize, innery1+inner_boxsize
+        )
+        self.canvas.coords(self.coin[2],
+            middlex1 , middley1
+        )
+        
+        self.canvas.itemconfig(self.coin[0], state='normal')
+        self.canvas.itemconfig(self.coin[1], state='normal')
+        self.canvas.itemconfig(self.coin[2], state='normal',font=("Arial",text_size,"bold"))
+        
+    def delete_coin(self, hide: bool = True) -> None:
+        """
+        Deletes or hides the coin from the canvas.
+
+        Parameters:
+        hide (bool): If True, hides the coin; otherwise, deletes it from the canvas.
+        """
+        if self.coin is None:
+            return None
+        
+        if hide:
+            for coin in self.coin:
+                self.canvas.itemconfig(coin, state="hidden")
+            return None
+        
+        for coin in self.coin:
+            self.canvas.delete(coin)
+        self.hearts = None
+        
+    def new_coin(self, coordinates):
+        """
+        Creates a new coin or moves an existing one to the specified coordinates.
+
+        Parameters:
+        coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
+        """
+        if self.hearts is None:
+            self._create_coin(coordinates)
+        else:
+            self._move_resize_coin_shape(coordinates)
+            
+    def change_color(self, color: str):
+        """
+        Changes the color of the coin.
+
+        Parameters:
+        color (str): The new color of the coin.
+        """
+        self.color = color
+        self.inner_color = darken_hex_color(self.color , 0.1)
+        
+        if self.coin is None:
+            return None
+        
+        self.canvas.itemconfig(self.coin[0], fill = self.color)
+        self.canvas.itemconfig(self.coin[1], fill = self.inner_color)
+    
+    def change_size(self, box_size:int):
+        """
+        Changes the size of the coin.
+
+        Parameters:
+        box_size (int): The new size of the coin.
+        """
+        self.box_size = box_size
+        
+        if self.hearts is None:
+            return None
+        self._move_resize_coin_shape(self.coords)
+
+
 class Heart_NEV:
     """
     Represents a heart shape drawn on a canvas.
