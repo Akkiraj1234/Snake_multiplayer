@@ -638,8 +638,6 @@ class Game_screen:
         
         self.HEART = Heart_NEV(
             canvas = self.NEVIGATION_CANVAS,
-            cordnites = (self.game_width - Heart_size,pady),
-            box_size = Heart_size,
             color = self.var.HEART_COLOR,
             inisial_heart = self.var.INISISAL_HEART
             )

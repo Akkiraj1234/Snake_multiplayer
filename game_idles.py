@@ -580,7 +580,7 @@ class Heart_NEV:
         hearts_list (list): A list to store the IDs of the heart shapes drawn on the canvas.
         limit (int or None): The maximum number of hearts allowed on the canvas. If set, adding more hearts will be limited.
     """
-    def __init__(self, canvas:Canvas, cordnites:tuple, box_size:int, color:str, inisial_heart=1) -> None:
+    def __init__(self, canvas:Canvas, color:str, inisial_heart=1) -> None:
         """
         Initialize a Heart object.
 
@@ -592,20 +592,32 @@ class Heart_NEV:
             initial_heart (int, optional): The number of hearts to initialize. Defaults to 1.
         """
         self.canvas = canvas
-        self.cordinates = cordnites
-        self.box_size = box_size
         self.color = color
         self.limit = None
         self.inisial_heart = inisial_heart
         self.calulating_diameters()
-        
         self.hearts_list = []
         for _ in range(self.inisial_heart):
             self.add_one_heart()
     
     def calulating_diameters(self):
-        '''calculate the diameters'''
-        self.distance = self.box_size // 4
+        """Calculate box size, coordinates, and distance."""
+        # Get canvas dimensions
+        canvas_height = int(self.canvas.cget("height"))
+        canvas_width = int(self.canvas.cget("width"))
+        
+        # Calculate padding and box size
+        padding = canvas_height // 8
+        box_size = padding * 7
+        
+        # Determine coordinates
+        y = padding
+        x = canvas_width - box_size
+        
+        # Set instance variables
+        self.box_size = box_size
+        self.cordinates = (x, y)
+        self.distance = box_size // 4
     
     def add_one_heart(self):
         """
