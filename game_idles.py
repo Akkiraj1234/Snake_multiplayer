@@ -436,18 +436,16 @@ class Heart:
         self.hearts = None
         self.coords = None
             
-    def __create_heart_shape(self, coordinates:tuple[int, int]) -> None:
+    def _create_heart_shape(self, coordinates:tuple[int, int], return_:bool = False) -> None:
         """
         Draws a heart shape on the canvas.
 
         Args:
             coordinates (tuple[int, int]): The x and y coordinates where the heart will be drawn.
-
-        Returns:
-            None
+            return_ (bool): Asking if the item it shoude be returned or not defult False
 
         Note:
-            This method is private because it can potentially cause data leakage.
+            This method is can be cause of data leakage use it carfully.
         """
         x1, y1 = coordinates
         x2, y2 = x1 + self.box_size, y1 + self.box_size
@@ -460,18 +458,25 @@ class Heart:
         first = self.canvas.create_arc(x1, new_y1 - radius, new_x1, new_y1 + radius, fill=self.color, start=0, extent=180)
         second = self.canvas.create_arc(new_x1, new_y1 - radius, x2, new_y1 + radius, fill=self.color, start=0, extent=180)
         third = self.canvas.create_polygon(x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2, fill=self.color)
+        
+        if return_:
+            return (first, second, third)
         self.hearts = (first, second, third)
     
-    def _move_resize_heart_shape(self, coordinates:tuple[int, int]) -> None:
+    def _move_resize_heart_shape(self, coordinates:tuple[int, int], heart:tuple = None) -> None:
         """
         Moves and resizes the heart shape on the canvas.
 
         Args:
             coordinates (tuple[int, int]): The new x and y coordinates for the heart shape.
+            heart (tuple): this method takes heart items tupple shoude be the same canvas as this method canvas hold defult none if not given takes self.hearts the body
 
         Returns:
             None
         """
+        if not heart:
+            heart = self.hearts
+            
         x1, y1 = coordinates
         x2, y2 = x1 + self.box_size, y1 + self.box_size
 
@@ -480,18 +485,18 @@ class Heart:
         radius = (new_y1 - y1) / 2
         self.coords = (x1, y1)
         
-        self.canvas.coords(self.hearts[0],
+        self.canvas.coords(heart[0],
             x1, new_y1 - radius, new_x1, new_y1 + radius
         )
-        self.canvas.coords(self.hearts[1],
+        self.canvas.coords(heart[1],
             new_x1, new_y1 - radius, x2, new_y1 + radius
         )
-        self.canvas.coords(self.hearts[2],
+        self.canvas.coords(heart[2],
             x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2
         )
         
-        for heart in self.hearts:
-            self.canvas.itemconfig(heart, state='normal', fill=self.color)
+        for body in heart:
+            self.canvas.itemconfig(body, state='normal', fill=self.color)
         
     def delete_heart(self, hide: bool = True) -> None:
         """
@@ -526,7 +531,7 @@ class Heart:
             None
         """
         if self.hearts is None:
-            self.__create_heart_shape(coordinates)
+            self._create_heart_shape(coordinates)
         else:
             self._move_resize_heart_shape(coordinates)
             
@@ -563,6 +568,9 @@ class Heart:
         if self.hearts is None:
             return None
         self._move_resize_heart_shape(self.coords)
+
+
+
         
         
 class Heart_NEV:
@@ -579,29 +587,31 @@ class Heart_NEV:
         distance (int): The distance between each heart when added.
         hearts_list (list): A list to store the IDs of the heart shapes drawn on the canvas.
         limit (int or None): The maximum number of hearts allowed on the canvas. If set, adding more hearts will be limited.
+        initial_heart (int): The number of hearts to initialize.
     """
     def __init__(self, canvas:Canvas, color:str, inisial_heart=1) -> None:
         """
-        Initialize a Heart object.
+        Initialize a Heart_NEV object.
 
         Args:
             canvas (Canvas): The canvas on which the heart will be drawn.
-            coordinates (tuple): The initial coordinates (x, y) of the top-left corner of the heart.
-            box_size (int): The size of the bounding box of the heart.
             color (str): The color of the heart.
             initial_heart (int, optional): The number of hearts to initialize. Defaults to 1.
         """
+        self.inisial_heart = inisial_heart
         self.canvas = canvas
         self.color = color
         self.limit = None
-        self.inisial_heart = inisial_heart
         self.calulating_diameters()
+        self.heart = Heart(self.canvas, self.box_size, self.color)
+        
         self.hearts_list = []
-        for _ in range(self.inisial_heart):
-            self.add_one_heart()
+        self.add_heart_in_range(self.inisial_heart)
     
-    def calulating_diameters(self):
-        """Calculate box size, coordinates, and distance."""
+    def calulating_diameters(self) -> None:
+        """
+        Calculate box size, coordinates, and distance.
+        """
         # Get canvas dimensions
         canvas_height = int(self.canvas.cget("height"))
         canvas_width = int(self.canvas.cget("width"))
@@ -619,26 +629,9 @@ class Heart_NEV:
         self.cordinates = (x, y)
         self.distance = box_size // 4
     
-    def add_one_heart(self):
-        """
-        Add one heart to the canvas.
-
-        If the limit is set and the number of hearts exceeds the limit, no heart will be added.
-
-        Returns:
-            None
-        """
-        if self.limit and len(self.hearts_list)>= self.limit:
-            return None
-        self.heart()
-        self.cordinates = (self.cordinates[0]-self.box_size-self.distance , self.cordinates[1])
-        
-    def remmove_heart(self):
+    def remmove_heart(self) -> None:
         """
         Remove the last heart from the canvas.
-
-        Returns:
-            None
         """
         if self.hearts_list == []:
             return None
@@ -648,52 +641,41 @@ class Heart_NEV:
             
         self.cordinates = (self.cordinates[0]+self.box_size+self.distance , self.cordinates[1])
         
-    def remove_all_heart(self):
+    def remove_all_heart(self) -> None:
         """
         remove all the heart left on the canvas.
-        
-        returns:
-            None
         """
-        if self.hearts_list == []:
-            return None
-        
         for _ in range(len(self.hearts_list)):
             self.remmove_heart()
             
-    def add_heart_in_range(self,num = 0):
-        '''
-        add hearts in a range given by num or the value of 
-        num is by default set to be num = self.inisial_heart
-        '''
+    def add_heart_in_range(self,num = 0) -> None:
+        """
+        Add hearts to the canvas within a specified range.
+
+        Args:
+            num (int, optional): The number of hearts to add. Defaults to initial_heart if not provided.
+        """
         if not num:
             num = self.inisial_heart
         
         for _ in range(num):
-            self.add_one_heart()
+            self.add_one_heart(check = False)
     
-    def heart(self):
+    def add_one_heart(self , check:bool = True) -> None:
         """
-        Draw a heart shape on the canvas.
+        Add one heart to the canvas.
 
-        This method calculates the coordinates and dimensions of the heart shape
-        based on the given parameters and draws it on the canvas.
-
-        Returns:
-            None
+        Args:
+            check (bool, optional): If True, check if the limit is set and if the number of hearts exceeds the limit.Defaults to True.
         """
-        x1 , y1 = self.cordinates
-        x2 , y2 = x1 + self.box_size , y1 + self.box_size
-
-        new_y1 = (self.box_size / 2) + y1
-        new_x1 = (self.box_size / 2) + x1
-        radious = (new_y1 - y1) / 2
+        if check and self.limit and len(self.hearts_list) >= self.limit:
+            return None
         
-        first = self.canvas.create_arc(x1,new_y1-radious,new_x1,new_y1+radious,fill=self.color,start=0,extent=180)
-        secoend = self.canvas.create_arc(new_x1,new_y1-radious,x2,new_y1+radious,fill=self.color,start=0,extent=180)
-        third = self.canvas.create_polygon(x1,new_y1,x2,new_y1,(x1+x2)/2,y2,fill=self.color)
-        self.hearts_list.append((first,secoend,third))
-    
+        heart = self.heart._create_heart_shape(self.cordinates , return_=True)
+        
+        self.hearts_list.append(heart)
+        self.cordinates = (self.cordinates[0]-self.box_size-self.distance , self.cordinates[1])
+        
     def update_color(self,color:str):
         """Update the color of the Heart.
 
@@ -701,6 +683,7 @@ class Heart_NEV:
             color (str): The new color of the Heart.
         """
         self.color = color
+        self.heart.color = color
         
         for hearts in self.hearts_list:
             self.canvas.itemconfig(hearts[0],fill = self.color)
@@ -708,19 +691,17 @@ class Heart_NEV:
             self.canvas.itemconfig(hearts[2],fill = self.color)
     
     def update_size(self , box_size:int) -> None:
-        self.box_size = box_size
-        
         self.calulating_diameters()
+        self.heart.box_size = self.box_size
         
-        heart = len(self.hearts_list)
-        
-        self.remove_all_heart()
-        self.add_heart_in_range(heart)
-        
+        for heart in reversed(self.hearts_list):
+            self.heart._move_resize_heart_shape(self.cordinates,heart)
+            self.cordinates = (self.cordinates[0]+self.box_size+self.distance , self.cordinates[1])
         
 
 class goofy_Snakes:
-    """Represents a goofy snake in the game.
+    """
+    Represents a goofy snake in the game.
 
     Attributes:
         master (Canvas): The canvas on which the snake will be drawn.
@@ -739,16 +720,9 @@ class goofy_Snakes:
         move_the_snakes(): Move the snake to the new coordinates.
     """
     
-    def __init__(
-        self,
-        master : Canvas,
-        color : str,
-        coordinates : tuple,
-        lenght : int,
-        inisial_direction : str,
-        box_size : int
-        ) -> None:
-        """Initialize a new goofy_Snakes object.
+    def __init__(self, master:Canvas, color:str, coordinates:tuple, lenght:int, inisial_direction:str, box_size:int) -> None:
+        """
+        Initialize a new goofy_Snakes object.
 
         Args:
             master (Canvas): The canvas on which the snake will be drawn.
@@ -759,22 +733,20 @@ class goofy_Snakes:
             box_size (int): The size of each box representing a segment of the snake.
         """
         self.master = master
-        self.color = color
-        self.coordinates = coordinates
-        self.lenght = lenght
         self.direction = inisial_direction
-        self.box_size = box_size
         
         self.snake = Snake(
             canvas = self.master,
-            lenght = self.lenght,
-            color  = self.color,
-            box_size = self.box_size,
-            coordinates = self.coordinates
+            lenght = lenght,
+            color  = color,
+            box_size = box_size,
+            coordinates = coordinates
         )
 
     def random_direction(self):
-        """Randomly choose a new direction for the snake."""
+        """
+        Randomly choose a new direction for the snake.
+        """
         new_direction = choice(("down","right","down","right","down","left","up","down"))
         
         if new_direction in ("down","up") and self.direction in ("down","up"):
@@ -784,22 +756,24 @@ class goofy_Snakes:
         else: self.direction = new_direction
     
     def calculate_new_coordinates(self):
-        """Calculate new coordinates for the snake's head based on its current direction."""
+        """
+        Calculate new coordinates for the snake's head based on its current direction.
+        """
         self.random_direction()
         
         x , y =self.snake.snake_coordinates[0]
         
         if self.direction == "up":
-            y -= self.box_size
+            y -= self.snake.box_size
             
         elif self.direction == "down":
-            y += self.box_size
+            y += self.snake.box_size
             
         elif self.direction == "right":
-            x += self.box_size
+            x += self.snake.box_size
             
         elif self.direction == "left":
-            x -= self.box_size
+            x -= self.snake.box_size
         
         #adjusting screen :0
         canvas_width = int(self.master.cget("width"))
@@ -811,20 +785,27 @@ class goofy_Snakes:
         self.coordinates = (x,y)
     
     def move_the_snakes(self):
-        """Move the snake to the new coordinates."""
+        """
+        Move the snake to the new coordinates.
+        """
         self.calculate_new_coordinates()
         x , y = self.coordinates
-        self.snake.move_snake(x,y,True)
+        self.snake.move_snake(x , y , True)
         
     def update_color(self , color):
-        """Update the color of the goofy snake.
+        """
+        Update the color of the goofy snake.
 
         Args:
             color (str): The new color of the goofy snake.
         """
-        self.color = color
         self.snake.update_color(self.color)
         
     def update_size(self , box_size):
-        self.box_size = box_size
+        """
+        Updates the size of the box and the snake.
+        
+        Args:
+            box_size (int): The new size of the box.
+        """
         self.snake.update_size(self.box_size)

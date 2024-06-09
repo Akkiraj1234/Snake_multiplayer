@@ -620,7 +620,6 @@ class setting_screen:
 
 
 
-
 def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     """
     Initialize the home screen with specified parameters and widgets.
