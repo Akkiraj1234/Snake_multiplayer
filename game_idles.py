@@ -658,7 +658,7 @@ class Coin:
         Parameters:
         coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
         """
-        x1 ,y1 = coordinates
+        x1 , y1 = coordinates
         self.coords = coordinates
         #innerx1 and box_szie
         innerx1 = (self.box_size // 10) + x1
@@ -667,7 +667,7 @@ class Coin:
         #inner_smile_cords
         middlex1 = innerx1+(inner_boxsize//2)
         middley1 = innery1+(inner_boxsize//2)
-        #text_size = pixels * (72 / dpi(96))==0.75
+        #text_size = pixels * (72 / dpi(96)==0.75)
         text_size = inner_boxsize // 5
         text_size = int(text_size * 7.5)//2
         
@@ -1006,4 +1006,4 @@ class goofy_Snakes:
         Args:
             box_size (int): The new size of the box.
         """
-        self.snake.update_size(self.box_size)
+        self.snake.update_size(box_size)
