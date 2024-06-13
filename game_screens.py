@@ -1,26 +1,13 @@
-from tkinter import (
-    Canvas,
-    Frame,
-    Button,
-    Label,
-    Entry,
-    Toplevel,
-    Tk ,
-    messagebox
-)
-
-from game_idles import(
-    Food,
-    goofy_Snakes,
-    Snake,Heart_NEV
-)
-
-from variable import Variable
+from tkinter import Canvas, Frame, Button, Label, Entry, Toplevel ,Tk, messagebox
 from random import choice
+
+from game_idles import Food, goofy_Snakes, Snake, Heart_NEV, Heart, Coin
+from variable import Variable
 
 
 class inisial_screens:
-    """A class representing an initial screen setup for a game.
+    """
+    A class representing an initial screen setup for a game.
 
     This class provides methods for setting up the initial screen of a game, including adding snakes, food items, starting animations, and managing animations.
 
@@ -43,47 +30,18 @@ class inisial_screens:
         start_animation: Starts the animation loop for moving snakes and updating the game state.
         stop_animation: Stops the animation loop.
         add_button: Adds a button widget to the game screen.
-
-    Example:
-        # Initialize the initial screen
-        initial_screen = inisial_screens(master, background_color='black', game_width=800, box_size=20, game_height=600, speed=100)
-
-        # Add a snake to the initial screen
-        initial_screen.add_snakes(color='green', coordinates=(5, 5), length=3, direction='right')
-
-        # Add food to the initial screen
-        initial_screen.add_food(color='red', food_type='oval', random_color=True)
-
-        # Start the animation loop
-        initial_screen.start_animation()
-
-        # Stop the animation loop
-        initial_screen.stop_animation()
-
-        # Add a button to the game screen
-        initial_screen.add_button(button1, button2, button3)
     """
     
-    def __init__(
-        self,
-        master : Tk | Frame ,
-        background_color : str,
-        game_width : int,
-        box_size : int,
-        game_height : int,
-        speed : int,
-        pack:bool = True 
-        ) -> None:
-        
-        """Initialize the initial screen of the game.
+    def __init__(self, master:Tk|Frame, background_color:str, game_width:int, game_height:int, box_size:int, pack:bool = True ) -> None:
+        """
+        Initialize the initial screen of the game.
 
         Args:
             master: The master widget where the initial screen will be placed.
             background_color (str): The background color of the game screen.
             game_width (int): The width of the game screen.
-            box_size (int): The size of each box or unit in the game grid.
             game_height (int): The height of the game screen.
-            speed (int): The speed of animations in milliseconds.
+            box_size (int): The size of each box or unit in the game grid.
             pack (bool): Whether to automatically pack the canvas widget (default is True).
         """
         self.master = master
@@ -91,7 +49,6 @@ class inisial_screens:
         self.game_width = game_width
         self.game_height = game_height
         self.box_size = box_size
-        self.speed=speed
         
         #inisalizing child window
         self.child_window = Canvas(
@@ -101,56 +58,34 @@ class inisial_screens:
             width = self.game_width
         )
         
+        #elements of the inisial snakes :0
+        self.food = None
+        self.heart = None
+        self.coin = None
+        self.snakes = []
+        self.Windows_list = []
+        self.Header = []
+        self.footer = []
+        
+        #arttibutes used
+        self.random_food_color = None
+        self.random_heart_color = None
+        self.random_coin_color = None
+        self.speed = None
+        self.animation_after_ids=None
+        
         if pack: 
             self.child_window.pack()
             
-        self.food = None
-        self.snakes = []
-        self.Windows_list = []
-        self.animation_after_ids=None
-    
-    def update(self):
-        pass
-    
-    def add_snakes(
-        self,
-        color : str ,
-        coordinates : tuple,
-        lenght : int,
-        direction : str
-        ) -> None:
-        
-        """Add a snake to the game screen.
-
-        Args:
-            color (str): The color of the snake.
-            coordinates (tuple): The initial coordinates of the snake.
-            length (int): The length of the snake.
-            direction (str): The initial direction of the snake ('up', 'down', 'left', 'right').
+    def add_food(self, color:str, randome_color=False) -> None:
         """
-        
-        coordinates = [i * self.box_size for i in coordinates]
-        
-        self.snakes.append(
-            goofy_Snakes(
-                master = self.child_window,
-                color = color,
-                lenght = lenght,
-                box_size = self.box_size,
-                coordinates = coordinates,
-                inisial_direction = direction
-            )
-        )
-    
-    def add_food(self, color:str , randome_color=False) -> None:
-        """Add a food item to the game screen.
+        Add a food item to the game screen.
 
         Args:
             color (str): The color of the food item.
-            food_type (str): The type of food item ('oval' or 'rectangle', default is 'oval').
             random_color (bool): Whether to randomize the color of the food item (default is False).
         """
-        self.random_color=randome_color
+        self.random_food_color=randome_color
         
         self.food=Food(
             canvas = self.child_window,
@@ -158,16 +93,81 @@ class inisial_screens:
             color = color
         )
         
-    def add_button(self,*args) -> None:
-        """Add button widgets to the game screen.
+    def add_heart(self, color:str, randome_color=False):
+        """
+        add heart item to the game screen.
 
         Args:
-            *buttons: Button widgets to be added to the game screen.
+            color (str): The color of the heart item
+            random_color (bool): Whether to randomize the color of the heart item (default is False).
         """
-        self.Windows_list = args
+        self.random_heart_color=randome_color
+        
+        self.heart = Heart(
+            canvas = self.child_window,
+            box_size = self.box_size,
+            color = color
+        )
+    
+    def add_coin(self, color:str, randome_color=False):
+        """
+        add heart item to the game screen.
+
+        Args:
+            color (str): The color of the heart item
+            random_color (bool): Whether to randomize the color of the heart item (default is False).
+        """
+        self.random_coin_color=randome_color
+        
+        self.heart = Coin(
+            canvas = self.child_window,
+            box_size = self.box_size,
+            color = color
+        )
+    
+    def add_snakes(self, color:str, coordinates:list, lenght:int, direction:str) -> None:
+        """
+        Add a snake to the game screen.
+
+        Args:
+            color (str): The color of the snake.
+            coordinates (list): The initial coordinates of the snake. It should be a list of two integers [x, y], 
+                                and both coordinates should be divisible by box_size.
+            length (int): The length of the snake.
+            direction (str): The initial direction of the snake ('up', 'down', 'left', 'right').
+
+        Note:
+            The coordinates should be divisible by box_size to ensure proper alignment on the game grid.
+        """
+        
+        coordinates[0] = min((self.game_height // self.box_size),max(0,coordinates[0]))*self.box_size
+        coordinates[1] = min((self.game_width // self.box_size),max(0,coordinates[1]))*self.box_size
+             
+        snake = goofy_Snakes(
+                master = self.child_window,
+                box_size = self.box_size,
+                color = color,
+                lenght = lenght,
+                coordinates = coordinates,
+                inisial_direction = direction
+            )
+
+        self.snakes.append(snake)
+        
+    def add_windows(self, *args, middle = 1) -> None:
+        """
+        Add windows widgets to the game screen.
+
+        Args:
+            *windows: widgets to be added to the game screen.
+        """
+        for widget in args:
+            self.Windows_list.append(widget)
         
         # getting the box size in negative
         num = self.box_size - (self.box_size * 2)
+        print(num,self.box_size)
+        
         
         for button in args:
             
@@ -179,7 +179,7 @@ class inisial_screens:
             
             num += self.box_size
         
-    def start_animation(self) -> None:
+    def start_animation(self , speed:int) -> None:
         """Start the animation loop for moving snakes and updating the game state."""
         
         for snake in self.snakes:
@@ -192,15 +192,12 @@ class inisial_screens:
             
             if x == foodx and y == foody:
                 
-                if self.random_color:
+                if self.random_food_color:
                     self.food.color = choice(("blue","yellow","red","pink"))
                     
                 self.food.new_food()
                 
-        self.animation_after_ids = self.child_window.after(
-            ms = self.speed,
-            func = self.start_animation
-        )
+        self.animation_after_ids = self.child_window.after(speed,self.start_animation,speed)
     
     def stop_animation(self) -> None:
         """Stop the animation loop."""

@@ -639,17 +639,15 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
         background_color = var.CANVAS_COLOR,
         game_width = var.game_width,
         game_height = var.game_height,
-        box_size = var.home_boxsize,
-        speed = var.home_speed,
-        pack = True
+        box_size = var.home_boxsize
         )
     
     # Add snakes and food to the home screen
-    Home_window.add_snakes("red", (0,0), 5, "down")
-    Home_window.add_snakes("pink", (4,2), 8, "left")
-    Home_window.add_snakes("grey", (1,3), 3, "right")
-    Home_window.add_snakes("blue", (4,4), 4, "up")
-    Home_window.add_snakes("yellow", (2,1), 3, "down")
+    Home_window.add_snakes("red", [0,0], 5, "down")
+    Home_window.add_snakes("pink", [8,4], 8, "left")
+    Home_window.add_snakes("grey", [9,3], 3, "right")
+    Home_window.add_snakes("blue", [10,4], 4, "up")
+    Home_window.add_snakes("yellow", [6,1], 3, "down")
     Home_window.add_food("red", True)
     
     # Create and configure label widget
@@ -700,7 +698,7 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     
     # adding buttons to the home_window canvas and then
     # returning the instance of the home_window
-    Home_window.add_button(lable, button, button1, button2)
+    Home_window.add_windows(lable, button, button1, button2)
     return Home_window
 
 
@@ -731,7 +729,6 @@ def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
         game_width = var.game_width,
         game_height = var.game_height,
         box_size = var.home_boxsize,
-        speed = var.game_speed,
         pack = False
     )
     # adding buttones
@@ -778,7 +775,7 @@ def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
     )
     
     #adding button to pause_game_screen and returning its instanse
-    pause_game_screen.add_button(Label1,Button1,Button2,Button3)
+    pause_game_screen.add_windows(Label1,Button1,Button2,Button3)
     return pause_game_screen
 
 
@@ -895,7 +892,7 @@ def home_pause_menu():
     pause_menu.remove_from_master()
     game.set_everrything_to_default()
     home_screen.add_to_master()
-    home_screen.start_animation()
+    home_screen.start_animation(var.game_speed)
     
     print("hmm.... u wanna go home oki ! ")
 
@@ -915,11 +912,11 @@ def main():
     root.title("title")
     root.resizable(width=False,height=False)
     game.pause_screen = pause_menu
-    home_screen.start_animation()
+    home_screen.start_animation(var.game_speed)
     
 def lolololtest():
     home_screen.add_to_master()
-    home_screen.start_animation()
+    home_screen.start_animation(var.game_speed)
     
 
 
