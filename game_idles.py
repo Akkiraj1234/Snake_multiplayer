@@ -77,6 +77,7 @@ def darken_hex_color(hex_color, darken_factor=0.1) -> str:
     return darkened_hex_color
 
 
+
 class Snake:
     """
     Represents a snake in the game.
@@ -306,7 +307,7 @@ class Food:
         self.y = 0
         
         self._calculate_dimensions()
-        self.new_coordinates()
+        self.x, self.y = self.new_coordinates()
         self.new_food()
     
     def _calculate_dimensions(self) -> None:
@@ -351,7 +352,7 @@ class Food:
             self.food, self.x, self.y, self.x + self.box_size, self.y + self.box_size 
         )
         
-    def new_coordinates(self) -> None:
+    def new_coordinates(self) -> tuple[int,int]:
         """
         Generate new random coordinates for the food item.
         """
@@ -360,8 +361,9 @@ class Food:
         # To select a random cell, we choose a random integer index along the x-axis (vertical lines) and y-axis (horizontal lines).
         # We then multiply these indices by the box_size to obtain the exact coordinates within the canvas where the food can be placed.
         
-        self.x = randint(0, self.__width_grid_size)* self.box_size
-        self.y =  randint(0, self.__height_grid_size)* self.box_size
+        x = randint(0, self.__width_grid_size)* self.box_size
+        y =  randint(0, self.__height_grid_size)* self.box_size
+        return x,y
 
     def generate_non_overlapping_coordinates(self, coordinates:list|tuple) -> tuple[int,int]:
         """
@@ -428,7 +430,7 @@ class Food:
         if cordinates is not None:
             self.x , self.y = self.generate_non_overlapping_coordinates(cordinates)
         else:
-            self.new_coordinates()
+            self.x, self.y = self.new_coordinates()
             
         if self.food:
             self.move_resize_food()
@@ -469,7 +471,7 @@ class Heart:
         hearts (tuple): A tuple containing the IDs of the components of the heart shape on the canvas.
         coords (tuple): The coordinates of the heart shape.
     """
-    def __init__(self, canvas:Canvas, box_size:int, color:str) -> None:
+    def __init__(self, canvas:Canvas, box_size:int, color:str, insalize = True, cords = (0,0)) -> None:
         """
         Initializes a Heart object with the given canvas, box size, and color.
 
@@ -486,7 +488,11 @@ class Heart:
         self.color = color
         
         self.hearts = None
-        self.coords = None
+        self.coords = (None,None)
+        self.avialable = False
+        
+        if insalize:
+            self.new_heart(cords)
             
     def _create_heart_shape(self, coordinates:tuple[int, int], return_:bool = False) -> None:
         """
@@ -499,6 +505,7 @@ class Heart:
         Note:
             This method is can be cause of data leakage use it carfully.
         """
+        self.avialable = True
         x1, y1 = coordinates
         x2, y2 = x1 + self.box_size, y1 + self.box_size
         self.coords = (x1, y1)
@@ -526,6 +533,8 @@ class Heart:
         Returns:
             None
         """
+        self.avialable = True
+        
         if not heart:
             heart = self.hearts
             
@@ -560,6 +569,8 @@ class Heart:
         Returns:
             None
         """
+        self.avialable = False
+        
         if self.hearts is None:
             return None
         
@@ -634,7 +645,7 @@ class Coin:
     coin (tuple): The coin shape consisting of graphical elements.
     coords (tuple): The coordinates of the top-left corner of the coin.
     """
-    def __init__(self, canvas:Canvas, box_size:int, color:str) -> None:
+    def __init__(self, canvas:Canvas, box_size:int, color:str, insalize:bool = True, cords:tuple = (0,0)) -> None:
         """
         Initializes a Coin object.
 
@@ -649,7 +660,11 @@ class Coin:
         self.inner_color = darken_hex_color(self.color , 0.1)
         
         self.coin = None
-        self.coords = None
+        self.coords = (None,None)
+        self.avialable = False
+        
+        if insalize:
+            self.new_coin(cords)
         
     def _create_coin(self, coordinates:tuple[int,int]):
         """
@@ -658,6 +673,8 @@ class Coin:
         Parameters:
         coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
         """
+        self.avialable = True
+        
         x1 , y1 = coordinates
         self.coords = coordinates
         #innerx1 and box_szie
@@ -683,6 +700,8 @@ class Coin:
         Parameters:
         coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
         """
+        self.avialable = True
+        
         x1 ,y1 = coordinates
         self.coords = coordinates
         #innerx1 and box_szie
@@ -717,6 +736,8 @@ class Coin:
         Parameters:
         hide (bool): If True, hides the coin; otherwise, deletes it from the canvas.
         """
+        self.avialable = False
+        
         if self.coin is None:
             return None
         
@@ -736,7 +757,7 @@ class Coin:
         Parameters:
         coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
         """
-        if self.hearts is None:
+        if self.coin is None:
             self._create_coin(coordinates)
         else:
             self._move_resize_coin_shape(coordinates)

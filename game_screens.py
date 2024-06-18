@@ -58,7 +58,7 @@ class inisial_screens:
             width = self.game_width
         )
         
-        #elements of the inisial snakes :0
+        #elements of the game_screen :0
         self.food = None
         self.heart = None
         self.coin = None
@@ -66,17 +66,24 @@ class inisial_screens:
         self.Windows_list = []
         self.Header = []
         self.footer = []
+        self.color_list = colors = [
+            "#FFA500", "#800080", "#00FFFF", "#FFD700", "#00FF00",
+            "#0000FF", "#FFFF00", "#FF0000", "#FFC0CB"
+        ]
         
-        #arttibutes used
+        #arttibutes used for game_screen elements
         self.random_food_color = None
         self.random_heart_color = None
         self.random_coin_color = None
         self.speed = None
         self.animation_after_ids=None
+        self._Windows_ids = []
+        self._header_ids = [None,None,None]
+        self._footer_ids = [None,None,None]
         
         if pack: 
             self.child_window.pack()
-            
+        
     def add_food(self, color:str, randome_color=False) -> None:
         """
         Add a food item to the game screen.
@@ -85,7 +92,7 @@ class inisial_screens:
             color (str): The color of the food item.
             random_color (bool): Whether to randomize the color of the food item (default is False).
         """
-        self.random_food_color=randome_color
+        self.random_food_color = randome_color
         
         self.food=Food(
             canvas = self.child_window,
@@ -93,15 +100,15 @@ class inisial_screens:
             color = color
         )
         
-    def add_heart(self, color:str, randome_color=False):
+    def add_heart(self, color:str, randome_color=False) -> None:
         """
         add heart item to the game screen.
 
         Args:
-            color (str): The color of the heart item
+            color (str): The color of the heart item.
             random_color (bool): Whether to randomize the color of the heart item (default is False).
         """
-        self.random_heart_color=randome_color
+        self.random_heart_color = randome_color
         
         self.heart = Heart(
             canvas = self.child_window,
@@ -109,7 +116,7 @@ class inisial_screens:
             color = color
         )
     
-    def add_coin(self, color:str, randome_color=False):
+    def add_coin(self, color:str, randome_color=False) -> None:
         """
         add heart item to the game screen.
 
@@ -117,9 +124,9 @@ class inisial_screens:
             color (str): The color of the heart item
             random_color (bool): Whether to randomize the color of the heart item (default is False).
         """
-        self.random_coin_color=randome_color
+        self.random_coin_color = randome_color
         
-        self.heart = Coin(
+        self.coin = Coin(
             canvas = self.child_window,
             box_size = self.box_size,
             color = color
@@ -144,61 +151,179 @@ class inisial_screens:
         coordinates[1] = min((self.game_width // self.box_size),max(0,coordinates[1]))*self.box_size
              
         snake = goofy_Snakes(
-                master = self.child_window,
-                box_size = self.box_size,
-                color = color,
-                lenght = lenght,
-                coordinates = coordinates,
-                inisial_direction = direction
-            )
+            master = self.child_window,
+            box_size = self.box_size,
+            color = color,
+            lenght = lenght,
+            coordinates = coordinates,
+            inisial_direction = direction
+        )
 
         self.snakes.append(snake)
         
-    def add_windows(self, *args, middle = 1) -> None:
+    def add_windows(self, *args, middle:int = 1 , destroy:bool = True) -> None:
         """
-        Add windows widgets to the game screen.
+        Add window widgets to the game screen.
+
+        This method places given widgets (e.g., buttons) on the game screen at a specific 
+        position based on the `middle` parameter. It also handles the removal of previously 
+        added widgets if called multiple times.
 
         Args:
-            *windows: widgets to be added to the game screen.
+            *args: Widgets to be added to the game screen.
+            
+            middle (int, optional): Determines the vertical offset of the widgets. Defaults to 1.
+                The value represents how much the widgets should move upwards, with 1 
+                representing one box size.
+                
+            destroy (bool, optional): Indicates whether to destroy the original widgets when 
+                this method is called again. Defaults to True. If True, the original widget will 
+                be destroyed; otherwise, only the canvas item will be deleted.
+
+        Note:
+            This method should ideally be used only once per object to avoid adding new 
+            widgets and deleting old ones repeatedly.
         """
-        for widget in args:
-            self.Windows_list.append(widget)
+        #destroying all widget if its called again
+        for _ in range(len(self._Windows_ids)):
+            window = self._Windows_ids.pop()
+            self.child_window.delete(window)
+            if destroy: 
+                window = self.Windows_list.pop()
+                window.destroy()
+            
+        self.Windows_list = list(args)
         
-        # getting the box size in negative
-        num = self.box_size - (self.box_size * 2)
-        print(num,self.box_size)
-        
+        # getting the box size in negative or the inisal cords:0
+        num = (self.box_size - (self.box_size * 2)) * middle
         
         for button in args:
             
-            self.child_window.create_window(
+            id = self.child_window.create_window(
                 self.game_width//2, # x value
                 self.game_height//2+num, # y value
                 window=button
             )
-            
+            self._Windows_ids.append(id)
             num += self.box_size
         
+    def add_header(self, header:tuple[int,int,int], pady:int = 10, padx:int = 10, destroy:bool = True) -> None:
+        """
+        Add header widgets to the header section of the game screen.
+
+        This method positions up to three widgets in the header section: right side, center, and left side. 
+        The `header` tuple should contain the widget IDs for these positions. If no widget is desired in 
+        a particular position, `None` can be used.
+
+        Args:
+            header (tuple[int, int, int]): A tuple containing the widget IDs for the right side, center, and 
+                left side of the header, respectively. Example: (right_side_id, center_id, left_side_id). 
+                Use `None` for positions where no widget is needed.
+            pady (int, optional): Padding on the y-axis. Defaults to 10.
+            padx (int, optional): Padding on the x-axis. Defaults to 10.
+            destroy (bool, optional): Indicates whether to destroy the original widgets when this method 
+                is called again. Defaults to True. If True, the original widgets will be destroyed.
+
+        Note:
+            This method should ideally be used only once per object to avoid repeatedly adding new 
+            headers and deleting old ones.
+        """
+        # Deleting existing header widgets if the method is called again
+        for num in range(0,len(self._header_ids)):
+            if not self._header_ids[num]:
+                continue
+            
+            self.child_window.delete(self._header_ids[num])
+            if destroy: 
+                window = self.Header[num]
+                window.destroy()
+                
+        # Reset header ids and store new header tuple
+        self._header_ids = [None, None, None]    
+        self.Header = header
+        
+        # Adding widget
+        if header[0]:# right-side header widget
+            x = 0 + padx
+            y = 0 + pady
+            self._header_ids[0] = self.child_window.create_window(
+                x, y, window=header[0], anchor="nw"
+            )
+            
+        if header[1]: #center header widget
+            x = (self.game_width // 2 )
+            y = (header[1].winfo_reqheight() // 2) + pady
+            self._header_ids[1] = self.child_window.create_window(
+                x, y, window=header[1], anchor="center"
+            )
+        
+        if header[2]: #left-side header widget
+            x = self.game_width - padx
+            y = 0 + pady
+            self._header_ids[2] = self.child_window.create_window(
+                x, y, window=header[2], anchor="ne"
+            )
+    def add_footer(self, footer:tuple):
+        """
+        add footer windows in the footer this is follwing by footer tuple which will contain **(ryt_side, center, left_side)**
+        == **(item_id, item_id, item_id)** if u want not to put any widget in center then **(item_id1, None, item_id2)**
+        and same goes for if u dont wanna put ryt_side then **(None, item_id1, item_id2)**
+        if u just wanna put one footer then leave other as None and put item id whichevre place u wanna put it on.
+        
+        Note:
+            use this method only once in a obj
+        """
+        if footer[0]:
+            pass
+        
+        if footer[1]:
+            pass
+        
+        if footer[2]:
+            pass
+    
     def start_animation(self , speed:int) -> None:
-        """Start the animation loop for moving snakes and updating the game state."""
+        """
+        Start the animation loop for moving snakes and updating the game state.
+
+        This method moves each snake in the game, checks for collisions with
+        food, heart, or coin, updates their colors if needed, and generates new 
+        items as appropriate. It then schedules the next frame of the animation.
+
+        Args:
+            speed (int): The delay in milliseconds between each animation frame.
+            
+        Note:
+            we need to inisalize atlest 1 snake to start the animation if not its return None :)
+        """
+        if len(self.snakes) == 0:
+            return None
         
         for snake in self.snakes:
             
             snake.move_the_snakes()
-            
-            #cordinates of snake and food
             x , y = snake.coordinates
-            foodx , foody = self.food.x, self.food.y
             
-            if x == foodx and y == foody:
-                
+            if bool(self.food) and x == self.food.x and y == self.food.y:
                 if self.random_food_color:
-                    self.food.color = choice(("blue","yellow","red","pink"))
-                    
+                    color = choice(self.color_list)
+                    self.food.update_color(color)
                 self.food.new_food()
+            
+            if bool(self.food) and bool(self.heart) and (x , y) == self.heart.coords:
+                if self.random_heart_color:
+                    color = choice(self.color_list)
+                    self.heart.change_color(color)
+                self.heart.new_heart(self.food.new_coordinates())
+            
+            if bool(self.food) and bool(self.coin) and (x , y) == self.coin.coords:
+                if self.random_coin_color:
+                    color = choice(self.color_list)
+                    self.coin.change_color(color)
+                self.coin.new_coin(self.food.new_coordinates())
                 
         self.animation_after_ids = self.child_window.after(speed,self.start_animation,speed)
-    
+        
     def stop_animation(self) -> None:
         """Stop the animation loop."""
         if self.animation_after_ids:

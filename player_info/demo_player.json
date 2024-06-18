@@ -1,1 +1,27 @@
-{"name": "demo_player", "password": "123", "HIGH_SCORE": 75, "points": 0, "Cur_nev_color": "#000000", "cur_text_color": "#ffffff", "cur_heart_color": "#ff0000", "cur_canvas_color": "#050B2B", "cur_food_color": "#ff0000", "cur_snake_color": "#ffff00", "inisial_heart": 1, "countdown_time_s": 2, "owned_nev_color": 1, "owned_heart_color": [1], "owned_canvas_color": [1], "owned_food_color": [1], "owned_snake_color": [1]}
+{
+    "name": "demo_player",
+    "password": "123",
+    "HIGH_SCORE": 75,
+    "points": 0,
+    "Cur_nev_color": "#000000",
+    "cur_text_color": "#ffffff",
+    "cur_heart_color": "#ff0000",
+    "cur_canvas_color": "#050B2B",
+    "cur_food_color": "#ff0000",
+    "cur_snake_color": "#ffff00",
+    "inisial_heart": 1,
+    "countdown_time_s": 2,
+    "owned_nev_color": 1,
+    "owned_heart_color": [
+        1
+    ],
+    "owned_canvas_color": [
+        1
+    ],
+    "owned_food_color": [
+        1
+    ],
+    "owned_snake_color": [
+        1
+    ]
+}
