@@ -66,7 +66,7 @@ class inisial_screens:
         self.Windows_list = []
         self.Header = []
         self.footer = []
-        self.color_list = colors = [
+        self.color_list = [
             "#FFA500", "#800080", "#00FFFF", "#FFD700", "#00FF00",
             "#0000FF", "#FFFF00", "#FF0000", "#FFC0CB"
         ]
@@ -263,25 +263,129 @@ class inisial_screens:
             self._header_ids[2] = self.child_window.create_window(
                 x, y, window=header[2], anchor="ne"
             )
-    def add_footer(self, footer:tuple):
+            
+    def add_footer(self, footer:tuple, pady:int = 10, padx:int = 10, destroy:bool = True):
         """
-        add footer windows in the footer this is follwing by footer tuple which will contain **(ryt_side, center, left_side)**
-        == **(item_id, item_id, item_id)** if u want not to put any widget in center then **(item_id1, None, item_id2)**
-        and same goes for if u dont wanna put ryt_side then **(None, item_id1, item_id2)**
-        if u just wanna put one footer then leave other as None and put item id whichevre place u wanna put it on.
-        
+        Add footer widgets to the footer section of the game screen.
+
+        This method positions up to three widgets in the footer section: right side, center, and left side. 
+        The `footer` tuple should contain the widget IDs for these positions. If no widget is desired in 
+        a particular position, `None` can be used.
+
+        Args:
+            footer (tuple): A tuple containing the widget IDs for the right side, center, and 
+                left side of the footer, respectively. Example: (right_side_id, center_id, left_side_id). 
+                Use `None` for positions where no widget is needed.
+            pady (int, optional): Padding on the y-axis. Defaults to 10.
+            padx (int, optional): Padding on the x-axis. Defaults to 10.
+            destroy (bool, optional): Indicates whether to destroy the original widgets when this method 
+                is called again. Defaults to True. If True, the original widgets will be destroyed.
+
         Note:
-            use this method only once in a obj
+            This method should ideally be used only once per object to avoid repeatedly adding new 
+            footers and deleting old ones.
         """
+        # Deleting existing footer widgets if the method is called again
+        for num in range(0,len(self._footer_ids)):
+            if not self._footer_ids[num]:
+                continue
+            
+            self.child_window.delete(self._footer_ids[num])
+            if destroy: 
+                window = self.footer[num]
+                window.destroy()
+                
+        # Reset footer ids and store new footer tuple
+        self._footer_ids = [None, None, None]    
+        self.footer = footer
+        
         if footer[0]:
-            pass
+            x = 0 + padx
+            y = self.game_height - pady
+            self._footer_ids[0] = self.child_window.create_window(
+                x, y, window=footer[0], anchor="sw"
+            )
         
         if footer[1]:
-            pass
+            x = (self.game_width // 2 )
+            y = self.game_height - (footer[1].winfo_reqheight() // 2) - pady
+            self._footer_ids[1] = self.child_window.create_window(
+                x, y, window=footer[1], anchor="center"
+            )
         
         if footer[2]:
-            pass
-    
+            x = self.game_width - padx
+            y = self.game_height - pady
+            self._footer_ids[2] = self.child_window.create_window(
+                x, y, window=footer[2], anchor="se"
+            )
+            
+    def HomeScreen_HeaderFooter_modle1_inisalization(self, var , padx:int = 10, pady:int = 10) -> None:
+        """
+        Initialize the header and footer for the home screen with specified labels and a coin widget.
+
+        This method sets up the header with high score and player coin information, and the footer with the version info.
+        It also initializes a coin widget in the specified position.
+
+        Args:
+            var (object): An object containing necessary attributes for initialization:
+                - HIGHT_SCORE (int): The high score value to be displayed.
+                - CANVAS_COLOR (str): Background color for the labels.
+                - TEXT_COLOR (str): Text color for the labels.
+                - FONT_STYLE (str): Font style for the labels.
+                - PLAYERP_COINE (int): The player's coin count to be displayed.
+                - version (str): The version of the game to be displayed.
+                - Form_font (str): Font style for the version label.
+            padx (int, optional): Padding on the x-axis for header and footer. Defaults to 10.
+            pady (int, optional): Padding on the y-axis for header and footer. Defaults to 10.
+
+        Note:
+            This method utilizes the `add_header_or_footer` method to add widgets to the header and footer sections.
+        """
+        box_size = 20
+        
+        lable1 = Label(
+            master = self.child_window,
+            text = f"High score: {var.HIGHT_SCORE}",
+            bg = var.CANVAS_COLOR,
+            fg = var.TEXT_COLOR,
+            font = (var.FONT_STYLE,int(box_size//1.66)),
+            relief = "flat"
+        )
+        
+        label2 = Label(
+            master = self.child_window,
+            text = f": {var.PLAYERP_COINE}",
+            bg = var.CANVAS_COLOR,
+            fg = var.TEXT_COLOR,
+            font = (var.FONT_STYLE,int(box_size//1.66)),
+            relief = "flat"
+        )
+        
+        label3 = Label(
+            master = self.child_window,
+            text = f"Version: {var.version}v",
+            bg = var.CANVAS_COLOR,
+            fg = var.TEXT_COLOR,
+            font = (var.Form_font,7),
+            relief = "flat"
+        )
+        self.add_header(header = (lable1,None,label2), padx= padx, pady= pady)
+        self.add_footer(footer = (None,None,label3), padx= padx, pady= pady)
+        
+        #cords for coin:
+        x = self.game_width - label2.winfo_reqwidth() - padx - box_size
+        y = 0 + pady + 3
+        
+        #inisalizing coin
+        self.home_coin = Coin(
+            canvas = self.child_window,
+            box_size = box_size,
+            color = "#ffff00",
+            insalize = True,
+            cords = (x , y)
+        )
+        
     def start_animation(self , speed:int) -> None:
         """
         Start the animation loop for moving snakes and updating the game state.
@@ -337,7 +441,15 @@ class inisial_screens:
         '''remove window from master'''
         self.stop_animation()
         self.child_window.pack_forget()
-        
+    
+    def update_color():
+        pass
+    
+    def update_size():
+        pass
+    
+    def update_everything():
+        pass
 
 
 class WindowGenerator:

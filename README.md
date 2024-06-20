@@ -32,9 +32,11 @@ Sneck Safari is a Python-based snake game developed using the tkinter library. I
 
 ## need to improve :0
 
-1. in game_idles.py under Food class there is 0new_food(...) method which creating new cordinates method is fixed by that code.  ->  `FIXED`
+1. ~~in game_idles.py under Food class there is 0new_food(...) method which creating new cordinates method is fixed by that code.~~  ->  `FIXED`
 
-2. needed to update the snake's segment coordinates to fit a new box size while maintaining their alignment and direction without overlap. -> `FIXED`
+2. ~~needed to update the snake's segment coordinates to fit a new box size while maintaining their alignment and direction without overlap.~~ -> `FIXED`
+
+3. the method `HomeScreen_HeaderFooter_modle1_inisalization` in `game_screens.py` class `inisial_screens` need to improve insted of using `lable` we shoude use `child_window.create_text()` for transpenert for that need to imporve `add_header` and `add_footer` method.  -> `in FUTURE`
 
 ## probleams fixed :0
 

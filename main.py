@@ -649,6 +649,14 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     Home_window.add_snakes("blue", [10,4], 4, "up")
     Home_window.add_snakes("yellow", [6,1], 3, "down")
     Home_window.add_food("red", True)
+    Home_window.add_heart("red", False)
+    Home_window.add_coin("#ffff00",False)
+    #setting up the random possision
+    Home_window.heart.new_heart(Home_window.food.new_coordinates())
+    Home_window.coin.new_coin(Home_window.food.new_coordinates())
+    #adding header and footer
+    Home_window.HomeScreen_HeaderFooter_modle1_inisalization(var = var)
+    
     
     # Create and configure label widget
     lable = Label(
@@ -698,7 +706,7 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     
     # adding buttons to the home_window canvas and then
     # returning the instance of the home_window
-    Home_window.add_windows(lable, button, button1, button2)
+    Home_window.add_windows(lable, button, button1, button2, middle=1)
     return Home_window
 
 
@@ -838,6 +846,8 @@ def about_me_home():
     - Prints a message indicating the user's intent to learn about the creator.
     """
     print("hmmm u wanna know about me me crying :)")
+    print(home_screen.Header[0].bbox())
+    print(home_screen.child_window.coords(home_screen._header_ids[0]))
 
 def resume_pause_menu():
     """

@@ -2,7 +2,7 @@
     "name": "demo_player",
     "password": "123",
     "HIGH_SCORE": 75,
-    "points": 0,
+    "points": 145,
     "Cur_nev_color": "#000000",
     "cur_text_color": "#ffffff",
     "cur_heart_color": "#ff0000",

@@ -12,6 +12,7 @@
         "theme2": "#111111"
     },
     "game_info": {
-        "Account": "demo_player"
+        "Account": "demo_player",
+        "verstion": "1.0"
     }
 }
