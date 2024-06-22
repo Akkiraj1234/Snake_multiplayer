@@ -851,6 +851,8 @@ class Game_screen:
         if self.FOOD: self.FOOD.update_color(self.var.FOOD_COLOR)
         if self.HEART: self.HEART.update_color(self.var.HEART_COLOR)
         if self.COIN: self.COIN.update_color(self.var.COIN_COLOR)
+    def update(self):
+        pass
     
     def add_to_Master(self,side = "left",side_status = True) -> None:
         """

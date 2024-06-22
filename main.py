@@ -1,6 +1,7 @@
 from variable import Variable
 from game_screens import inisial_screens, Game_screen , setting_option_menu
 from tkinter import Tk,Frame,Button,Label,Canvas
+from random import choice
 import time
 
 
@@ -47,6 +48,7 @@ class Game_engion:
         self.master_after_ids = None
         self.stop_game_animation = False
         self._old_time_ = 0
+        self.chance_of_drop = 20 #in persantage
         
         #creating screen
         self.GAME_FRAME = Game_screen(self.MASTER, self.var)
@@ -157,10 +159,10 @@ class Game_engion:
         
         # if all heart is not gone yet call remove one heart else game over 
         # and call the UPDATION_AFTER_GAME_OVER method
-        if len(self.GAME_FRAME.HEART.hearts_list) > 1:
-            self.GAME_FRAME.HEART.remmove_heart()
+        if len(self.GAME_FRAME.HEART_NEW.hearts_list) > 1:
+            self.GAME_FRAME.HEART_NEW.remmove_heart()
         else:
-            self.GAME_FRAME.HEART.remmove_heart()
+            self.GAME_FRAME.HEART_NEW.remmove_heart()
             self.UPDATION_AFTER_GAME_OVER()
         
         self._old_time_ = current_time      
@@ -199,6 +201,22 @@ class Game_engion:
             remove = False
             self.GAME_FRAME.FOOD.new_food(self.GAME_FRAME.SNAKE.snake_coordinates)
             self.SCORE +=1
+        
+        heart_avl = self.GAME_FRAME.HEART.avialable
+        coin_avl  = self.GAME_FRAME.COIN.avialable
+        if heart_avl or coin_avl:
+            if heart_avl and self.GAME_FRAME.HEART.coords == (sneckx,snecky):
+                self.GAME_FRAME.HEART.delete_heart()
+                self.SCORE += 1
+                self.GAME_FRAME.HEART_NEW.add_one_heart()
+            if coin_avl and self.GAME_FRAME.COIN.coords == (sneckx,snecky):
+                self.GAME_FRAME.COIN.delete_coin()
+                self.SCORE += 1
+                self.var.PLAYERP_COINE += 10
+        else:
+            if self.SCORE % 5 == 0:
+                item = choice((self.GAME_FRAME.HEART.new_heart,self.GAME_FRAME.COIN.new_coin))
+                item(self.GAME_FRAME.FOOD.new_coordinates())
         
         #updaing things and collection after id
         self.GAME_FRAME.SNAKE.move_snake(sneckx,snecky,remove)
@@ -307,8 +325,8 @@ class Game_engion:
         self.GAME_FRAME.update_things(score = self.SCORE)
         
         #setting heart to therre inisisal value
-        self.GAME_FRAME.HEART.remove_all_heart()
-        self.GAME_FRAME.HEART.add_heart_in_range(self.var.INISISAL_HEART)
+        self.GAME_FRAME.HEART_NEW.remove_all_heart()
+        self.GAME_FRAME.HEART_NEW.add_heart_in_range(self.var.INISISAL_HEART)
         
         #setting sneck lenght to inisial lenght and directiong to 
         #down and cordinates to (0,0) all done by the method get_to_inisial_posision
@@ -903,6 +921,7 @@ def home_pause_menu():
     game.set_everrything_to_default()
     home_screen.add_to_master()
     home_screen.start_animation(var.game_speed)
+    home_screen.update_nessassaery(update=True)
     
     print("hmm.... u wanna go home oki ! ")
 
