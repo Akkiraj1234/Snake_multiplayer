@@ -913,7 +913,7 @@ class Heart_NEV:
             self.canvas.itemconfig(hearts[1],fill = self.color)
             self.canvas.itemconfig(hearts[2],fill = self.color)
     
-    def update_size(self , box_size:int) -> None:
+    def update_size(self) -> None:
         self.calulating_diameters()
         self.heart.box_size = self.box_size
         

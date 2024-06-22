@@ -660,14 +660,16 @@ class Game_screen:
         """
    
         self.var = var
-        self.master = Master
-        self.MASTER = Frame(self.master)
+        self.root = Master
+        self.MASTER = Frame(self.root)
         
         self.NEVIGATION_CANVAS = None
         self.GAME_CANVAS = None
         self.SNAKE = None
         self.FOOD = None
         self.HEART = None
+        self.COIN = None
+        self.HEART_NEW = None
         self.MENU_OPTION = None
         self.SCORE_TEXT = None
         
@@ -675,24 +677,7 @@ class Game_screen:
         self.game_height = self.var.game_height
         self.game_width = self.var.game_width
         self._game_bord_height = None
-        self._nevigation_height = None
-    
-    def update(self):
-        '''
-        update the things
-        '''
-        #updating the color
-        self.NEVIGATION_CANVAS.config(bg=self.var.NEV_COLOR)
-        self.GAME_CANVAS.config(bg=self.var.CANVAS_COLOR)
-        self.SNAKE.update_color(self.var.SNAKE_COLOR)
-        self.FOOD.update_color(self.var.FOOD_COLOR)
-        self.HEART.update_color(self.var.HEART_COLOR)
-        self.NEVIGATION_CANVAS.itemconfig(self.MENU_OPTION,fill = self.var.TEXT_COLOR)
-        self.NEVIGATION_CANVAS.itemconfig(self.SCORE_TEXT,fill = self.var.TEXT_COLOR)
-        
-        #updating height and rest
-        pass
-        
+        self._nevigation_height = None   
         
     def set_up(self) -> None:
         """
@@ -704,7 +689,6 @@ class Game_screen:
         self.nevigation_setup()
         self.game_canvas_setup()
         
-    
     def adjust_window_size(self) -> None:
         """
         Adjust the window size based on game height and navigation heights.
@@ -718,11 +702,11 @@ class Game_screen:
             _nevigation_height (int): The height of the navigation canvas.
             _game_bord_height (int): The height of the game board canvas.
         """
-        nevigation_height = self.game_height // 8
-        nevigation_height = nevigation_height // self.var.game_box_size
+        nevigation_h = self.game_height // 8
+        nevigation_height = nevigation_h // self.var.game_box_size
         
-        if not nevigation_height:
-            self._nevigation_height = self.var.game_box_size * nevigation_height
+        if not bool(nevigation_height):
+            self._nevigation_height = nevigation_h
         else:
             self._nevigation_height = self.var.game_box_size
             
@@ -735,8 +719,6 @@ class Game_screen:
         and a menu option for accessing game options or pausing the game.
         """
         braking_into_4 =  self._nevigation_height // 4
-        Heart_size = braking_into_4 * 3
-        pady = braking_into_4 // 4
         
         self.NEVIGATION_CANVAS = Canvas(
             master = self.MASTER,
@@ -745,7 +727,7 @@ class Game_screen:
             height = self._nevigation_height
             )
         
-        self.HEART = Heart_NEV(
+        self.HEART_NEW = Heart_NEV(
             canvas = self.NEVIGATION_CANVAS,
             color = self.var.HEART_COLOR,
             inisial_heart = self.var.INISISAL_HEART
@@ -794,8 +776,22 @@ class Game_screen:
             box_size = self.var.game_box_size,
             color = self.var.FOOD_COLOR
             )
-    
-    def update_things(self,**kwargs):
+        
+        self.HEART = Heart(
+            canvas = self.GAME_CANVAS,
+            box_size = self.var.game_box_size,
+            color = self.var.HEART_COLOR,
+            insalize=False
+        )
+        
+        self.COIN = Coin(
+            canvas = self.GAME_CANVAS,
+            box_size = self.var.game_box_size,
+            color = self.var.COIN_COLOR,
+            insalize = False 
+        )
+        
+    def update_things(self,**kwargs) -> None:
         """
         Update game elements based on provided keyword arguments.
 
@@ -807,8 +803,56 @@ class Game_screen:
             self.NEVIGATION_CANVAS.itemconfig(
                 self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
             )
+        
+    def update_everything(self):
+        """
+        this method update all elemets posstion and color acording to new one
+        """
+        #updating game elements
+        self.game_height = self.var.game_height
+        self.game_width = self.var.game_width
+        self.adjust_window_size()
+        
+        #updating nevigation and its itemes================
+        braking_into_4 =  self._nevigation_height // 4
+        
+        if self.NEVIGATION_CANVAS: self.NEVIGATION_CANVAS.config(
+            bg = self.var.NEV_COLOR,
+            width = self.game_width,
+            height = self._nevigation_height
+            )
+        
+        if self.HEART:
+            self.HEART_NEW.update_color(self.var.HEART_COLOR)
+            self.HEART_NEW.update_size()
+        
+        if self.SCORE_TEXT and self.MENU_OPTION:\
+            #tuple1 contain text id and its x cords
+            tuple1 = ((self.SCORE_TEXT,self.game_width // 2), (self.MENU_OPTION,30))
+            
+            for text_id , xcords in tuple1:
+                self.NEVIGATION_CANVAS.itemconfig(
+                    text_id[0],
+                    font = ("Arial",braking_into_4 * 2,"bold"),
+                    fill = self.var.TEXT_COLOR
+                )
+                self.NEVIGATION_CANVAS.coords(
+                    text_id,
+                    xcords,#x
+                    braking_into_4 * 2#y
+                )
+        #updating canvas and its itemes===================
+        if self.GAME_CANVAS: self.GAME_CANVAS.config(
+            bg = self.var.CANVAS_COLOR,
+            width = self.game_width,
+            height = self._game_bord_height
+            )
+        if self.SNAKE: self.SNAKE.update_color(self.var.SNAKE_COLOR)
+        if self.FOOD: self.FOOD.update_color(self.var.FOOD_COLOR)
+        if self.HEART: self.HEART.update_color(self.var.HEART_COLOR)
+        if self.COIN: self.COIN.update_color(self.var.COIN_COLOR)
     
-    def add_to_Master(self,side = "left",side_status = True)->None:
+    def add_to_Master(self,side = "left",side_status = True) -> None:
         """
         Pack the navigation and game canvases and add it to master
         """
