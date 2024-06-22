@@ -174,6 +174,7 @@ class inisial_screens:
             The coordinates should be divisible by box_size to ensure proper alignment on the game grid.
         """
         
+        # getting the cords in the range not out of game width and height and not less then 0 then * it to get cords
         coordinates[0] = min((self.game_height // self.box_size),max(0,coordinates[0]))*self.box_size
         coordinates[1] = min((self.game_width // self.box_size),max(0,coordinates[1]))*self.box_size
              
@@ -482,17 +483,18 @@ class inisial_screens:
         self.add_footer(footer = (None, None, label3), padx= padx, pady= pady)
         
         #cords for coin:
-        x = self.game_width - label2.winfo_reqwidth() - padx - box_size - 5
-        y = 0 + pady + 3
+        x = self.game_width - label2.winfo_reqwidth() - padx - box_size
+        y =  pady
         
         #inisalizing coin
         home_coin = Coin(
             canvas = self.child_window,
             box_size = box_size,
             color = "#ffff00",
-            insalize = True,
-            cords = (x , y)
+            insalize = False,
         )
+        
+        home_coin.new_coin((x , y),False)
         
         def update(header1,header2,footer1,var, home_coin,gamewidth,box_size,padx,pady):
             header1.config(text = f"High score: {var.HIGHT_SCORE}")
@@ -500,7 +502,7 @@ class inisial_screens:
             footer1.config(text = f"Version: {var.version}v")
             
             x = gamewidth - header2.winfo_reqwidth() - padx - box_size - 5
-            y = 0 + pady
+            y = 0 + pady 
             
             home_coin.update_color(var.COIN_COLOR)
             home_coin._move_resize_coin_shape((x,y))
@@ -614,6 +616,7 @@ class inisial_screens:
         '''remove window from master'''
         self.stop_animation()
         self.child_window.pack_forget()
+
 
 class WindowGenerator:
     """
@@ -1439,191 +1442,3 @@ class setting_option_menu:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# import tkinter as tk
-
-# class Var:
-#     def __init__(self):
-#         self.HIGHT_SCORE = 1000
-#         self.PLAYERP_COINE = 50
-#         self.version = "1.0.0"
-#         self.CANVAS_COLOR = "#000000"
-#         self.TEXT_COLOR = "#FFFFFF"
-#         self.FONT_STYLE = "Arial"
-#         self.Form_font = "Arial"
-#         self.COIN_COLOR = "#ff5800"
-
-# var = Var()
-
-# class MockVariable:
-#     def __init__(self):
-#         self.FOOD_COLOR = "#00FF00"
-#         self.HEART_COLOR = "#FF0000"
-#         self.COIN_COLOR = "#FFFF00"
-#         self.home_boxsize = 50
-#         self.CANVAS_COLOR = "grey"
-#         self.TEXT_COLOR = "#FFFFFF"
-#         self.game_height = 500
-#         self.game_width = 1000
-#         self.home_speed = 100
-
-# # Define your `inisial_screens` class and other necessary methods here
-
-# root = tk.Tk()
-
-# # Create an instance of the `inisial_screens` class
-# initial_screen = inisial_screens(
-#     master=root,
-#     background_color="black",
-#     game_width=700,
-#     game_height=300,
-#     box_size=30
-# )
-
-# # Add snakes and food to the home screen
-# initial_screen.add_snakes("red", [0, 0], 5, "down")
-# initial_screen.add_snakes("pink", [8, 4], 8, "left")
-# initial_screen.add_snakes("grey", [9, 3], 3, "right")
-# initial_screen.add_snakes("blue", [10, 4], 4, "up")
-# initial_screen.add_snakes("yellow", [6, 1], 3, "down")
-# initial_screen.add_food("red", True)
-# initial_screen.add_heart("red", False)
-# initial_screen.add_coin("#ffff00", False)
-# # Setting up the random position
-# initial_screen.heart.new_heart(initial_screen.food.new_coordinates())
-# initial_screen.coin.new_coin(initial_screen.food.new_coordinates())
-# # Adding header and footer
-# initial_screen.HomeScreen_HeaderFooter_modle1_inisalization(var=var)
-
-# # Create and configure label widget
-# label = tk.Label(
-#     master=initial_screen.child_window,
-#     text="lawda maderchod",
-#     bg="black",
-#     fg="white",
-#     font=("Arial", 30),
-#     relief="flat"
-# )
-
-# # Create and configure 'Play' button widget
-# button = tk.Button(
-#     master=initial_screen.child_window,
-#     text="Play",
-#     width=10,
-#     bg="black",
-#     fg="white",
-#     font=("arial", 10),
-#     relief="groove"
-# )
-
-# # Create and configure 'Settings' button widget
-# button1 = tk.Button(
-#     initial_screen.child_window,
-#     text="Shop",
-#     width=10,
-#     bg="black",
-#     fg="white",
-#     font=("Arial", 10),
-#     relief="groove"
-# )
-
-# # Create and configure 'about me' button widget
-# button2 = tk.Button(
-#     master=initial_screen.child_window,
-#     text="about me",
-#     width=10,
-#     bg="black",
-#     fg="white",
-#     font=("Arial", 10),
-#     relief="groove"
-# )
-
-# # Adding buttons to the home_window canvas and then
-# # returning the instance of the home_window
-# initial_screen.add_windows(label, button, button1, button2, middle=1)
-
-# initial_screen.start_animation(200)
-
-# def me():
-#     global MockVariable, initial_screen
-#     var = MockVariable()
-
-#     # Call the `update_everything` method with the new `var` object
-#     initial_screen.update_everything(var)
-
-#     # Pack the canvas and start the Tkinter main loop
-#     initial_screen.add_to_master()
-
-# buron = tk.Button(root, text="click me", command=me)
-# buron.pack()
-
-# lol = MockVariable()
-
-# previous_width, previous_height = root.winfo_width(), root.winfo_height()
-# left_button_pressed = False
-
-# def on_resize(event):
-#     global root, lol, initial_screen, previous_width, previous_height, left_button_pressed
-#     print(left_button_pressed)
-#     if left_button_pressed:
-#         new_width = root.winfo_width()
-#         new_height = root.winfo_height()
-
-#         if new_width != previous_width or new_height != previous_height:
-#             lol.game_height = new_height
-#             lol.game_width = new_width
-#             initial_screen.update_everything(lol)
-#             print(f"Resized to {new_width}x{new_height}")
-#             previous_width, previous_height = new_width, new_height
-
-# def on_button_press(event):
-#     global left_button_pressed
-#     left_button_pressed = True
-
-# def on_button_release(event):
-#     global left_button_pressed
-#     left_button_pressed = False
-
-# root.bind("<Configure>", on_resize)
-# root.bind("<ButtonPress-1>", on_button_press)
-# root.bind("<ButtonRelease-1>", on_button_release)
-
-# root.update()
-# root.mainloop()

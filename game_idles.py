@@ -583,7 +583,7 @@ class Heart:
             self.canvas.delete(heart)
         self.hearts = None
         
-    def new_heart(self, coordinates):
+    def new_heart(self, coordinates, validate:bool = True):
         """
         Creates a new heart shape on the canvas.
 
@@ -593,7 +593,8 @@ class Heart:
         Returns:
             None
         """
-        coordinates = validate_cordinates(coordinates,self.box_size)
+        if validate:
+            coordinates = validate_cordinates(coordinates,self.box_size)
         if self.hearts is None:
             self._create_heart_shape(coordinates)
         else:
@@ -751,14 +752,15 @@ class Coin:
             self.canvas.delete(coin)
         self.hearts = None
         
-    def new_coin(self, coordinates):
+    def new_coin(self, coordinates, validate:bool = True):
         """
         Creates a new coin or moves an existing one to the specified coordinates.
 
         Parameters:
         coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
         """
-        coordinates = validate_cordinates(coordinates,self.box_size)
+        if validate:
+            coordinates = validate_cordinates(coordinates,self.box_size)
         if self.coin is None:
             self._create_coin(coordinates)
         else:
