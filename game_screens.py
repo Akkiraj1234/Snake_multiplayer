@@ -12,24 +12,47 @@ class inisial_screens:
     This class provides methods for setting up the initial screen of a game, including adding snakes, food items, starting animations, and managing animations.
 
     Attributes:
-        master: The master widget where the initial screen will be placed.
+        master (Tk | Frame): The master widget where the initial screen will be placed.
         background_color (str): The background color of the game screen.
         game_width (int): The width of the game screen.
-        box_size (int): The size of each box or unit in the game grid.
         game_height (int): The height of the game screen.
+        box_size (int): The size of each box or unit in the game grid.
         speed (int): The speed of animations in milliseconds.
         child_window (tkinter.Canvas): The canvas widget representing the game screen.
         food (Food): The food item on the game screen.
+        heart (Heart): The heart item on the game screen.
+        coin (Coin): The coin item on the game screen.
         snakes (list): A list containing snake objects on the game screen.
-        animation_after_ids: A reference to the animation after method IDs for managing animation loops.
+        Windows_list (list): A list of additional widgets (windows) added to the game screen.
+        Header (list): A list containing header widgets placed at the top of the game screen.
+        footer (list): A list containing footer widgets placed at the bottom of the game screen.
+        methods (list): A list to store methods for deferred execution.
+        color_list (list): A list of predefined colors for game elements.
 
     Methods:
         __init__: Initializes the initial screen with provided parameters.
         add_snakes: Adds a snake to the game screen.
         add_food: Adds a food item to the game screen.
+        add_heart: Adds a heart item to the game screen.
+        add_coin: Adds a coin item to the game screen.
+        add_windows: Adds window widgets to the game screen.
+        add_header: Adds header widgets to the game screen.
+        add_footer: Adds footer widgets to the game screen.
+        update_window_size: Updates the positions of all windows on the game screen.
+        update_header: Updates the positions of header elements on the game screen.
+        update_footer: Updates the positions of footer elements on the game screen.
+        update_nessassaery: Appends methods to self.methods and optionally executes them.
+        HomeScreen_HeaderFooter_modle1_inisalization: Initializes header and footer with labels and a coin widget.
         start_animation: Starts the animation loop for moving snakes and updating the game state.
         stop_animation: Stops the animation loop.
-        add_button: Adds a button widget to the game screen.
+        update_everything: Updates various attributes, elements, and widgets based on provided variables.
+        add_to_master: Adds the game screen to the master widget.
+        remove_from_master: Removes the game screen from the master widget.
+    
+    Note: 
+        Note: If you add any more elements to the canvas that are not part of the game_screens 
+        method and their size and color can be updated, create a method to update them and append
+        it to the self.methods list or through the self.update_message method.
     """
     
     def __init__(self, master:Tk|Frame, background_color:str, game_width:int, game_height:int, box_size:int, pack:bool = True ) -> None:
@@ -37,7 +60,7 @@ class inisial_screens:
         Initialize the initial screen of the game.
 
         Args:
-            master: The master widget where the initial screen will be placed.
+            master (Tk | Frame): The master widget where the initial screen will be placed.
             background_color (str): The background color of the game screen.
             game_width (int): The width of the game screen.
             game_height (int): The height of the game screen.
@@ -66,6 +89,7 @@ class inisial_screens:
         self.Windows_list = []
         self.Header = []
         self.footer = []
+        self.methods = []
         self.color_list = [
             "#FFA500", "#800080", "#00FFFF", "#FFD700", "#00FF00",
             "#0000FF", "#FFFF00", "#FF0000", "#FFC0CB"
@@ -77,6 +101,9 @@ class inisial_screens:
         self.random_coin_color = None
         self.speed = None
         self.animation_after_ids=None
+        self._middel_windows = 0
+        self.header_info = (0,0)
+        self.footer_info = (0,0)
         self._Windows_ids = []
         self._header_ids = [None,None,None]
         self._footer_ids = [None,None,None]
@@ -118,11 +145,11 @@ class inisial_screens:
     
     def add_coin(self, color:str, randome_color=False) -> None:
         """
-        add heart item to the game screen.
+        add coin item to the game screen.
 
         Args:
-            color (str): The color of the heart item
-            random_color (bool): Whether to randomize the color of the heart item (default is False).
+            color (str): The color of the coin item
+            random_color (bool): Whether to randomize the color of the coin item (default is False).
         """
         self.random_coin_color = randome_color
         
@@ -193,6 +220,7 @@ class inisial_screens:
                 window.destroy()
             
         self.Windows_list = list(args)
+        self._middel_windows = middle
         
         # getting the box size in negative or the inisal cords:0
         num = (self.box_size - (self.box_size * 2)) * middle
@@ -235,12 +263,12 @@ class inisial_screens:
             
             self.child_window.delete(self._header_ids[num])
             if destroy: 
-                window = self.Header[num]
-                window.destroy()
+                self.Header[num].destroy()
                 
         # Reset header ids and store new header tuple
-        self._header_ids = [None, None, None]    
         self.Header = header
+        self._header_ids = [None, None, None]    
+        self.header_info = (padx,pady)
         
         # Adding widget
         if header[0]:# right-side header widget
@@ -263,8 +291,8 @@ class inisial_screens:
             self._header_ids[2] = self.child_window.create_window(
                 x, y, window=header[2], anchor="ne"
             )
-            
-    def add_footer(self, footer:tuple, pady:int = 10, padx:int = 10, destroy:bool = True):
+        
+    def add_footer(self, footer:tuple, pady:int = 10, padx:int = 10, destroy:bool = True) -> None:
         """
         Add footer widgets to the footer section of the game screen.
 
@@ -286,18 +314,18 @@ class inisial_screens:
             footers and deleting old ones.
         """
         # Deleting existing footer widgets if the method is called again
-        for num in range(0,len(self._footer_ids)):
+        for num in range(0, len(self._footer_ids)):
             if not self._footer_ids[num]:
                 continue
             
             self.child_window.delete(self._footer_ids[num])
             if destroy: 
-                window = self.footer[num]
-                window.destroy()
+                self.footer[num].destroy()
                 
         # Reset footer ids and store new footer tuple
-        self._footer_ids = [None, None, None]    
         self.footer = footer
+        self._footer_ids = [None, None, None]    
+        self.footer_info = (padx,pady)
         
         if footer[0]:
             x = 0 + padx
@@ -319,7 +347,87 @@ class inisial_screens:
             self._footer_ids[2] = self.child_window.create_window(
                 x, y, window=footer[2], anchor="se"
             )
+    
+    def update_window_size(self) -> None:
+        """
+        Update the positions of all windows in the game screen.
+
+        This method adjusts the coordinates of each window stored in self._Windows_ids 
+        to be centered horizontally and vertically stacked in the middle of the game screen.
+        """
+        if self._Windows_ids == []:
+            return None
+        
+        num = (self.box_size - (self.box_size * 2)) * self._middel_windows
+        
+        for window in self._Windows_ids:
+            x = self.game_width // 2
+            y = self.game_height // 2 + num
+            self.child_window.coords(window, x , y)
+            num += self.box_size
             
+    def update_header(self) -> None:
+        """
+        Update the positions of header elements on the game screen.
+
+        This method adjusts the coordinates of each header element based on its stored ID and position info:
+        - If self._header_ids[0] exists, it positions it at (0 + self.header_info[0], 0 + self.header_info[1]).
+        - If self._header_ids[1] exists, it positions it horizontally centered and adjusted vertically based on its height.
+        - If self._header_ids[2] exists, it positions it at (self.game_width - self.header_info[0], 0 + self.header_info[1]).
+        """
+        if self._header_ids[0]:
+            x = 0 + self.header_info[0]
+            y = 0 + self.header_info[1]
+            self.child_window.coords(self._header_ids[0],x,y)
+            
+        if self._header_ids[1]:
+            x = (self.game_width // 2 )
+            y = (self.Header[1].winfo_reqheight() // 2) + self.header_info[1]
+            self.child_window.coords(self._header_ids[1],x,y)
+            
+        if self._header_ids[2]:
+            x = self.game_width - self.header_info[0]
+            y = 0 + self.header_info[1]
+            self.child_window.coords(self._header_ids[2],x,y)
+    
+    def update_footer(self) -> None:
+        """
+        Update the positions of footer elements on the game screen.
+
+        This method adjusts the coordinates of each footer element based on its stored ID and position info:
+        - If self._footer_ids[0] exists, it positions it at (0 + self.footer_info[0], self.game_height - self.footer_info[1]).
+        - If self._footer_ids[1] exists, it positions it horizontally centered and adjusted vertically based on its height.
+        - If self._footer_ids[2] exists, it positions it at (self.game_width - self.footer_info[0], self.game_height - self.footer_info[1]).
+        """
+        if self._footer_ids[0]:
+            x = 0 + self.footer_info[0]
+            y = self.game_height - self.footer_info[1]
+            self.child_window.coords(self._footer_ids[0],x,y)
+            
+        if self._footer_ids[1]:
+            x = (self.game_width // 2 )
+            y = self.game_height - (self.footer[1].winfo_reqheight() // 2) - self.footer_info[1]
+            self.child_window.coords(self._footer_ids[1],x,y)
+            
+        if self._header_ids[2]:
+            x = self.game_width - self.footer_info[0]
+            y = self.game_height - self.footer_info[1]
+            self.child_window.coords(self._footer_ids[2],x,y)
+            
+    def update_nessassaery(self, *args_method, update:bool = False):
+        """
+        Append methods to self.methods and optionally execute them.
+
+        Args:
+            *args_method: Variable length argument list of methods to append to self.methods.
+            update (bool): If True, execute all methods in self.methods after appending new methods.
+        """
+        for method in args_method:
+            self.methods.append(method)
+        
+        if update:
+            for method in self.methods: method()
+        
     def HomeScreen_HeaderFooter_modle1_inisalization(self, var , padx:int = 10, pady:int = 10) -> None:
         """
         Initialize the header and footer for the home screen with specified labels and a coin widget.
@@ -371,20 +479,34 @@ class inisial_screens:
             relief = "flat"
         )
         self.add_header(header = (lable1,None,label2), padx= padx, pady= pady)
-        self.add_footer(footer = (None,None,label3), padx= padx, pady= pady)
+        self.add_footer(footer = (None, None, label3), padx= padx, pady= pady)
         
         #cords for coin:
-        x = self.game_width - label2.winfo_reqwidth() - padx - box_size
+        x = self.game_width - label2.winfo_reqwidth() - padx - box_size - 5
         y = 0 + pady + 3
         
         #inisalizing coin
-        self.home_coin = Coin(
+        home_coin = Coin(
             canvas = self.child_window,
             box_size = box_size,
             color = "#ffff00",
             insalize = True,
             cords = (x , y)
         )
+        
+        def update(header1,header2,footer1,var, home_coin,gamewidth,box_size,padx,pady):
+            header1.config(text = f"High score: {var.HIGHT_SCORE}")
+            header2.config(text = f": {var.PLAYERP_COINE}")
+            footer1.config(text = f"Version: {var.version}v")
+            
+            x = gamewidth - header2.winfo_reqwidth() - padx - box_size - 5
+            y = 0 + pady
+            
+            home_coin.update_color(var.COIN_COLOR)
+            home_coin._move_resize_coin_shape((x,y))
+            
+        
+        self.update_nessassaery(lambda : update(lable1,label2,label3,var,home_coin,self.game_width,box_size,padx,pady))
         
     def start_animation(self , speed:int) -> None:
         """
@@ -432,7 +554,58 @@ class inisial_screens:
         """Stop the animation loop."""
         if self.animation_after_ids:
             self.child_window.after_cancel(self.animation_after_ids)
+            
+    def update_everything(self,var) -> None:
+        """
+        Update various attributes, elements, and widgets based on the provided `var` object.
+
+        Args:
+            var: An object containing variables to update the game screen attributes and elements.
+        """
+        if self.food: 
+            self.food.update_color(var.FOOD_COLOR)
+            self.food.update_size(var.home_boxsize)  
+            
+        if self.heart:
+            self.heart.update_color(var.HEART_COLOR)
+            self.heart.update_size(var.home_boxsize)
+            
+        if self.coin:
+            self.coin.update_color(var.COIN_COLOR)
+            self.coin.update_size(var.home_boxsize)
         
+        #updating snake
+        for snake in self.snakes:
+            snake.update_size(var.home_boxsize)
+        
+        #updating canvas and mislanerious
+        self.background_color = var.CANVAS_COLOR
+        self.game_height = var.game_height
+        self.game_width = var.game_width
+        self.box_size = var.home_boxsize
+        self.speed = var.home_speed
+        
+        self.child_window.config(
+            bg = var.CANVAS_COLOR,
+            width = var.game_width,
+            height = var.game_height
+        )
+        
+        #updating all window elements:0
+        for windows in self.Windows_list:
+            windows.config(bg=var.CANVAS_COLOR,fg=var.TEXT_COLOR)
+        self.update_window_size()
+        
+        for window in self.Header:
+            if window: window.config(bg=var.CANVAS_COLOR,fg=var.TEXT_COLOR)
+        self.update_header()
+        
+        for window in self.footer:
+            if window: window.config(bg=var.CANVAS_COLOR,fg=var.TEXT_COLOR)
+        self.update_footer()
+        
+        self.update_nessassaery(update=True)
+            
     def add_to_master(self) -> None:
         '''add to the master'''
         self.child_window.pack()
@@ -441,16 +614,6 @@ class inisial_screens:
         '''remove window from master'''
         self.stop_animation()
         self.child_window.pack_forget()
-    
-    def update_color():
-        pass
-    
-    def update_size():
-        pass
-    
-    def update_everything():
-        pass
-
 
 class WindowGenerator:
     """
@@ -1272,3 +1435,195 @@ class setting_option_menu:
         self.nevigation_button2.grid_forget()
         self.curent_screen.grid_forget()
         self.save_button.grid_forget()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import tkinter as tk
+
+# class Var:
+#     def __init__(self):
+#         self.HIGHT_SCORE = 1000
+#         self.PLAYERP_COINE = 50
+#         self.version = "1.0.0"
+#         self.CANVAS_COLOR = "#000000"
+#         self.TEXT_COLOR = "#FFFFFF"
+#         self.FONT_STYLE = "Arial"
+#         self.Form_font = "Arial"
+#         self.COIN_COLOR = "#ff5800"
+
+# var = Var()
+
+# class MockVariable:
+#     def __init__(self):
+#         self.FOOD_COLOR = "#00FF00"
+#         self.HEART_COLOR = "#FF0000"
+#         self.COIN_COLOR = "#FFFF00"
+#         self.home_boxsize = 50
+#         self.CANVAS_COLOR = "grey"
+#         self.TEXT_COLOR = "#FFFFFF"
+#         self.game_height = 500
+#         self.game_width = 1000
+#         self.home_speed = 100
+
+# # Define your `inisial_screens` class and other necessary methods here
+
+# root = tk.Tk()
+
+# # Create an instance of the `inisial_screens` class
+# initial_screen = inisial_screens(
+#     master=root,
+#     background_color="black",
+#     game_width=700,
+#     game_height=300,
+#     box_size=30
+# )
+
+# # Add snakes and food to the home screen
+# initial_screen.add_snakes("red", [0, 0], 5, "down")
+# initial_screen.add_snakes("pink", [8, 4], 8, "left")
+# initial_screen.add_snakes("grey", [9, 3], 3, "right")
+# initial_screen.add_snakes("blue", [10, 4], 4, "up")
+# initial_screen.add_snakes("yellow", [6, 1], 3, "down")
+# initial_screen.add_food("red", True)
+# initial_screen.add_heart("red", False)
+# initial_screen.add_coin("#ffff00", False)
+# # Setting up the random position
+# initial_screen.heart.new_heart(initial_screen.food.new_coordinates())
+# initial_screen.coin.new_coin(initial_screen.food.new_coordinates())
+# # Adding header and footer
+# initial_screen.HomeScreen_HeaderFooter_modle1_inisalization(var=var)
+
+# # Create and configure label widget
+# label = tk.Label(
+#     master=initial_screen.child_window,
+#     text="lawda maderchod",
+#     bg="black",
+#     fg="white",
+#     font=("Arial", 30),
+#     relief="flat"
+# )
+
+# # Create and configure 'Play' button widget
+# button = tk.Button(
+#     master=initial_screen.child_window,
+#     text="Play",
+#     width=10,
+#     bg="black",
+#     fg="white",
+#     font=("arial", 10),
+#     relief="groove"
+# )
+
+# # Create and configure 'Settings' button widget
+# button1 = tk.Button(
+#     initial_screen.child_window,
+#     text="Shop",
+#     width=10,
+#     bg="black",
+#     fg="white",
+#     font=("Arial", 10),
+#     relief="groove"
+# )
+
+# # Create and configure 'about me' button widget
+# button2 = tk.Button(
+#     master=initial_screen.child_window,
+#     text="about me",
+#     width=10,
+#     bg="black",
+#     fg="white",
+#     font=("Arial", 10),
+#     relief="groove"
+# )
+
+# # Adding buttons to the home_window canvas and then
+# # returning the instance of the home_window
+# initial_screen.add_windows(label, button, button1, button2, middle=1)
+
+# initial_screen.start_animation(200)
+
+# def me():
+#     global MockVariable, initial_screen
+#     var = MockVariable()
+
+#     # Call the `update_everything` method with the new `var` object
+#     initial_screen.update_everything(var)
+
+#     # Pack the canvas and start the Tkinter main loop
+#     initial_screen.add_to_master()
+
+# buron = tk.Button(root, text="click me", command=me)
+# buron.pack()
+
+# lol = MockVariable()
+
+# previous_width, previous_height = root.winfo_width(), root.winfo_height()
+# left_button_pressed = False
+
+# def on_resize(event):
+#     global root, lol, initial_screen, previous_width, previous_height, left_button_pressed
+#     print(left_button_pressed)
+#     if left_button_pressed:
+#         new_width = root.winfo_width()
+#         new_height = root.winfo_height()
+
+#         if new_width != previous_width or new_height != previous_height:
+#             lol.game_height = new_height
+#             lol.game_width = new_width
+#             initial_screen.update_everything(lol)
+#             print(f"Resized to {new_width}x{new_height}")
+#             previous_width, previous_height = new_width, new_height
+
+# def on_button_press(event):
+#     global left_button_pressed
+#     left_button_pressed = True
+
+# def on_button_release(event):
+#     global left_button_pressed
+#     left_button_pressed = False
+
+# root.bind("<Configure>", on_resize)
+# root.bind("<ButtonPress-1>", on_button_press)
+# root.bind("<ButtonRelease-1>", on_button_release)
+
+# root.update()
+# root.mainloop()

@@ -593,12 +593,13 @@ class Heart:
         Returns:
             None
         """
+        coordinates = validate_cordinates(coordinates,self.box_size)
         if self.hearts is None:
             self._create_heart_shape(coordinates)
         else:
             self._move_resize_heart_shape(coordinates)
             
-    def change_color(self, color: str):
+    def update_color(self, color: str):
         """
         Changes the color of the heart shape.
 
@@ -616,7 +617,7 @@ class Heart:
         for heart in self.hearts:
             self.canvas.itemconfig(heart, fill=self.color)
     
-    def change_size(self, box_size: int):
+    def update_size(self, box_size: int):
         """
         Changes the size of the heart shape.
 
@@ -630,7 +631,7 @@ class Heart:
         
         if self.hearts is None:
             return None
-        self._move_resize_heart_shape(self.coords)
+        self.new_heart(self.coords)
 
 
 class Coin:
@@ -757,12 +758,13 @@ class Coin:
         Parameters:
         coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
         """
+        coordinates = validate_cordinates(coordinates,self.box_size)
         if self.coin is None:
             self._create_coin(coordinates)
         else:
             self._move_resize_coin_shape(coordinates)
             
-    def change_color(self, color: str):
+    def update_color(self, color: str):
         """
         Changes the color of the coin.
 
@@ -778,7 +780,7 @@ class Coin:
         self.canvas.itemconfig(self.coin[0], fill = self.color)
         self.canvas.itemconfig(self.coin[1], fill = self.inner_color)
     
-    def change_size(self, box_size:int):
+    def update_size(self, box_size:int):
         """
         Changes the size of the coin.
 
@@ -787,9 +789,9 @@ class Coin:
         """
         self.box_size = box_size
         
-        if self.hearts is None:
+        if self.coin is None:
             return None
-        self._move_resize_coin_shape(self.coords)
+        self.new_coin(self.coords)
 
 
 class Heart_NEV:

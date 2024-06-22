@@ -64,6 +64,7 @@ class Variable:
         self.HEART_COLOR    = self._player_acc_info["cur_heart_color"]
         self.CANVAS_COLOR   = self._player_acc_info["cur_canvas_color"]
         self.FOOD_COLOR     = self._player_acc_info["cur_food_color"]
+        self.COIN_COLOR     = "#ffff00"
         self.SNAKE_COLOR    = self._player_acc_info["cur_snake_color"]
         self.INISISAL_HEART = self._player_acc_info["inisial_heart"]
         self.SNAKE_LOSS_COUNTDOWN = self._player_acc_info["countdown_time_s"]
