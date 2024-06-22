@@ -618,6 +618,217 @@ class inisial_screens:
         self.child_window.pack_forget()
 
 
+class Game_screen:
+    """
+    Class to manage the game screen, including navigation setup,
+    game canvas setup, updating game elements, and adding/removing
+    from the master widget.
+
+    Attributes:
+        var (variable): An object containing game variables.
+        MASTER (Tk): The parent Tkinter window.
+        NEVIGATION_CANVAS (Canvas): The canvas for navigation elements.
+        GAME_CANVAS (Canvas): The canvas for game elements.
+        SNAKE (Snake): The snake object.
+        FOOD (Food): The food object.
+        HEART (Heart): The heart object.
+        MENU_OPTION (Text): The menu option text.
+        SCORE_TEXT (Text): The score text.
+        _game_bord_height (int): Height of the game board.
+        _nevigation_height (int): Height of the navigation canvas.
+
+    Methods:
+        __init__(Master, var): Initializes the game screen.
+        adjust_window_size(): Adjusts window size based on game and navigation heights.
+        nevigation_setup(): Sets up the navigation canvas with heart, score text, and menu option.
+        game_canvas_setup(): Sets up the game canvas with snake and food.
+        update_things(**kwargs): Updates game elements based on provided keyword arguments.
+        add_to_Master(): Packs the navigation and game canvases.
+        remove_to_Master(): Removes navigation and game canvases from master widget.
+    """
+   
+    def __init__(self,Master:Tk, var:Variable) -> None:
+        """
+        Initialize the game screen. 
+        with main game canvas and nevigation panel
+        and sneck ,  food in hevigation heart score board,
+        and menu option
+
+        Args:
+            Master (Tk): The parent Tkinter window.
+            var (variable): An object containing game variables.
+        """
+   
+        self.var = var
+        self.master = Master
+        self.MASTER = Frame(self.master)
+        
+        self.NEVIGATION_CANVAS = None
+        self.GAME_CANVAS = None
+        self.SNAKE = None
+        self.FOOD = None
+        self.HEART = None
+        self.MENU_OPTION = None
+        self.SCORE_TEXT = None
+        
+        #game_variables
+        self.game_height = self.var.game_height
+        self.game_width = self.var.game_width
+        self._game_bord_height = None
+        self._nevigation_height = None
+    
+    def update(self):
+        '''
+        update the things
+        '''
+        #updating the color
+        self.NEVIGATION_CANVAS.config(bg=self.var.NEV_COLOR)
+        self.GAME_CANVAS.config(bg=self.var.CANVAS_COLOR)
+        self.SNAKE.update_color(self.var.SNAKE_COLOR)
+        self.FOOD.update_color(self.var.FOOD_COLOR)
+        self.HEART.update_color(self.var.HEART_COLOR)
+        self.NEVIGATION_CANVAS.itemconfig(self.MENU_OPTION,fill = self.var.TEXT_COLOR)
+        self.NEVIGATION_CANVAS.itemconfig(self.SCORE_TEXT,fill = self.var.TEXT_COLOR)
+        
+        #updating height and rest
+        pass
+        
+        
+    def set_up(self) -> None:
+        """
+        genrate the game canvas by adjusting 
+        window_size and nevigation_size create the
+        game_canvas with all things set up
+        """
+        self.adjust_window_size()
+        self.nevigation_setup()
+        self.game_canvas_setup()
+        
+    
+    def adjust_window_size(self) -> None:
+        """
+        Adjust the window size based on game height and navigation heights.
+        
+        Note:
+            The navigation height is calculated as one-eighth of the game height,
+            but if the calculated height is less than or equal to the size of game
+            boxes, it defaults to the size of game boxes.
+        
+        Attributes created:
+            _nevigation_height (int): The height of the navigation canvas.
+            _game_bord_height (int): The height of the game board canvas.
+        """
+        nevigation_height = self.game_height // 8
+        nevigation_height = nevigation_height // self.var.game_box_size
+        
+        if not nevigation_height:
+            self._nevigation_height = self.var.game_box_size * nevigation_height
+        else:
+            self._nevigation_height = self.var.game_box_size
+            
+        self._game_bord_height = self.game_height - self._nevigation_height
+    
+    def nevigation_setup(self) -> None:
+        """
+        This method sets up the navigation canvas with essential elements such as a heart icon
+        representing the player's remaining lives, a score text displaying the current score,
+        and a menu option for accessing game options or pausing the game.
+        """
+        braking_into_4 =  self._nevigation_height // 4
+        Heart_size = braking_into_4 * 3
+        pady = braking_into_4 // 4
+        
+        self.NEVIGATION_CANVAS = Canvas(
+            master = self.MASTER,
+            bg = self.var.NEV_COLOR,
+            width = self.game_width,
+            height = self._nevigation_height
+            )
+        
+        self.HEART = Heart_NEV(
+            canvas = self.NEVIGATION_CANVAS,
+            color = self.var.HEART_COLOR,
+            inisial_heart = self.var.INISISAL_HEART
+            )
+        
+        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
+            self.game_width // 2,
+            braking_into_4 * 2,
+            font = ("Arial",braking_into_4 * 2,"bold"),
+            text = f"Score: 0",
+            fill = self.var.TEXT_COLOR
+            )
+        
+        self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
+            30,
+            braking_into_4 * 2,
+            font = ("Arial", braking_into_4 * 2, "bold"),
+            text = "Menu",
+            fill = self.var.TEXT_COLOR
+            )
+    
+    def game_canvas_setup(self) -> None:
+        """
+        This method sets up the game canvas with the snake and food objects.
+        It creates a canvas widget with the specified background color, width,
+        and height. Then, it initializes the snake and food objects on the canvas
+        using the provided game variables.
+        """
+        self.GAME_CANVAS = Canvas(
+            master = self.MASTER,
+            bg = self.var.CANVAS_COLOR,
+            width = self.game_width,
+            height = self._game_bord_height
+            )
+        
+        self.SNAKE = Snake(
+            canvas = self.GAME_CANVAS,
+            lenght = self.var.SNAKE_LENGHT,
+            coordinates = self.var.SNAKE_CORDINATES,
+            color = self.var.SNAKE_COLOR,
+            box_size = self.var.game_box_size
+            )
+        
+        self.FOOD = Food(
+            canvas = self.GAME_CANVAS,
+            box_size = self.var.game_box_size,
+            color = self.var.FOOD_COLOR
+            )
+    
+    def update_things(self,**kwargs):
+        """
+        Update game elements based on provided keyword arguments.
+
+        Args:
+            **kwargs: Keyword arguments to update game elements. Available args:
+                      - score: Score to be updated.
+        """
+        if kwargs.get('score',None):
+            self.NEVIGATION_CANVAS.itemconfig(
+                self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
+            )
+    
+    def add_to_Master(self,side = "left",side_status = True)->None:
+        """
+        Pack the navigation and game canvases and add it to master
+        """
+        if side_status:
+            self.MASTER.pack()
+        else:
+            self.MASTER.pack(side=side)
+            
+        self.NEVIGATION_CANVAS.pack()
+        self.GAME_CANVAS.pack()
+
+    def remove_to_Master(self)-> None:
+        """
+        remove the navigation and game canvases. from master
+        """
+        self.NEVIGATION_CANVAS.pack_forget()
+        self.GAME_CANVAS.pack_forget()
+        self.MASTER.pack_forget()
+
+
 class WindowGenerator:
     """
     A class for managing window settings and operations.
@@ -908,216 +1119,6 @@ class WindowGenerator:
             self.root.grab_set()
             self.root.focus_set()
 
-
-class Game_screen:
-    """
-    Class to manage the game screen, including navigation setup,
-    game canvas setup, updating game elements, and adding/removing
-    from the master widget.
-
-    Attributes:
-        var (variable): An object containing game variables.
-        MASTER (Tk): The parent Tkinter window.
-        NEVIGATION_CANVAS (Canvas): The canvas for navigation elements.
-        GAME_CANVAS (Canvas): The canvas for game elements.
-        SNAKE (Snake): The snake object.
-        FOOD (Food): The food object.
-        HEART (Heart): The heart object.
-        MENU_OPTION (Text): The menu option text.
-        SCORE_TEXT (Text): The score text.
-        _game_bord_height (int): Height of the game board.
-        _nevigation_height (int): Height of the navigation canvas.
-
-    Methods:
-        __init__(Master, var): Initializes the game screen.
-        adjust_window_size(): Adjusts window size based on game and navigation heights.
-        nevigation_setup(): Sets up the navigation canvas with heart, score text, and menu option.
-        game_canvas_setup(): Sets up the game canvas with snake and food.
-        update_things(**kwargs): Updates game elements based on provided keyword arguments.
-        add_to_Master(): Packs the navigation and game canvases.
-        remove_to_Master(): Removes navigation and game canvases from master widget.
-    """
-   
-    def __init__(self,Master:Tk, var:Variable) -> None:
-        """
-        Initialize the game screen. 
-        with main game canvas and nevigation panel
-        and sneck ,  food in hevigation heart score board,
-        and menu option
-
-        Args:
-            Master (Tk): The parent Tkinter window.
-            var (variable): An object containing game variables.
-        """
-   
-        self.var = var
-        self.master = Master
-        self.MASTER = Frame(self.master)
-        
-        self.NEVIGATION_CANVAS = None
-        self.GAME_CANVAS = None
-        self.SNAKE = None
-        self.FOOD = None
-        self.HEART = None
-        self.MENU_OPTION = None
-        self.SCORE_TEXT = None
-        
-        #game_variables
-        self.game_height = self.var.game_height
-        self.game_width = self.var.game_width
-        self._game_bord_height = None
-        self._nevigation_height = None
-    
-    def update(self):
-        '''
-        update the things
-        '''
-        #updating the color
-        self.NEVIGATION_CANVAS.config(bg=self.var.NEV_COLOR)
-        self.GAME_CANVAS.config(bg=self.var.CANVAS_COLOR)
-        self.SNAKE.update_color(self.var.SNAKE_COLOR)
-        self.FOOD.update_color(self.var.FOOD_COLOR)
-        self.HEART.update_color(self.var.HEART_COLOR)
-        self.NEVIGATION_CANVAS.itemconfig(self.MENU_OPTION,fill = self.var.TEXT_COLOR)
-        self.NEVIGATION_CANVAS.itemconfig(self.SCORE_TEXT,fill = self.var.TEXT_COLOR)
-        
-        #updating height and rest
-        pass
-        
-        
-    def set_up(self) -> None:
-        """
-        genrate the game canvas by adjusting 
-        window_size and nevigation_size create the
-        game_canvas with all things set up
-        """
-        self.adjust_window_size()
-        self.nevigation_setup()
-        self.game_canvas_setup()
-        
-    
-    def adjust_window_size(self) -> None:
-        """
-        Adjust the window size based on game height and navigation heights.
-        
-        Note:
-            The navigation height is calculated as one-eighth of the game height,
-            but if the calculated height is less than or equal to the size of game
-            boxes, it defaults to the size of game boxes.
-        
-        Attributes created:
-            _nevigation_height (int): The height of the navigation canvas.
-            _game_bord_height (int): The height of the game board canvas.
-        """
-        nevigation_height = self.game_height // 8
-        nevigation_height = nevigation_height // self.var.game_box_size
-        
-        if not nevigation_height:
-            self._nevigation_height = self.var.game_box_size * nevigation_height
-        else:
-            self._nevigation_height = self.var.game_box_size
-            
-        self._game_bord_height = self.game_height - self._nevigation_height
-    
-    def nevigation_setup(self) -> None:
-        """
-        This method sets up the navigation canvas with essential elements such as a heart icon
-        representing the player's remaining lives, a score text displaying the current score,
-        and a menu option for accessing game options or pausing the game.
-        """
-        braking_into_4 =  self._nevigation_height // 4
-        Heart_size = braking_into_4 * 3
-        pady = braking_into_4 // 4
-        
-        self.NEVIGATION_CANVAS = Canvas(
-            master = self.MASTER,
-            bg = self.var.NEV_COLOR,
-            width = self.game_width,
-            height = self._nevigation_height
-            )
-        
-        self.HEART = Heart_NEV(
-            canvas = self.NEVIGATION_CANVAS,
-            color = self.var.HEART_COLOR,
-            inisial_heart = self.var.INISISAL_HEART
-            )
-        
-        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
-            self.game_width // 2,
-            braking_into_4 * 2,
-            font = ("Arial",braking_into_4 * 2,"bold"),
-            text = f"Score: 0",
-            fill = self.var.TEXT_COLOR
-            )
-        
-        self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
-            30,
-            braking_into_4 * 2,
-            font = ("Arial", braking_into_4 * 2, "bold"),
-            text = "Menu",
-            fill = self.var.TEXT_COLOR
-            )
-    
-    def game_canvas_setup(self) -> None:
-        """
-        This method sets up the game canvas with the snake and food objects.
-        It creates a canvas widget with the specified background color, width,
-        and height. Then, it initializes the snake and food objects on the canvas
-        using the provided game variables.
-        """
-        self.GAME_CANVAS = Canvas(
-            master = self.MASTER,
-            bg = self.var.CANVAS_COLOR,
-            width = self.game_width,
-            height = self._game_bord_height
-            )
-        
-        self.SNAKE = Snake(
-            canvas = self.GAME_CANVAS,
-            lenght = self.var.SNAKE_LENGHT,
-            coordinates = self.var.SNAKE_CORDINATES,
-            color = self.var.SNAKE_COLOR,
-            box_size = self.var.game_box_size
-            )
-        
-        self.FOOD = Food(
-            canvas = self.GAME_CANVAS,
-            box_size = self.var.game_box_size,
-            color = self.var.FOOD_COLOR
-            )
-    
-    def update_things(self,**kwargs):
-        """
-        Update game elements based on provided keyword arguments.
-
-        Args:
-            **kwargs: Keyword arguments to update game elements. Available args:
-                      - score: Score to be updated.
-        """
-        if kwargs.get('score',None):
-            self.NEVIGATION_CANVAS.itemconfig(
-                self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
-            )
-    
-    def add_to_Master(self,side = "left",side_status = True)->None:
-        """
-        Pack the navigation and game canvases and add it to master
-        """
-        if side_status:
-            self.MASTER.pack()
-        else:
-            self.MASTER.pack(side=side)
-            
-        self.NEVIGATION_CANVAS.pack()
-        self.GAME_CANVAS.pack()
-
-    def remove_to_Master(self)-> None:
-        """
-        remove the navigation and game canvases. from master
-        """
-        self.NEVIGATION_CANVAS.pack_forget()
-        self.GAME_CANVAS.pack_forget()
-        self.MASTER.pack_forget()
 
 
 class setting_option_menu:
