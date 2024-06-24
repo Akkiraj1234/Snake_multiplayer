@@ -826,7 +826,7 @@ class Heart_NEV:
         self.color = color
         self.limit = None
         self.calulating_diameters()
-        self.heart = Heart(self.canvas, self.box_size, self.color)
+        self.heart = Heart(self.canvas, self.box_size, self.color,insalize=False)
         
         self.hearts_list = []
         self.add_heart_in_range(self.inisial_heart)

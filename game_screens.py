@@ -742,7 +742,7 @@ class Game_screen:
             )
         
         self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
-            30,
+            braking_into_4 * 4,
             braking_into_4 * 2,
             font = ("Arial", braking_into_4 * 2, "bold"),
             text = "Menu",
@@ -826,16 +826,18 @@ class Game_screen:
             self.HEART_NEW.update_color(self.var.HEART_COLOR)
             self.HEART_NEW.update_size()
         
-        if self.SCORE_TEXT and self.MENU_OPTION:\
+        if self.SCORE_TEXT and self.MENU_OPTION:
             #tuple1 contain text id and its x cords
-            tuple1 = ((self.SCORE_TEXT,self.game_width // 2), (self.MENU_OPTION,30))
+            tuple1 = ((self.SCORE_TEXT,self.game_width // 2), (self.MENU_OPTION,braking_into_4 * 4))
             
             for text_id , xcords in tuple1:
+                # updating color and size
                 self.NEVIGATION_CANVAS.itemconfig(
                     text_id[0],
                     font = ("Arial",braking_into_4 * 2,"bold"),
                     fill = self.var.TEXT_COLOR
                 )
+                # updating postion.
                 self.NEVIGATION_CANVAS.coords(
                     text_id,
                     xcords,#x
@@ -851,8 +853,6 @@ class Game_screen:
         if self.FOOD: self.FOOD.update_color(self.var.FOOD_COLOR)
         if self.HEART: self.HEART.update_color(self.var.HEART_COLOR)
         if self.COIN: self.COIN.update_color(self.var.COIN_COLOR)
-    def update(self):
-        pass
     
     def add_to_Master(self,side = "left",side_status = True) -> None:
         """

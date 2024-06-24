@@ -48,7 +48,9 @@ class Game_engion:
         self.master_after_ids = None
         self.stop_game_animation = False
         self._old_time_ = 0
-        self.chance_of_drop = 20 #in persantage
+        self.chance_of_drop = 10 #in persantage
+        self.game_speed = self.var.game_speed
+        self.increase_speed_after = 20
         
         #creating screen
         self.GAME_FRAME = Game_screen(self.MASTER, self.var)
@@ -202,19 +204,21 @@ class Game_engion:
             self.GAME_FRAME.FOOD.new_food(self.GAME_FRAME.SNAKE.snake_coordinates)
             self.SCORE +=1
         
+        #checking if any 
         heart_avl = self.GAME_FRAME.HEART.avialable
         coin_avl  = self.GAME_FRAME.COIN.avialable
         if heart_avl or coin_avl:
             if heart_avl and self.GAME_FRAME.HEART.coords == (sneckx,snecky):
                 self.GAME_FRAME.HEART.delete_heart()
-                self.SCORE += 1
                 self.GAME_FRAME.HEART_NEW.add_one_heart()
+                self.SCORE += 2
             if coin_avl and self.GAME_FRAME.COIN.coords == (sneckx,snecky):
                 self.GAME_FRAME.COIN.delete_coin()
-                self.SCORE += 1
                 self.var.PLAYERP_COINE += 10
+                self.SCORE += 1
         else:
-            if self.SCORE % 5 == 0:
+            # if they not exist creating new
+            if self.SCORE and self.SCORE % self.chance_of_drop == 0:
                 item = choice((self.GAME_FRAME.HEART.new_heart,self.GAME_FRAME.COIN.new_coin))
                 item(self.GAME_FRAME.FOOD.new_coordinates())
         
@@ -222,15 +226,23 @@ class Game_engion:
         self.GAME_FRAME.SNAKE.move_snake(sneckx,snecky,remove)
         self.GAME_FRAME.update_things(score = self.SCORE)
         self._check_collision(sneckx,snecky)
+                
         self.master_after_ids = self.MASTER.after(
-            self.var.game_speed,
+            self.game_speed,
             self.PLAY_THE_GAME
             )
         
         #checking if game pause is called or not
         if self.stop_game_animation:
             self.MASTER.after_cancel(self.master_after_ids)
-            
+        
+        #work on speed increcsing
+        if self.SCORE and not self.SCORE % self.increase_speed_after:
+            self.game_speed -= 10 
+            self.SCORE += 1
+            print(self.SCORE,"cool",self.game_speed)
+        
+        
     def UPDATION_AFTER_GAME_OVER(self) -> None:
         """
         Handles post-game update actions.
@@ -288,10 +300,12 @@ class Game_engion:
         self.stop_game_animation = True
         
         
+        
         if self.pause_screen: #if i inisalize the pause screen or its not None then
             #Windows_list[0] becouse while creating pause screen we added text lable in index 0
             id = self.pause_screen.Windows_list[0]
             id.config(text=text)
+            self.pause_screen.update_nessassaery(update = True)
             
             if deacive_resume:
                 #Windows_list[1] becouse while creating pause screen we added resume button in index 1
@@ -328,6 +342,10 @@ class Game_engion:
         self.GAME_FRAME.HEART_NEW.remove_all_heart()
         self.GAME_FRAME.HEART_NEW.add_heart_in_range(self.var.INISISAL_HEART)
         
+        #removeing heart and coin
+        self.GAME_FRAME.HEART.delete_heart()
+        self.GAME_FRAME.COIN.delete_coin()
+        
         #setting sneck lenght to inisial lenght and directiong to 
         #down and cordinates to (0,0) all done by the method get_to_inisial_posision
         self.direction = "down"
@@ -341,6 +359,8 @@ class Game_engion:
             # to normal again as an default
             resume = self.pause_screen.Windows_list[1]
             resume.config(state= 'normal')
+        
+        self.game_speed = self.var.game_speed
     
     def ADD_TO_SCREEN(self) -> None:
         """
@@ -802,6 +822,7 @@ def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
     
     #adding button to pause_game_screen and returning its instanse
     pause_game_screen.add_windows(Label1,Button1,Button2,Button3)
+    pause_game_screen.HomeScreen_HeaderFooter_modle1_inisalization(var)
     return pause_game_screen
 
 
@@ -880,12 +901,6 @@ def resume_pause_menu():
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
     print("wowow u clicked resume")
-    
-    
-    for window in home_screen.snakes:
-        window.update_size(10)
-        
-    home_screen.food.update_size(10)
 
 def restart_pause_menu():
     """
@@ -901,11 +916,6 @@ def restart_pause_menu():
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
     print("hmmm u wanna play again")
-    
-    for window in home_screen.snakes:
-        window.update_size(30)
-    
-    home_screen.food.update_size(30)
 
 def home_pause_menu():
     """
