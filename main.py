@@ -48,9 +48,9 @@ class Game_engion:
         self.master_after_ids = None
         self.stop_game_animation = False
         self._old_time_ = 0
-        self.chance_of_drop = 10 #in persantage
-        self.game_speed = self.var.game_speed
-        self.increase_speed_after = 20
+        self.chance_of_drop = 17 #in persantage
+        self.game_speed =  self.var.game_speed
+        self.increase_speed_after = 20 #increase in score
         
         #creating screen
         self.GAME_FRAME = Game_screen(self.MASTER, self.var)
@@ -241,27 +241,6 @@ class Game_engion:
             self.game_speed -= 10 
             self.SCORE += 1
             print(self.SCORE,"cool",self.game_speed)
-        
-        
-    def UPDATION_AFTER_GAME_OVER(self) -> None:
-        """
-        Handles post-game update actions.
-
-        Updates the high score if the current score surpasses it,
-        then triggers user settings update.
-
-        Parameters:
-        - status (str): Game outcome ('loss' or 'high_score').
-        """
-        status = 'loss'
-        
-        if self.SCORE > self.var.HIGHT_SCORE:
-            self.var.HIGHT_SCORE = self.SCORE
-            status = 'high_score'
-            
-        # self.var.update()
-        self.var.update_user_settings()
-        self.PAUSE_GAME(status)
             
     def PAUSE_GAME(self,status:str) -> None:
         """
@@ -299,8 +278,6 @@ class Game_engion:
         self._remove_bind_key()
         self.stop_game_animation = True
         
-        
-        
         if self.pause_screen: #if i inisalize the pause screen or its not None then
             #Windows_list[0] becouse while creating pause screen we added text lable in index 0
             id = self.pause_screen.Windows_list[0]
@@ -313,7 +290,30 @@ class Game_engion:
                 resume.config(state='disabled')
                 
             self.pause_screen.add_to_master()
-                        
+    
+    def UPDATION_AFTER_GAME_OVER(self) -> None:
+        """
+        Handles post-game update actions.
+
+        Updates the high score if the current score surpasses it,
+        then triggers user settings update.
+
+        Parameters:
+        - status (str): Game outcome ('loss' or 'high_score').
+        """
+        status = 'loss'
+        
+        if self.SCORE > self.var.HIGHT_SCORE:
+            self.var.HIGHT_SCORE = self.SCORE
+            status = 'high_score'
+            
+        # self.var.update()
+        self.var.update_user_settings()
+        self.PAUSE_GAME(status)
+    
+    def update_everything(self):
+        self.GAME_FRAME.update_everything()
+        
     def set_everrything_to_default(self) -> None:
         """
         Resets all game-related variables and components to their default states.
@@ -360,8 +360,8 @@ class Game_engion:
             resume = self.pause_screen.Windows_list[1]
             resume.config(state= 'normal')
         
-        self.game_speed = self.var.game_speed
-    
+        self.game_speed = self.var.game_speed        
+            
     def ADD_TO_SCREEN(self) -> None:
         """
         Adds the game frame to the master window and sets up key bindings for game controls.
@@ -374,7 +374,6 @@ class Game_engion:
         Note:
         - This method should be called when starting or resuming the game.
         """
-        self.GAME_FRAME.update()
         self.GAME_FRAME.add_to_Master()
         self._bild_key()
         self.stop_game_animation = False
@@ -822,7 +821,7 @@ def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
     
     #adding button to pause_game_screen and returning its instanse
     pause_game_screen.add_windows(Label1,Button1,Button2,Button3)
-    pause_game_screen.HomeScreen_HeaderFooter_modle1_inisalization(var)
+    pause_game_screen.HomeScreen_HeaderFooter_modle1_inisalization(var = var)
     return pause_game_screen
 
 
@@ -864,7 +863,6 @@ def play_home():
     home_screen.remove_from_master()
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
-    print("hmm lets play")
 
 def shop_home():
     """
@@ -900,7 +898,6 @@ def resume_pause_menu():
     pause_menu.remove_from_master()
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
-    print("wowow u clicked resume")
 
 def restart_pause_menu():
     """
@@ -915,7 +912,6 @@ def restart_pause_menu():
     game.set_everrything_to_default()
     game.ADD_TO_SCREEN()
     game.PLAY_THE_GAME()
-    print("hmmm u wanna play again")
 
 def home_pause_menu():
     """
@@ -932,8 +928,11 @@ def home_pause_menu():
     home_screen.add_to_master()
     home_screen.start_animation(var.game_speed)
     home_screen.update_nessassaery(update=True)
-    
-    print("hmm.... u wanna go home oki ! ")
+
+def update_everything():
+    pause_menu.update_everything()
+    home_screen.update_everything()
+    game.update_everything()
 
 
 
@@ -948,8 +947,8 @@ def main():
     - Starts the animation of the home screen.
     """
     root.geometry(f"{var.game_width+5}x{var.game_height+5}")
-    root.title("title")
     root.resizable(width=False,height=False)
+    root.title(var.INISIAL_HOME_TEXT)
     game.pause_screen = pause_menu
     home_screen.start_animation(var.game_speed)
     
