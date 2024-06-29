@@ -273,11 +273,6 @@ class Game_engion:
             text = f'New High Score:0   {self.SCORE}'
             deacive_resume = True
         
-        #removeing canvas binded keys and stoping game animation
-        self.GAME_FRAME.remove_to_Master()
-        self._remove_bind_key()
-        self.stop_game_animation = True
-        
         if self.pause_screen: #if i inisalize the pause screen or its not None then
             #Windows_list[0] becouse while creating pause screen we added text lable in index 0
             id = self.pause_screen.Windows_list[0]
@@ -290,6 +285,11 @@ class Game_engion:
                 resume.config(state='disabled')
                 
             self.pause_screen.add_to_master()
+        
+        #removeing canvas binded keys and stoping game animation
+        self.GAME_FRAME.remove_to_Master()
+        self._remove_bind_key()
+        self.stop_game_animation = True
     
     def UPDATION_AFTER_GAME_OVER(self) -> None:
         """
@@ -301,6 +301,7 @@ class Game_engion:
         Parameters:
         - status (str): Game outcome ('loss' or 'high_score').
         """
+        self.set_everrything_to_default()
         status = 'loss'
         
         if self.SCORE > self.var.HIGHT_SCORE:
@@ -337,7 +338,7 @@ class Game_engion:
         #setting score to 0 and updating the text
         self.SCORE = 0
         self.GAME_FRAME.update_things(score = self.SCORE)
-        
+                
         #setting heart to therre inisisal value
         self.GAME_FRAME.HEART_NEW.remove_all_heart()
         self.GAME_FRAME.HEART_NEW.add_heart_in_range(self.var.INISISAL_HEART)
@@ -360,7 +361,7 @@ class Game_engion:
             resume = self.pause_screen.Windows_list[1]
             resume.config(state= 'normal')
         
-        self.game_speed = self.var.game_speed        
+        self.game_speed = self.var.game_speed       
             
     def ADD_TO_SCREEN(self) -> None:
         """

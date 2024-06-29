@@ -38,6 +38,8 @@ Sneck Safari is a Python-based snake game developed using the tkinter library. I
 
 3. the method `HomeScreen_HeaderFooter_modle1_inisalization` in `game_screens.py` class `inisial_screens` need to improve insted of using `lable` we shoude use `child_window.create_text()` for transpenert for that need to imporve `add_header` and `add_footer` method.  -> `in FUTURE`
 
+4. the class Game_engion in main.py have a error after i click restart score does not apdated unless snake eat a food then its starting to update -> 'in FUTURE'
+
 ## probleams fixed :0
 
 1. You encountered an issue with a previous implementation for generating new coordinates within a grid. The problem arose when attempting to ensure that the new coordinates did not overlap with existing coordinates. The initial approach unintentionally formed squares in the grid due to incorrect handling of occupied coordinates.
