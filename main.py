@@ -350,7 +350,7 @@ class Game_engion:
         #setting sneck lenght to inisial lenght and directiong to 
         #down and cordinates to (0,0) all done by the method get_to_inisial_posision
         self.direction = "down"
-        self.GAME_FRAME.SNAKE.get_to_inisial_posision()
+        self.GAME_FRAME.SNAKE.initial_posision()
         
         #food to new loaction
         self.GAME_FRAME.FOOD.new_food()
@@ -509,7 +509,7 @@ class setting_screen:
         
         self._hearts_cordinates = [
             self.game_screen.NEVIGATION_CANVAS.bbox(body)
-            for heart in self.game_screen.HEART.hearts_list
+            for heart in self.game_screen.HEART_NEW.hearts_list
             for body in heart
         ]
 
@@ -520,6 +520,16 @@ class setting_screen:
         self._cordinates_sneck = [
             self.game_screen.GAME_CANVAS.bbox(snack)
             for snack in self.game_screen.SNAKE.snake_body
+        ]
+        
+        self._cordinates_canvas_heart = [
+            self.game_screen.GAME_CANVAS.bbox(heart)
+            for heart in self.game_screen.HEART.hearts
+        ]
+        
+        self._cordinates_coin = [
+            self.game_screen.GAME_CANVAS.bbox(coin)
+            for coin in self.game_screen.COIN.coin
         ]
         
     def _check_bind_event_on_game_screen(self, event , screen:int) -> None:#fix things here too !!!!!!!!!!!!!!!!!!!!!!
@@ -548,6 +558,12 @@ class setting_screen:
                 
             elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
                 window = self.windows.Inisial_screen(self.setting_screen_frame,"text5")
+                
+            elif self.__check_cords_in_range(self._cordinates_coin, (event.x , event.y)):
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"coin window")
+            
+            elif self.__check_cords_in_range(self._cordinates_canvas_heart, (event.x , event.y)):
+                window = self.windows.Inisial_screen(self.setting_screen_frame,"heart window")
                 
             else:
                 window = self.windows.Inisial_screen(self.setting_screen_frame,"text6")
@@ -602,7 +618,7 @@ class setting_screen:
         possison the sneck and idels like food and heart and stuff
         and postion etc........
         '''
-        self.game_screen.SNAKE.delete_all_snake()
+        self.game_screen.SNAKE.delete_all()
         center_borderx = self._game_screen_width // 2
         center_bordery = self.game_screen._game_bord_height // 2
         box_size = self.var.game_box_size
@@ -626,6 +642,9 @@ class setting_screen:
         #adding food:
         snake_cords = self.game_screen.SNAKE.snake_coordinates
         self.game_screen.FOOD.new_food(cordinates = snake_cords)
+        self.game_screen.COIN.new_coin(coordinates= self.game_screen.FOOD.new_coordinates())
+        self.game_screen.HEART.new_heart(coordinates= self.game_screen.FOOD.new_coordinates())
+        # self.game_screen.HEART.new_heart(coordinates = )
         
     def ADD_TO_MASTER(self) -> None:
         '''

@@ -908,6 +908,8 @@ class WindowGenerator:
 
     def Inisial_screen(self, master:Frame, text:str = "demo texxt") -> Canvas:
         """
+        !!!!!!!!!!!!!!!Demo will be removed!!!!!!!!!!!!!!!!!!!!!!
+        
         Create an initial screen canvas with specified parameters.
 
         Args:

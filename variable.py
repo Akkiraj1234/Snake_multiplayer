@@ -29,13 +29,13 @@ class Variable:
         self.get_the_info()
         
         #fixed and constant variables
-        self.SNAKE_LENGHT = 3
+        self.SNAKE_LENGHT = 1
         self.SNAKE_CORDINATES = (0,0)
         self.FONT_STYLE =  "Press Start 2P" 
         self.Form_font = "Myanmar Text"
         self.INISIAL_HOME_TEXT = "Sneck suffarie :0"
         
-        self.game_speed = 120
+        self.game_speed = 100
         self.game_box_size = 30
     
     def get_the_info(self):
