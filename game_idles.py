@@ -1,28 +1,30 @@
 from tkinter import Canvas
 from random import randint,choice
-# import gc #use gc.collect()
 
 # notes: -
-# 1. we are using canvas height or width to keep track of height and width 
-#    we not taking it as argumrnt :0
+# 1. Every game class contains an "initial_posision" initialize method, and in each
+#    class, the __init__ method has an argument initialize: bool which is set to True. 
+#    Setting it to False will not initialize the initial method.
+#
+# 2. We are using canvas height or width to keep track of height and width; 
+#    we are not taking it as an argument.
+#
+# 3. Whenever taking coordinates as an argument, use the validate_coordinate 
+#    method to validate the coordinates by providing the correct box_size.
+#
+# 4  Each method should contain update_color(color:str), update_size(box_size:int),
+#    and delete_all(hide:bool = True) methods, and the names should also be the same.
+#      a. update_color(color:str) : update item color takes new color as argument
+#      b. update_size(box_size:int): update item size takes new box_size as argument
+#      c. delete_all(hide:bool = True):if hide set to false then delete all shape drawn
+#                                      by the method else hide all shape drawn by method.
+# 
+# 5. Each method should have "return_id()" method which don't take any arguemnt
+#    return the main canvas drawn obj id which will be int
+#
+# 6. Each class have a avilable variable or arttibute that will say if item is currently
+#    visible or not
 
-def validate_cordinates(cords ,box_size:int) -> tuple[int:int]:
-    """
-    Snap coordinates to the nearest lower multiple of box size.
-
-    Parameters:
-    cords (tuple): A tuple (x, y) representing the coordinates.
-    box_size (int): The size of the box grid.
-
-    Returns:
-    tuple: Adjusted coordinates (x, y) snapped to the nearest lower multiple of box_size.
-    """
-    x , y = cords
-    
-    x -= x % box_size
-    y -= y % box_size
-    
-    return (x , y)
 
 def lighten_hex_color(hex_color, lighten_factor=0.1) -> str:
     """
@@ -76,6 +78,107 @@ def darken_hex_color(hex_color, darken_factor=0.1) -> str:
     darkened_hex_color = f'#{r:02X}{g:02X}{b:02X}'
     return darkened_hex_color
 
+def random_coordinates(grid_width:int, grid_height:int, box_size:int) -> tuple[int,int]:
+    """
+    Generate random coordinates within the given grid dimensions, adjusted by the box size.
+
+    Args:
+        grid_width (int): The width of the grid in terms of number of boxes.
+        grid_height (int): The height of the grid in terms of number of boxes.
+        box_size (int): The size of each box in the grid.
+
+    Returns:
+        tuple[int, int]: A tuple containing the random (x, y) coordinates.
+    """
+    # The approach divides the screen into a grid of cells, where each cell represents a possible position for the food.
+    # The grid is defined by the box_size, which determines the size of each cell.
+    # To select a random cell, we choose a random integer index along the x-axis (vertical lines) and y-axis (horizontal lines).
+    # We then multiply these indices by the box_size to obtain the exact coordinates within the canvas where the food can be placed.
+    x = randint(0, grid_width)* box_size
+    y = randint(0, grid_height)* box_size
+    return (x , y)
+
+def generate_non_overlapping_coordinates(
+    coordinates : list|tuple,
+    grid_width : int,
+    grid_height : int,
+    box_size : int
+    ) -> tuple[int,int]|None:
+    """
+    Generate new coordinates within a grid that do not overlap with existing coordinates.
+
+    Args:
+        list1 (list of tuples): List of current coordinates.
+        width_box (int): Width of the grid in terms of boxes.
+        height_box (int): Height of the grid in terms of boxes.
+        box_size (int): Size of each box.
+
+    Returns:
+        tuple: New x, y coordinates in terms of pixels if available, otherwise None.
+    
+    Time Complexity: 𝑂(𝑛 + width_box + height_box)
+    Space Complexity: 𝑂(𝑛)
+
+    """
+    def coordinates_to_dict(coordinates, box_size) -> dict[int:set]:
+        """
+        Convert a list of coordinates into a dictionary for quick lookup.
+        """
+        dict1 = {}
+        for x , y in coordinates:
+            x //= box_size
+            y //= box_size
+            
+            if x in dict1:
+                dict1[x].add(y)
+            else:
+                dict1[x] = {y}
+        return dict1
+    
+    #genrating random cordss in box_size
+    x = randint(0 , grid_width)
+    y = randint(0 , grid_height)
+    
+    dict1 = coordinates_to_dict(coordinates, box_size)
+    
+    #there is no infinite loop possible
+    # If the current x is in the dictionary and all possible y values are taken (column is full),
+    # move to the next x value. Wrap around to 0 if the end of the grid is reached.
+    # If we've cycled back to the original x value, it means no available x-coordinate was found.
+    # the same thing going on with 2nd while loop
+    
+    original_x = x
+    while (x in dict1) and (len(dict1[x]) == grid_width + 1):
+        x = (x + 1) if x < grid_width else 0
+        if original_x == x:
+            return None
+        
+    # there is no infinite loop possible
+    original_y = y
+    while (x in dict1) and (y in dict1[x]):
+        y = (y + 1) if y < grid_height else 0
+        if original_y == y:
+            return None
+    
+    return x * box_size , y * box_size
+
+def validate_coordinates(cords ,box_size:int) -> tuple[int:int]:
+    """
+    Snap coordinates to the nearest lower multiple of box size.
+
+    Parameters:
+    cords (tuple): A tuple (x, y) representing the coordinates.
+    box_size (int): The size of the box grid.
+
+    Returns:
+    tuple: Adjusted coordinates (x, y) snapped to the nearest lower multiple of box_size.
+    """
+    x , y = cords
+    
+    x -= x % box_size
+    y -= y % box_size
+    
+    return (x , y)
 
 
 class Snake:
@@ -93,17 +196,17 @@ class Snake:
 
     Methods:
         __init__(canvas, length, box_size, color, coordinates): Initialize a new Snake object.
-        _create_inisial_snake(): Create the snake on the canvas.
+        _create_initial_snake(): Create the inisial snake on the canvas.
         _create_body(x, y): Create a segment of the snake.
-        delete_all_snake(): Delete all snake segments from the canvas.
-        _update_snake_cords(snake_body, x, y): Update the coordinates of a snake segment.
-        update_cords(new_box_size): Update the coordinates of the snake segments based on the new box size.
+        _update_snake_coords(new_box_size): Update the coordinates of the snake segments based on the new box size.
+        _update_coords(snake_body, x, y): Update the coordinates of a snake segment.
+        delete_all(): Delete all snake segments from the canvas.
         move_snake(x, y, remove): Move the snake to the new coordinates.
-        get_to_inisial_posision(): Reset the snake to its initial position.
+        initial_posision(): Reset the snake to its initial position.
         update_color(color): Update the color of the snake.
         update_size(box_size): Update the size of each box segment of the snake.
     """
-    def __init__(self, canvas:Canvas, lenght:int, box_size:int, color:str, coordinates:tuple) -> None :
+    def __init__(self, canvas:Canvas, lenght:int, box_size:int, color:str, coordinates:tuple, initialize:bool = True) -> None:
         """
         Initialize the Snake object on the canvas.
 
@@ -113,58 +216,51 @@ class Snake:
             box_size (int): The size of each box representing a segment of the snake.
             color (str): The color of the snake.
             coordinates (tuple): The initial coordinates of the snake.
+            initialize (bool): weather to draw snake on canvas or not the initial snake
         """
         self.box_size = box_size
         self.color = color
         self.canvas = canvas
-        self.lenght=lenght
-        self.coordinates = validate_cordinates(coordinates, self.box_size)
-        self._create_inisial_snake()
+        self.lenght = lenght
+        self.coordinates = validate_coordinates(coordinates, self.box_size)
         
-    def _create_inisial_snake(self)-> None:
-        """
-        Create the snake on the canvas.
-        """
-        self.snake_coordinates=[self.coordinates] * self.lenght
-        self.snake_body=[self._create_body(x , y) for x , y in self.snake_coordinates]
+        if initialize:
+            self._create_initial_snake()
         
-    def _create_body(self , x:int , y:int)-> int:
+    def _create_initial_snake(self) -> None:
         """
-        Create a segment of the snake.
+        create the snake on the canvas.
+        """
+        self.snake_coordinates = [self.coordinates] * self.lenght
+        self.snake_body = [self._create_body(x , y) for x , y in self.snake_coordinates]
+    
+    def _create_body(self, x:int , y:int) -> int:
+        """
+        create a segment of the snake
 
         Args:
             x (int): The x-coordinate of the segment.
             y (int): The y-coordinate of the segment.
 
         Returns:
-            int: The id of the created segment on the canvas.
+            int: The id of the created segment.
         """
-        square = self.canvas.create_rectangle(
-            x , y , x + self.box_size , y + self.box_size, fill=self.color
+        return self.canvas.create_rectangle(
+            x, y, x + self.box_size, y + self.box_size, fill = self.color
         )
-        return square
-
-    def delete_all_snake(self) -> None:
-        """
-        Delete all snake segments from the canvas
-        """
-        for body in self.snake_body:
-            self.canvas.delete(body)
-            
-        self.snake_coordinates = []
     
-    def _update_snake_cords(self ,snake_body:int, x:int, y:int) -> None:
+    def _update_snake_coords(self, snake_body:int, x:int, y:int) -> None:
         """
         Update the coordinates of a snake segment.
 
         Args:
-            snake_body (int): The id of the snake segment.
-            x (int): The new x-coordinate.
-            y (int): The new y-coordinate.
+            snake_body (int): The id of the snake segment
+            x (int): the new x-coordinate.
+            y (int): the new y-coordinate.
         """
         self.canvas.coords(snake_body, x, y, x + self.box_size, y + self.box_size)
     
-    def update_cords(self, new_box_size:int) -> None:
+    def _update_coords(self, new_box_size:int) -> None:
         """
         Update the coordinates of the snake segments based on the new box size.
 
@@ -179,138 +275,157 @@ class Snake:
         Space Complexity: O(n), where n is the number of snake segments.
         """
         increment = new_box_size - self.box_size
-        initial_coords = self.snake_coordinates[0] # Starting point of the snake
+        initial_coords = self.snake_coordinates[0] #starting point of the snake
         x_increase = 0
         y_increase = 0
         
         for num in range(1, len(self.snake_coordinates)):
             
-            oldx ,oldy = self.snake_coordinates[num-1]
+            oldx , oldy = self.snake_coordinates[num-1]
             x , y = self.snake_coordinates[num]
             
             if x > initial_coords[0]:
                 value = (x + (increment + x_increase) , oldy)
                 x_increase += increment
+            
             elif x < initial_coords[0]:
                 value = (x - (increment - x_increase) , oldy)
                 x_increase -= increment
+                
             elif y > initial_coords[1]:
                 value = (oldx , y + (increment + y_increase))
                 y_increase += increment
+            
             elif y < initial_coords[1]:
                 value = (oldx , y - (increment - y_increase))
                 y_increase -= increment
             
-            self.snake_coordinates[num] = value
+            self.snake_coordinates[num] = validate_coordinates(value, new_box_size)
             initial_coords = (x , y)
         
-        self.snake_coordinates = [validate_cordinates(cords , new_box_size) for cords in self.snake_coordinates]
-        
-    def move_snake(self , x:int , y:int, remove:bool)-> None:
+    def move_snake(self, x:int, y:int, remove:bool = False) -> None:
         """
-        Move the snake to the new coordinates.
+        move the snake to the new coordinates.
 
         Args:
-            x (int): The x-coordinate of the new position.
-            y (int): The y-coordinate of the new position.
-            remove (bool): Whether to remove the last segment of the snake.
+            x (int): The x-coordinates of the new position.
+            y (int): The y-coordinates of the new position.
+            remove (bool): whether to remove the last segment of the snake. default False
         """
-        self.snake_coordinates.insert(0, (x, y))
+        # validate the x,y coords and insert new coords to 0 possition (x,y)
+        x , y = validate_coordinates((x , y), self.box_size)
+        self.snake_coordinates.insert(0 , (x , y))
         
+        # if remove then last snake_coords will removed and last snake body modified 
+        # to new possistion by given x,y coords and inserted to 0 possistion of snake_body
+        # if not remove then snake body created and inserted it to 0 possition by given (x,y)
         if remove:
             self.snake_coordinates.pop()
-            self._update_snake_cords(self.snake_body[-1], x, y)
+            self._update_snake_coords(self.snake_body[-1], x , y)
             self.snake_body.insert(0, self.snake_body.pop())
         else:
             self.snake_body.insert(0, self._create_body(x , y))
+    
+    def return_id(self) -> list[int,int,int]:
+        """
+        Return the snake body as a list of tuples with coordinates.
+        """
+        return self.snake_body
         
-    def get_to_inisial_posision(self) -> None:
+    def delete_all(self) -> None:
+        """
+        Delete all snake segment from the canvas
+        """
+        for body in self.snake_body:
+            self.canvas.delete(body)
+            
+        self.snake_coordinates = []
+    
+    def initial_posision(self) -> None:
         """
         Reset the snake to its initial position.
         """
-        self.coordinates = (0 , 0)
-        self.delete_all_snake()
-        self._create_inisial_snake()
+        self.delete_all()
+        self._create_initial_snake()
         
     def update_color(self, color:str) -> None:
-        """Update the color of the snake.
+        """
+        update the color of the snake.
 
         Args:
-            color (str): The new color of the snake.
+            color (str): The new color of the snake
         """
         self.color = color
+        
+        #updating color for each segments.
         for body in self.snake_body:
             self.canvas.itemconfig(body, fill = self.color)
-            
-    def update_size(self, box_size) -> None:
-        """Update the size of the snake segments.
+        
+    def update_size(self, box_size:int) -> None:
+        """
+        update the size of the snake segments.
 
         Args:
-            box_size (int): The new size of each box segment of the snake.
+            box_size (int): The new size of each box segment.
         """
-        self.update_cords(box_size)
+        #updating the coordinates
+        self._update_coords(box_size)
         self.box_size = box_size
         
+        #updating body segment with new coords
         for num in range(len(self.snake_coordinates)):
-            x, y = self.snake_coordinates[num]
+            x , y = self.snake_coordinates[num]
             body = self.snake_body[num]
-            self._update_snake_cords(body , x , y)
-        
+            self._update_snake_coords(body , x, y)
 
 class Food:
-    """Represents a food item in the game.
+    """
+    A class to represent food items in a graphical canvas.
 
     Attributes:
-        canvas (Canvas): The canvas on which the food item will be drawn.
-        box_size (int): The size of each box representing the food item.
-        color (str): The color of the food item.
-        canvas_width (int): The width of the game area.
-        canvas_height (int): The height of the game area.
-        food (int): The ID of the current food item on the canvas.
-        x (int): The x-coordinate of the food item.
-        y (int): The y-coordinate of the food item.
+        canvas (Canvas): The canvas on which to draw the food.
+        box_size (int): The size of the food box.
+        color (str): The color of the food.
+        food (int): The ID of the food item on the canvas.
+        coords (tuple[int, int]): The coordinates of the food item.
+        canvas_width (int): The width of the canvas.
+        canvas_height (int): The height of the canvas.
+        avialable (bool): saying if the item is visually appeared in the canvas or not
 
     Methods:
-        __init__(canvas, color, box_size): Initialize a new Food object.\n
-        _calculate_dimensions: Calculate width height and more for Food obj\n
-        _create_food_oval(): Create an oval-shaped food item on the canvas.\n
-        _delete_food(): Delete the current food item from the canvas.\n
-        move_resize_food(): Move current Food obj to new coordinates\n
-        new_coordinates(): Generate new random coordinates for the food item.\n
-        generate_non_overlapping_coordinates(coordinates:tuple|list):
-        genrate coordinates that does not overlap given cords[(int,int),(int,int)] list\n
-        new_food(coordinates:tuple|list|None = None): Create a new food items\n
-        update_color(color): update the color of Food and for obj\n
-        update_size(box_size); update the box_size of Food \n
-        
+        __init__(canvas, color, box_size): Initialize a new Food object.
+        _calculate_dimension(): Calculate and store the width and height of the canvas.
+        _create_food_oval(coords): Create an oval-shaped food item on the canvas.
+        _move_resize_food(coords): Update the position and size of the food item on the canvas.
+        new_food(coordinates): Create a new food item at optionally specified coordinates.
+        delete_all(): Delete the current food item from the canvas.
+        initial_posision(): Initialize the food position to the default.
+        update_color(color): Update the color of the Food.
+        update_size(box_size): Update the size of the Food.
+        return_id(): return the current food item id
     """
-    def __init__(self, canvas:Canvas, color:str, box_size:int)-> None:
+    def __init__(self, canvas:Canvas, color:str, box_size:int, initialize:bool = True) -> None:
         """
-        Initialize the Food object.
+        Initialize the Food class.
 
         Args:
-            canvas (Canvas): The canvas on which the food item will be drawn.
-            box_size (int): The size of each box representing the food item.
-            color (str): The color of the food item.
-        
-        Attributes:
-            food (int): The ID of the current food item on the canvas
-            x (int): The x cordinate of current food 
-            y (int): The y cordinate of current food
+            canvas (Canvas): The canvas on which to draw the food.
+            color (str): The color of the food.
+            box_size (int): The size of the food box.
+            initialize (bool, optional): Whether to initialize the food position. Defaults to True.
         """
         self.canvas = canvas
         self.box_size = box_size
         self.color = color
         
         self.food = None
-        self.x = 0
-        self.y = 0
+        self.coords = (0 , 0)
+        self.avialable = False
         
-        self._calculate_dimensions()
-        self.x, self.y = self.new_coordinates()
-        self.new_food()
+        if initialize:
+            self.initial_posision()
     
-    def _calculate_dimensions(self) -> None:
+    def _calculate_dimension(self) -> None:
         """
         Calculate and store the width and height of the canvas.
         """
@@ -319,145 +434,135 @@ class Food:
         #calculating grid
         self.__width_grid_size = (self.canvas_width // self.box_size) - 1
         self.__height_grid_size = (self.canvas_height // self.box_size) - 1
-        
-    def _create_food_oval(self) -> None:
+    
+    def _create_food_oval(self, coords:tuple[int,int]) -> int:
         """
-        Create an oval-shaped food item.
+        Create an oval-shaped food item on the canvas.
+
+        Args:
+            coords (tuple[int, int]): The coordinates for the food item.
         """
+        self.avialable = True
+        x , y = self.coords
         
         iteme_id = self.canvas.create_oval(
-            self.x , self.y, #x1 and y1
-            self.x + self.box_size, #x2
-            self.y + self.box_size, #y2
-            fill=self.color #color
+            x , y, #x1 and y1-
+            x + self.box_size, #x2
+            y + self.box_size, #y2
+            fill = self.color #color
         )
         self.food = iteme_id
+        return self.food
     
-    def _delete_food(self) -> None:
+    def _move_resize_food(self, coords:tuple[int,int], food:int|None = None) -> None:
         """
-        Delete the current food item from the canvas.
+        Update the position and size of the food item on the canvas.
+
+        Args:
+            coords (tuple[int, int]): The coordinates to move the food item to.
         """
+        self.avialable = True
+        food = self.food if not food else food
+        x , y = self.coords
+        
+        self.canvas.coords(
+            food, x, y, x + self.box_size, y + self.box_size 
+        )
+        self.canvas.itemconfig(self.food, state = "normal")
+    
+    def delete_all(self, hide:bool = True) -> None:
+        """
+        Deletes or hide the food shape from the canvas.
+
+        Args:
+            hide (bool, optional): if True, hides the food shape or else delete it. Defaults to True.
+
+        Returns:
+            None
+        """
+        self.avialable = False
+        
         if self.food is None:
             return None
         
+        if hide:
+            self.canvas.itemconfig(self.food, state = "hidden")
+            return None
+    
         self.canvas.delete(self.food)
+        self.food = None
     
-    def move_resize_food(self) -> None:
-        """
-        Update the position and size of the food item on the canvas.
-        
-        Moves the food item to (self.x, self.y) and resizes it to self.box_size.
-        """
-        self.canvas.coords(
-            self.food, self.x, self.y, self.x + self.box_size, self.y + self.box_size 
-        )
-        
-    def new_coordinates(self) -> tuple[int,int]:
-        """
-        Generate new random coordinates for the food item.
-        """
-        # The approach divides the screen into a grid of cells, where each cell represents a possible position for the food.
-        # The grid is defined by the box_size, which determines the size of each cell.
-        # To select a random cell, we choose a random integer index along the x-axis (vertical lines) and y-axis (horizontal lines).
-        # We then multiply these indices by the box_size to obtain the exact coordinates within the canvas where the food can be placed.
-        
-        x = randint(0, self.__width_grid_size)* self.box_size
-        y =  randint(0, self.__height_grid_size)* self.box_size
-        return x,y
-
-    def generate_non_overlapping_coordinates(self, coordinates:list|tuple) -> tuple[int,int]:
-        """
-        Generate new coordinates within a grid that do not overlap with existing coordinates.
-
-        Args:
-            list1 (list of tuples): List of current coordinates.
-            width_box (int): Width of the grid in terms of boxes.
-            height_box (int): Height of the grid in terms of boxes.
-            box_size (int): Size of each box.
-
-        Returns:
-            tuple: New x, y coordinates in terms of pixels if available, otherwise None.
-        
-        Time Complexity: 𝑂(𝑛 + width_box + height_box)
-        Space Complexity: 𝑂(𝑛)
-
-        """
-        
-        def x_y_dict(coordinates, box_size) -> dict:
-            """
-            Convert a list of coordinates into a dictionary for quick lookup.
-            """
-            dict1 = {}
-            for x, y in coordinates:
-                x //= box_size
-                y //= box_size
-                
-                if x in dict1:
-                    dict1[x].add(y)
-                else:
-                    dict1[x] = {y}
-            return dict1
-        
-        #genrating random cordss in box_size
-        x = randint(0, self.__width_grid_size)
-        y = randint(0, self.__height_grid_size)
-        
-        dict1 = x_y_dict(coordinates, self.box_size)
-        
-        original_x = x
-        while (x in dict1) and (len(dict1[x]) == self.__width_grid_size + 1):
-            x = (x + 1) if x < self.__width_grid_size else 0
-            if original_x == x:
-                return None
-            
-        original_y = y
-        while (x in dict1) and (y in dict1[x]):
-            y = (y + 1) if y < self.__height_grid_size else 0
-            if original_y == y:
-                return None
-        
-        return x * self.box_size, y * self.box_size
-
-    
-    def new_food(self, cordinates:list|tuple|None = None) -> None:
+    def new_food(self, coordinates:list|tuple|None = None) -> None:
         """
         Create a new food item of the specified type and optionally at specified coordinates.
 
         Args:
             coordinates (list or tuple or None): Optional coordinates to place the food item.
-                If provided, the food item will be placed at these coordinates.
+                If provided, the food item will not be placed at these coordinates.
         """
-        if cordinates is not None:
-            self.x , self.y = self.generate_non_overlapping_coordinates(cordinates)
+        if coordinates is not None:
+            self.coords = generate_non_overlapping_coordinates(
+                coordinates = coordinates,
+                grid_width = self.__width_grid_size,
+                grid_height = self.__height_grid_size,
+                box_size = self.box_size
+                )
         else:
-            self.x, self.y = self.new_coordinates()
-            
-        if self.food:
-            self.move_resize_food()
-        else:
-            self._create_food_oval()
+            self.coords = random_coordinates(
+                grid_width = self.__width_grid_size,
+                grid_height = self.__height_grid_size,
+                box_size = self.box_size
+                )
         
-    def update_color(self , color:str) -> None:
+        self.coords = validate_coordinates(self.coords, self.box_size)
+        
+        if self.food:
+            self._move_resize_food(self.coords)
+        
+        else:
+            self._create_food_oval(self.coords)
+    
+    def return_id(self) -> int:
+        """
+        Return the food id as a int.
+        """
+        return self.food
+    
+    def initial_posision(self) -> None:
+        """
+        Initialize the food position to the default.
+        """
+        self.coords = (0 , 0)
+        self.delete_all()
+        self.avialable = True
+        self._calculate_dimension()
+        self._create_food_oval(self.coords)
+    
+    def update_color(self, color:str) -> None:
         """Update the color of the Food.
 
         Args:
             color (str): The new color of the Food.
         """
         self.color = color
-        if self.food:
-            self.canvas.itemconfig(self.food, fill = self.color)
-        else:
-            self._create_food_oval()
-    
-    def update_size(self , box_size:int) -> None:
-        self.box_size = box_size
-        self._calculate_dimensions()
-        self.x , self.y = validate_cordinates((self.x , self.y), self.box_size)
         
         if self.food:
-            self.move_resize_food()
-        else:
-            self._create_food_oval()
+            self.canvas.itemconfig(self.food, fill = self.color)
+    
+    def update_size(self, box_size:int) -> None:
+        """
+        Update the size of the Food.
+
+        Args:
+            box_size (int): The new size of the food box.
+        """
+        self.box_size = box_size
+        self._calculate_dimension()
+        self.coords = validate_coordinates(self.coords, self.box_size)
+        
+        if self.food:
+            self._move_resize_food()
+            
             
 class Heart:
     """
@@ -465,101 +570,116 @@ class Heart:
     This class will not perform any calculations for coordinates.
     
     Attributes:
-        canvas (Canvas): The canvas on which the heart shapes will be drawn.
-        box_size (int): The size of the heart shape.
-        color (str): The color of the heart shape.
-        hearts (tuple): A tuple containing the IDs of the components of the heart shape on the canvas.
-        coords (tuple): The coordinates of the heart shape.
+        Canvas (Canvas): The canvas where item will be drawn.
+        box_size (int): the size of each box or grid size
+        color (str): the color of the item
+        canvas_width (int): the width of the game area.
+        canvas_height (int): The height of the game area.
+        hearts (list[int,int,int]): the list containing heart shape id
+        coords (tuple[int,int]): the tuple contaiing x1 and y1 coordinates of the item
+        avialable (bool): saying if the item is visually appeared in the canvas or not
+            
+    Methods:
+        __init__(canvas, color, box_size, initialize): inisialize new heart obj
+        _calculate_dimension():  Calculate width height and more of canvas
+        _create_heart_shape(coordinates): create an heart shape on canvas
+        _move_resize_heart_shape(coordinates, heart): move or resize the current shape to new possition
+        delete_all(hide): delete the items that persent in canvas or hide them
+        new_heart(coordinates): create a new heart item on canvas this is main method for it
+        return_id(): return the current heart item id
+        initial_posision(): take everything back to there inisisal possition
+        update_color(): update the color of the heart
+        update_size(): update the size of the heart
     """
-    def __init__(self, canvas:Canvas, box_size:int, color:str, insalize = True, cords = (0,0)) -> None:
+    def __init__(self, canvas:Canvas, color:str, box_size:int, initialize:bool = True) -> None:
         """
-        Initializes a Heart object with the given canvas, box size, and color.
+        Initialize the Heart object.
 
         Args:
-            canvas (Canvas): The canvas on which the heart shape will be drawn.
-            box_size (int): The size of the heart shape.
-            color (str): The color of the heart shape.
-
-        Returns:
-            None
+            canvas (Canvas): The Canvas on which to draw the heart.
+            color (str): Thr color of the Heart.
+            box_size (int): The size of the Heart box.
+            initialize (bool, optional): Whether to initialize the Heart position. Defaults to True.
         """
         self.canvas = canvas
         self.box_size = box_size
         self.color = color
         
         self.hearts = None
-        self.coords = (None,None)
+        self.coords = (0 , 0)
         self.avialable = False
         
-        if insalize:
-            self.new_heart(cords)
-            
-    def _create_heart_shape(self, coordinates:tuple[int, int], return_:bool = False) -> None:
+        if initialize:
+            self.initial_posision()
+    
+    def _calculate_dimension(self) -> None:
+        """
+        Calculate and store the width and height of the canvas.
+        """
+        self.canvas_width = int(self.canvas.cget("width"))
+        self.canvas_height = int(self.canvas.cget("height"))
+        # calculating grid
+        self.__width_grid_size = (self.canvas_width // self.box_size) - 1
+        self.__height_grid_size = (self.canvas_height // self.box_size) - 1
+    
+    def _create_heart_shape(self, coordinates:tuple[int,int]) -> tuple[int,int,int]:
         """
         Draws a heart shape on the canvas.
 
         Args:
-            coordinates (tuple[int, int]): The x and y coordinates where the heart will be drawn.
-            return_ (bool): Asking if the item it shoude be returned or not defult False
-
-        Note:
-            This method is can be cause of data leakage use it carfully.
-        """
-        self.avialable = True
-        x1, y1 = coordinates
-        x2, y2 = x1 + self.box_size, y1 + self.box_size
-        self.coords = (x1, y1)
-
-        new_y1 = (self.box_size / 2) + y1
-        new_x1 = (self.box_size / 2) + x1
-        radius = (new_y1 - y1) / 2
-        
-        first = self.canvas.create_arc(x1, new_y1 - radius, new_x1, new_y1 + radius, fill=self.color, start=0, extent=180)
-        second = self.canvas.create_arc(new_x1, new_y1 - radius, x2, new_y1 + radius, fill=self.color, start=0, extent=180)
-        third = self.canvas.create_polygon(x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2, fill=self.color)
-        
-        if return_:
-            return (first, second, third)
-        self.hearts = (first, second, third)
-    
-    def _move_resize_heart_shape(self, coordinates:tuple[int, int], heart:tuple = None) -> None:
-        """
-        Moves and resizes the heart shape on the canvas.
-
-        Args:
-            coordinates (tuple[int, int]): The new x and y coordinates for the heart shape.
-            heart (tuple): this method takes heart items tupple shoude be the same canvas as this method canvas hold defult none if not given takes self.hearts the body
+            coordinates (tuple[int,int]): The x and y coordinates where the heart will be drawn.
 
         Returns:
-            None
+            tuple[int,int,int]: tuple containing heart shapes id size will be 3
         """
         self.avialable = True
+        x1 , y1 = coordinates
+        x2 , y2 = x1 + self.box_size, y1+ self.box_size
+        self.coords = (x1 , y1)
         
-        if not heart:
-            heart = self.hearts
-            
-        x1, y1 = coordinates
-        x2, y2 = x1 + self.box_size, y1 + self.box_size
+        new_x1 = (self.box_size / 2) + x1
+        new_y1 = (self.box_size / 2) + y1
+        radius = (new_y1 - y1) / 2
+        
+        first = self.canvas.create_arc(x1, new_y1 - radius, new_x1, new_y1 + radius, fill = self.color, start = 0, extend = 180)
+        second = self.canvas.create_arc(new_x1, new_y1 - radius, x2, new_y1 + radius, fill = self.color,start = 0, extend = 180)
+        third = self.canvas.create_polygon(x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2, fill = self.color)
+        
+        self.hearts = (first, second, third)
+        return self.hearts
+    
+    def _move_resize_heart_shape(self, coordinates:tuple[int,int], heart:tuple|None = None) -> None:
+        """
+        Move and resizes the heart shape on the canvas.
 
+        Args:
+            coordinates (tuple[int,int]): The new x and y coordinates
+            heart (tuple | None, optional): this method takes heart items tuple. Defaults to None.
+        """
+        self.avialable = True
+        heart = self.hearts if not heart else heart
+        
+        x1 , y1 = coordinates
+        x2 , y2 = x1 + self.box_size, y1 + self.box_size
+        
         new_y1 = (self.box_size / 2) + y1
         new_x1 = (self.box_size / 2) + x1
         radius = (new_y1 - y1) / 2
-        self.coords = (x1, y1)
+        self.coords = (x1 , y1)
         
-        self.canvas.coords(heart[0],
-            x1, new_y1 - radius, new_x1, new_y1 + radius
+        self.canvas.coords(
+            heart[0], x1, new_y1 - radius, new_x1, new_y1 + radius
         )
-        self.canvas.coords(heart[1],
-            new_x1, new_y1 - radius, x2, new_y1 + radius
+        self.canvas.coords(
+            heart[1], new_x1, new_y1 - radius, x2, new_y1 + radius
         )
-        self.canvas.coords(heart[2],
-            x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2
+        self.canvas.coords(
+            heart[2], x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2
         )
-        
         for body in heart:
-            self.canvas.itemconfig(body, state='normal', fill=self.color)
-        
-    def delete_heart(self, hide: bool = True) -> None:
+            self.canvas.itemconfig(body, state = "normal")
+    
+    def delete_all(self, hide:bool = True) -> None:
         """
         Deletes or hides the heart shape from the canvas.
 
@@ -576,39 +696,69 @@ class Heart:
         
         if hide:
             for heart in self.hearts:
-                self.canvas.itemconfig(heart, state="hidden")
+                self.canvas.itemconfig(heart, state = "hidden")
             return None
         
         for heart in self.hearts:
             self.canvas.delete(heart)
-        self.hearts = None
         
-    def new_heart(self, coordinates, validate:bool = True):
+        self.hearts = None
+    
+    def new_heart(self, coordinates:list|tuple|None = None) -> None:
         """
-        Creates a new heart shape on the canvas.
+        Creates a new heart shape on the canvas optionally at specified coordinates.
 
         Args:
-            coordinates (tuple[int, int]): The x and y coordinates where the heart will be drawn.
+            coordinates (list or tuple or None): Optional coordinates to place the hearts item.
+                If provided, the hearts item will not be placed at these coordinates.
 
         Returns:
             None
         """
-        if validate:
-            coordinates = validate_cordinates(coordinates,self.box_size)
-        if self.hearts is None:
-            self._create_heart_shape(coordinates)
+        if coordinates is not None:
+            self.coords = generate_non_overlapping_coordinates(
+                coordinates = coordinates,
+                grid_width = self.__width_grid_size,
+                grid_height = self.__height_grid_size,
+                box_size = self.box_size
+            )
         else:
-            self._move_resize_heart_shape(coordinates)
-            
-    def update_color(self, color: str):
+            self.coords = random_coordinates(
+                grid_width = self.__width_grid_size,
+                grid_height = self.__height_grid_size,
+                box_size = self.box_size
+            )
+        #validating coordinates
+        self.coords = validate_coordinates(self.coords, self.box_size)
+        
+        if self.hearts:
+            self._move_resize_heart_shape(self.coords)
+        
+        else:
+            self._create_heart_shape(self.coords)
+    
+    def return_id(self) -> tuple[int,int,int]:
         """
-        Changes the color of the heart shape.
+        Return the heart id as a int.
+        """
+        return self.hearts
+        
+    def initial_posision(self) -> None:
+        """
+        Initialize the heart position to the default.
+        """
+        self.coords = (0 , 0)
+        self.delete_all()
+        self.avialable = True
+        self._calculate_dimension()
+        self._create_heart_shape(self.coords)
+    
+    def update_color(self, color:str) -> None:
+        """
+        Change the color of the heart shape.
 
         Args:
             color (str): The new color of the heart shape.
-
-        Returns:
-            None
         """
         self.color = color
         
@@ -616,230 +766,341 @@ class Heart:
             return None
         
         for heart in self.hearts:
-            self.canvas.itemconfig(heart, fill=self.color)
+            self.canvas.itemconfig(heart, fill = self.color)
     
-    def update_size(self, box_size: int):
+    def update_size(self, box_size:int) -> None:
         """
-        Changes the size of the heart shape.
+        change the size of the heart shape.
 
         Args:
             box_size (int): The new size of the heart shape.
-
-        Returns:
-            None
         """
         self.box_size = box_size
+        self._calculate_dimension()
+        self.coords = validate_coordinates(self.coords)
         
-        if self.hearts is None:
-            return None
-        self.new_heart(self.coords)
+        if self.hearts:
+            self._move_resize_heart_shape(self.coords)
+
 
 
 class Coin:
     """
     Represents a coin object that can be drawn on a canvas.
-
+    
     Attributes:
-    canvas (Canvas): The canvas on which the coin will be drawn.
-    box_size (int): The size of the coin.
-    color (str): The color of the coin.
-    inner_color (str): The color of the inner part of the coin.
-    coin (tuple): The coin shape consisting of graphical elements.
-    coords (tuple): The coordinates of the top-left corner of the coin.
+        Canvas (Canvas): The canvas where item will be drawn.
+        box_size (int): the size of each box or grid size
+        color (str): the color of the item (hax)
+        sec_color(str): the color of the 2nd circule (hax)
+        canvas_width (int): the width of the game area.
+        canvas_height (int): The height of the game area.
+        coins (list[int,int,int]): the list containing coin shape id
+        coords (tuple[int,int]): the tuple contaiing x1 and y1 coordinates of the item
+        avialable (bool): saying if the item is visually appeared in the canvas or not
+            
+    Methods:
+        __init__(canvas, color, box_size, initialize): inisialize new coin obj
+        _calculate_dimension():  Calculate width height and more of canvas
+        _create_coin_shape(coordinates): create an coin shape on canvas
+        _move_resize_coin_shape(coordinates, coin): move or resize the current shape to new possition
+        delete_all(hide): delete the items that persent in canvas or hide them
+        new_coin(coordinates): create a new coin item on canvas this is main method for it
+        return_id(): return the current coin item id
+        initial_posision(): take everything back to there inisisal possition
+        update_color(): update the color of the coin
+        update_size(): update the size of the coin
     """
-    def __init__(self, canvas:Canvas, box_size:int, color:str, insalize:bool = True, cords:tuple = (0,0)) -> None:
+    def __init__(self, canvas:Canvas, color:str, box_size:int, initialize:bool = True) -> None:
         """
-        Initializes a Coin object.
+        Initialize the Coin object.
 
-        Parameters:
-        canvas (Canvas): The canvas on which the coin will be drawn.
-        box_size (int): The size of the coin.
-        color (str): The color of the coin.
+        Args:
+            canvas (Canvas): The Canvas on which to draw the Coin.
+            color (str): Thr color of the Coin should be hax color
+            box_size (int): The size of the grid .
+            initialize (bool, optional): Whether to initialize the coin position. Defaults to True.
         """
         self.canvas = canvas
         self.box_size = box_size
         self.color = color
-        self.inner_color = darken_hex_color(self.color , 0.1)
         
-        self.coin = None
-        self.coords = (None,None)
+        self.coins = None
+        self.coords = (0 , 0)
         self.avialable = False
+        self.sec_color = darken_hex_color(self.color)
         
-        if insalize:
-            self.new_coin(cords)
-        
-    def _create_coin(self, coordinates:tuple[int,int]):
+        if initialize:
+            self.initial_posision()
+    
+    def _calculate_dimension(self) -> None:
+        """
+        Calculate and store the width and height of the canvas.
+        """
+        self.canvas_width = int(self.canvas.cget("width"))
+        self.canvas_height = int(self.canvas.cget("height"))
+        # calculating grid
+        self.__width_grid_size = (self.canvas_width // self.box_size) - 1
+        self.__height_grid_size = (self.canvas_height // self.box_size) - 1
+    
+    def _create_coin_shape(self, coordinates:tuple[int,int]) -> tuple[int,int,int]:
         """
         Creates a new coin at the specified coordinates.
+        
+        Args:
+            coordinates (tuple[int,int]): The x and y coordinates where the coin will be drawn.
 
-        Parameters:
-        coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
+        Returns:
+            tuple[int,int,int]: tuple containing coin shapes id size will be 3
         """
         self.avialable = True
-        
         x1 , y1 = coordinates
         self.coords = coordinates
-        #innerx1 and box_szie
+        
+        #innerx1 and box_size
         innerx1 = (self.box_size // 10) + x1
         innery1 = (self.box_size // 10) + y1
         inner_boxsize = self.box_size - (self.box_size // 10) * 2
-        #inner_smile_cords
-        middlex1 = innerx1+(inner_boxsize//2)
-        middley1 = innery1+(inner_boxsize//2)
-        #text_size = pixels * (72 / dpi(96)==0.75)
+        #inner_smile_coords
+        middlex1 = innerx1 + (inner_boxsize // 2)
+        middley1 = innery1 + (inner_boxsize // 2)
+        #text_size = pixels * (72 / dpi(96) == 0.75)
         text_size = inner_boxsize // 5
-        text_size = int(text_size * 7.5)//2
+        text_size = int(text_size * 7.5) // 2
         
-        first = self.canvas.create_oval(x1, y1, x1+self.box_size, y1+self.box_size,fill = self.color, outline = "black")
-        secoend = self.canvas.create_oval(innerx1, innery1, innerx1+inner_boxsize, innery1+inner_boxsize, outline="black", fill=self.inner_color)
-        third = self.canvas.create_text(middlex1 , middley1, text="!",justify="center",fill="black",font=("Arial",text_size,"bold"))
-        self.coin = (first , secoend , third)
+        first = self.canvas.create_oval(x1, y1, x1+self.box_size, y1+self.box_size, fill=self.color, outline="black")
+        secoend = self.canvas.create_oval(innerx1, innery1, innerx1+inner_boxsize, innery1+inner_boxsize, outline="black",fill=self.sec_color)
+        third = self.canvas.create_text(middlex1, middley1, text="!", justify="center",fill="black",font=("Arial",text_size,"bold"))
+        
+        self.coins = (first, secoend, third)
+        return self.coins
     
-    def _move_resize_coin_shape(self, coordinates:tuple[int, int]) -> None:
+    def _move_resize_coin_shape(self, coordinates:tuple[int,int], coin:tuple|None = None) -> None:
         """
         Moves and resizes the coin shape to the specified coordinates.
 
-        Parameters:
-        coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
+        Args:
+            coordinates (tuple[int,int]): The new x and y coordinates
+            coin (tuple | None, optional): this method takes coin items tuple. Defaults to None.
         """
         self.avialable = True
-        
-        x1 ,y1 = coordinates
+        coin = self.coins if not coin else coin
         self.coords = coordinates
+        x1 , y1 = coordinates
+        
         #innerx1 and box_szie
         innerx1 = (self.box_size // 10) + x1
         innery1 = (self.box_size // 10) + y1
         inner_boxsize = self.box_size - (self.box_size // 10) * 2
         #inner_smile_cords
-        middlex1 = innerx1+(inner_boxsize//2)
-        middley1 = innery1+(inner_boxsize//2)
+        middlex1 = innerx1 + (inner_boxsize // 2)
+        middley1 = innery1 + (inner_boxsize // 2)
         #text_size = pixels * (72 / dpi(96))==0.75
         text_size = inner_boxsize // 5
-        text_size = int(text_size * 7.5)//2
+        text_size = int(text_size * 7.5) // 2
         
-        self.canvas.coords(self.coin[0],
-            x1, y1, x1+self.box_size, y1+self.box_size
+        self.canvas.coords(
+            coin[0], x1, y1, x1 + self.box_size, y1 + self.box_size
         )
-        self.canvas.coords(self.coin[1],
-            innerx1, innery1, innerx1+inner_boxsize, innery1+inner_boxsize
+        self.canvas.coords(
+            coin[1], innerx1, innery1, innerx1 + inner_boxsize, innery1 + inner_boxsize
         )
-        self.canvas.coords(self.coin[2],
-            middlex1 , middley1
+        self.canvas.coords(
+            coin[2], middlex1 , middley1
         )
         
-        self.canvas.itemconfig(self.coin[0], state='normal')
-        self.canvas.itemconfig(self.coin[1], state='normal')
-        self.canvas.itemconfig(self.coin[2], state='normal',font=("Arial",text_size,"bold"))
-        
-    def delete_coin(self, hide: bool = True) -> None:
+        self.canvas.itemconfig(coin[0], state = "normal")
+        self.canvas.itemconfig(coin[1], state = "normal")
+        self.canvas.itemconfig(coin[2], state = "normal", font = ("Arial",text_size,"bold"))
+    
+    def delete_all(self, hide:bool = True) -> None:
         """
-        Deletes or hides the coin from the canvas.
+        Deletes or hides the coin shape from the canvas.
 
-        Parameters:
-        hide (bool): If True, hides the coin; otherwise, deletes it from the canvas.
+        Args:
+            hide (bool): If True, hides the coin shape instead of deleting it.
         """
         self.avialable = False
         
-        if self.coin is None:
+        if self.coins is None:
             return None
         
         if hide:
-            for coin in self.coin:
-                self.canvas.itemconfig(coin, state="hidden")
+            for coin in self.coins:
+                self.canvas.itemconfig(coin, state = "hidden")
             return None
         
-        for coin in self.coin:
+        for coin in self.coins:
             self.canvas.delete(coin)
-        self.hearts = None
         
-    def new_coin(self, coordinates, validate:bool = True):
+        self.coins = None
+    
+    def new_coin(self, coordinates:list|tuple|None = None) -> None:
         """
         Creates a new coin or moves an existing one to the specified coordinates.
 
-        Parameters:
-        coordinates (tuple[int, int]): The (x, y) coordinates for the top-left corner of the coin.
-        """
-        if validate:
-            coordinates = validate_cordinates(coordinates,self.box_size)
-        if self.coin is None:
-            self._create_coin(coordinates)
-        else:
-            self._move_resize_coin_shape(coordinates)
-            
-    def update_color(self, color: str):
-        """
-        Changes the color of the coin.
+        Args:
+            coordinates (list or tuple or None): Optional coordinates to not place the coin item.
+                If provided, the coin item will not be placed at these coordinates.
 
-        Parameters:
-        color (str): The new color of the coin.
+        """
+        if coordinates is not None:
+            self.coords = generate_non_overlapping_coordinates(
+                coordinates = coordinates,
+                grid_width = self.__width_grid_size,
+                grid_height = self.__height_grid_size,
+                box_size = self.box_size
+            )
+        else:
+            self.coords = random_coordinates(
+                grid_width = self.__width_grid_size,
+                grid_height = self.__height_grid_size,
+                box_size = self.box_size
+            )
+        #validating coordinates
+        self.coords = validate_coordinates(self.coords, self.box_size)
+        
+        if self.coins:
+            self._move_resize_coin_shape(self.coords)
+        
+        else:
+            self._create_coin_shape(self.coords)
+    
+    def return_id(self) -> tuple[int,int,int]:
+        """
+        Return the coin id as a int.
+        """
+        return self.coins
+        
+    def initial_posision(self) -> None:
+        """
+        Initialize the coin position to the default.
+        """
+        self.coords = (0 , 0)
+        self.delete_all()
+        self.avialable = True
+        self._calculate_dimension()
+        self._create_coin_shape(self.coords)
+    
+    def update_color(self, color:str) -> None:
+        """
+        Change the color of the coin shape.
+
+        Args:
+            color (str): The new color of the coin shape.
         """
         self.color = color
-        self.inner_color = darken_hex_color(self.color , 0.1)
+        self.sec_color = darken_hex_color(self.color)
         
-        if self.coin is None:
+        if self.coins is None:
             return None
         
-        self.canvas.itemconfig(self.coin[0], fill = self.color)
-        self.canvas.itemconfig(self.coin[1], fill = self.inner_color)
+        self.canvas.itemconfig(self.coins[0], fill = self.color)
+        self.canvas.itemconfig(self.coins[1], fill = self.sec_color)
     
-    def update_size(self, box_size:int):
+    def update_size(self, box_size:int) -> None:
         """
         Changes the size of the coin.
 
-        Parameters:
-        box_size (int): The new size of the coin.
+        Args:
+            box_size (int): The new size of the grid.
         """
         self.box_size = box_size
+        self._calculate_dimension()
+        self.coords = validate_coordinates(self.coords)
         
-        if self.coin is None:
-            return None
-        self.new_coin(self.coords)
+        if self.coins:
+            self._move_resize_coin_shape(self.coords)
 
 
 class Heart_NEV:
     """
-    Represents a heart shape drawn on a canvas.
-
-    This class provides methods to add, remove, and manipulate heart shapes on a canvas.
-
+    Represents a heart object that can be drawn on a canvas.
+    
     Attributes:
-        canvas (Canvas): The canvas on which the hearts are drawn.
-        coordinates (tuple): The initial coordinates (x, y) of the top-left corner of the heart.
-        box_size (int): The size of the bounding box of the heart.
-        color (str): The color of the heart.
-        distance (int): The distance between each heart when added.
-        hearts_list (list): A list to store the IDs of the heart shapes drawn on the canvas.
-        limit (int or None): The maximum number of hearts allowed on the canvas. If set, adding more hearts will be limited.
-        initial_heart (int): The number of hearts to initialize.
+        Canvas (Canvas): The canvas where item will be drawn.
+        color (str): the color of the item (hax)
+        initial_heart(int): the size of the heart to draww inisisaly
+        heart_list:tuple[tuple[int,int,int]....]: heart list contain heart ids
+        limit(int) : the limit size of the heart that can be drawn in nevigation
+        heart(int): the heart object with all fuction to manage heart
+        box_size (int): the box_size of heart 
+        distance (int): the distance between each heart
+        canvas_height (int): The height of the game area.
+        coins (list[int,int,int]): the list containing coin shape id
+        coords (tuple[int,int]): the tuple contaiing x1 and y1 coordinates of the item
+        avialable (bool): saying if the item is visually appeared in the canvas or not
+            
+    Methods:
+        __init__(canvas, color, box_size, initialize): inisialize new heart obj
+        _calculate_dimension():  Calculate width height and more of canvas
+        __update_coords(update): update the coords by given parameter (ih,iv,dh,dv)
+        remove_one_heart(): Remove the last heart from the canvas.
+        add_one_heart(check): Add one heart to the canvas.
+        add_heart_in_range(range_int): Add hearts to the canvas within a specified range.
+        delete_all(hide): delete the items that persent in canvas or hide them
+        new_heart(coordinates): create a new heart item on canvas this is main method for it
+        return_id(): return the current heart id
+        initial_posision(): take everything back to there inisisal possition
+        update_color(): update the color of the heart
+        update_size(): update the size of the heart
     """
-    def __init__(self, canvas:Canvas, color:str, inisial_heart=1) -> None:
+    def __init__(self, canvas:Canvas, color:str, initial_heart:int = 1, limit:int = 5, initialize:bool = True) -> None:
         """
-        Initialize a Heart_NEV object.
+        Initialize the Heart_NEV object.
 
         Args:
             canvas (Canvas): The canvas on which the heart will be drawn.
-            color (str): The color of the heart.
+            color (str): The color of the heart. should be hax color
             initial_heart (int, optional): The number of hearts to initialize. Defaults to 1.
+            limit(int, optional): the number after heart wont add
+            initialize (bool, optional): Whether to initialize the coin position. Defaults to True.
         """
-        self.inisial_heart = inisial_heart
         self.canvas = canvas
         self.color = color
-        self.limit = None
-        self.calulating_diameters()
-        self.heart = Heart(self.canvas, self.box_size, self.color,insalize=False)
+        self.initial_heart = initial_heart
         
-        self.hearts_list = []
-        self.add_heart_in_range(self.inisial_heart)
+        self._calculate_dimension()
+        self.limit = limit
+        self.heart_list = []
+        self.heart = Heart(self.canvas, self.box_size, self.color, False)
+        
+        if initialize:
+            self.initial_posision()
     
-    def calulating_diameters(self) -> None:
+    def __update_coords(self, update:str) -> None:
         """
-        Calculate box size, coordinates, and distance.
+        Update the coords under given update parameters.
+
+        Args:
+            update (str): Update coords on bases parameter (ih, iv, dh, dv)
+            
+        Note:
+            ih : increase coords horizontally
+            iv : increase coords vertically
+            dh : decrease coords horizontally
+            dv : decrease coords vertically
         """
-        # Get canvas dimensions
-        canvas_height = int(self.canvas.cget("height"))
+        update = update.lower()
+        if update == "ih":
+            self.coords = (self.coords[0] - self.box_size - self.distance, self.coords[1])
+        elif update == "iv":
+            self.coords = (self.coords[0], self.coords[1] - self.box_size - self.distance)
+        elif update == "dh":
+            self.coords = (self.coords[0] + self.box_size + self.distance, self.coords[1])
+        elif update == "dv":
+            self.coords = (self.coords[0], self.coords[1] + self.box_size + self.distance)
+        else:
+            raise ValueError(f"Unexpected update parameter: {update}")
+    
+    def _calculate_dimension(self) -> None:
+        """
+        Calculate and store the width and height of the canvas.
+        """
         canvas_width = int(self.canvas.cget("width"))
-        
-        # Calculate padding and box size
+        canvas_height = int(self.canvas.cget("height"))
+        # calculating grid
+         # Calculate padding and box size
         padding = canvas_height // 8
         box_size = padding * 7
         
@@ -849,41 +1110,9 @@ class Heart_NEV:
         
         # Set instance variables
         self.box_size = box_size
-        self.cordinates = (x, y)
+        self.coords = (x, y)
         self.distance = box_size // 4
-    
-    def remmove_heart(self) -> None:
-        """
-        Remove the last heart from the canvas.
-        """
-        if self.hearts_list == []:
-            return None
-        
-        for ids in self.hearts_list.pop():
-            self.canvas.delete(ids)
             
-        self.cordinates = (self.cordinates[0]+self.box_size+self.distance , self.cordinates[1])
-        
-    def remove_all_heart(self) -> None:
-        """
-        remove all the heart left on the canvas.
-        """
-        for _ in range(len(self.hearts_list)):
-            self.remmove_heart()
-            
-    def add_heart_in_range(self,num = 0) -> None:
-        """
-        Add hearts to the canvas within a specified range.
-
-        Args:
-            num (int, optional): The number of hearts to add. Defaults to initial_heart if not provided.
-        """
-        if not num:
-            num = self.inisial_heart
-        
-        for _ in range(num):
-            self.add_one_heart(check = False)
-    
     def add_one_heart(self , check:bool = True) -> None:
         """
         Add one heart to the canvas.
@@ -891,16 +1120,66 @@ class Heart_NEV:
         Args:
             check (bool, optional): If True, check if the limit is set and if the number of hearts exceeds the limit.Defaults to True.
         """
-        if check and self.limit and len(self.hearts_list) >= self.limit:
+        if check and self.limit and len(self.heart_list) >= self.limit:
             return None
         
-        heart = self.heart._create_heart_shape(self.cordinates , return_=True)
+        heart = self.heart._create_heart_shape(self.coords)
         
-        self.hearts_list.append(heart)
-        self.cordinates = (self.cordinates[0]-self.box_size-self.distance , self.cordinates[1])
+        self.heart_list.append(heart)
+        self.__update_coords(update = "dh")
+    
+    def add_heart_in_range(self, range_int:int = 0) -> None:
+        """
+        Add hearts to the canvas within a specified range.
+
+        Args:
+            range_int (int, optional): The number of hearts to add. Defaults to initial_heart if not provided.
+        """
+        if not range_int:
+            range_int = self.initial_heart
         
-    def update_color(self,color:str):
-        """Update the color of the Heart.
+        for _ in range(range_int):
+            self.add_one_heart(check = False)
+    
+    def remove_one_heart(self) -> None:
+        """
+        Remove the last heart from the canvas.
+        """
+        if self.heart_list == []:
+            return None
+        
+        for ids in self.heart_list.pop():
+            self.canvas.delete(ids)
+        
+        self.__update_coords(update = "ih")
+    
+    def delete_all(self, hide:bool = True) -> None:
+        """
+        Deletes or hides the heart shape from the canvas.
+
+        Args:
+            hide (bool): Does nothing in this method
+        """
+        for _ in range(len(self.heart_list)):
+            self.remove_one_heart()
+    
+    def return_id(self) -> tuple[tuple,tuple]:
+        """
+        Return the heart id as a tuple[tuple[int,int,int],tuple,tuple..].
+        """
+        return self.heart_list
+        
+    def initial_posision(self) -> None:
+        """
+        Initialize the heart position to the default.
+        """
+        self.delete_all()
+        self._calculate_dimension()
+        self.add_heart_in_range(self.initial_heart)
+    
+    def update_color(self, color:str) -> None:
+        """
+        Update the color of the Heart.
 
         Args:
             color (str): The new color of the Heart.
@@ -908,19 +1187,20 @@ class Heart_NEV:
         self.color = color
         self.heart.color = color
         
-        for hearts in self.hearts_list:
-            self.canvas.itemconfig(hearts[0],fill = self.color)
-            self.canvas.itemconfig(hearts[1],fill = self.color)
-            self.canvas.itemconfig(hearts[2],fill = self.color)
+        for heart in self.heart_list:
+            for ids in heart:
+                self.canvas.itemconfig(ids, fill = self.color)
     
     def update_size(self) -> None:
-        self.calulating_diameters()
+        """
+        Changes the size of the heart.
+        """
+        self._calculate_dimension()
         self.heart.box_size = self.box_size
         
-        for heart in reversed(self.hearts_list):
-            self.heart._move_resize_heart_shape(self.cordinates,heart)
-            self.cordinates = (self.cordinates[0]+self.box_size+self.distance , self.cordinates[1])
-        
+        for heart in reversed(self.heart_list):
+            self.heart._move_resize_heart_shape(self.coords,heart)
+            self.__update_coords(update= "dh")
 
 class goofy_Snakes:
     """
@@ -1014,17 +1294,29 @@ class goofy_Snakes:
         self.calculate_new_coordinates()
         x , y = self.coordinates
         self.snake.move_snake(x , y , True)
+    
+    def return_id(self) -> tuple[int]:
+        """
+        return the snake id
+        """
+        return self.snake.snake_body()
+
+    def delete_all(self) -> None:
+        """
+        delete all snake drawn
+        """
+        self.snake.delete_all()
         
-    def update_color(self , color):
+    def update_color(self , color) -> None:
         """
         Update the color of the goofy snake.
 
         Args:
             color (str): The new color of the goofy snake.
         """
-        self.snake.update_color(self.color)
+        self.snake.update_color(color)
         
-    def update_size(self , box_size):
+    def update_size(self , box_size) -> None:
         """
         Updates the size of the box and the snake.
         
