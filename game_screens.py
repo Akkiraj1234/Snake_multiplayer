@@ -189,6 +189,8 @@ class Game_screen:
             box_size = var.game_box_size,
             color = var.COIN_COLOR
         )
+        self.HEART.delete_all()
+        self.COIN.delete_all()
         
     def update_things(self,**kwargs) -> None:
         """
