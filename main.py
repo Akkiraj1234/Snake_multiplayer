@@ -1,5 +1,5 @@
 from variable import Variable
-from game_screens import inisial_screens, Game_screen , setting_option_menu
+from game_screens import inisial_screens, Game_screen , WindowGenerator, setting_screen_gui
 from tkinter import Tk,Frame,Button,Label,Canvas
 from random import choice
 import time
@@ -31,7 +31,7 @@ class Game_engion:
     - ADD_TO_SCREEN(): Adds the game screen to the master window.
     """
     
-    def __init__(self, Master:Tk, var:Variable) -> None:
+    def __init__(self, Master:Tk, var:Variable, pause_screen:inisial_screens) -> None:
         """
         Initializes the Game_engion object.
 
@@ -41,23 +41,20 @@ class Game_engion:
         """
         self.MASTER = Master
         self.var = var
+        self.GAME_FRAME = Game_screen(self.MASTER, self.var)
+        self.pause_screen = pause_screen
         
         #varibales needed
         self.SCORE = 0
+        self._old_time_ = 0
         self.direction = "down"
         self.master_after_ids = None
         self.stop_game_animation = False
-        self._old_time_ = 0
-        self.chance_of_drop = 17 #in persantage
+        self.chance_of_drop = self.var.CHANCE_OF_DROP
+        self.increase_speed_after = self.var.INCREASE_SPEED_AFTER
         self.game_speed =  self.var.game_speed
-        self.increase_speed_after = 20 #increase in score
         
-        #creating screen
-        self.GAME_FRAME = Game_screen(self.MASTER, self.var)
-        self.GAME_FRAME.set_up()
-        self.pause_screen = None
-        
-    def _bild_key(self) -> None:
+    def bild_key(self) -> None:
         '''
         Binds keys for controlling the game.
         - binding
@@ -86,7 +83,7 @@ class Game_engion:
         self.GAME_FRAME.NEVIGATION_CANVAS.tag_bind(self.GAME_FRAME.MENU_OPTION,"<Button-1>",lambda event: self.PAUSE_GAME("pause")),
         ]
     
-    def _remove_bind_key(self) -> None:
+    def remove_bind_key(self) -> None:
         """
         remove all the binding of the key used in game screen
         """
@@ -161,10 +158,10 @@ class Game_engion:
         
         # if all heart is not gone yet call remove one heart else game over 
         # and call the UPDATION_AFTER_GAME_OVER method
-        if len(self.GAME_FRAME.HEART_NEW.hearts_list) > 1:
-            self.GAME_FRAME.HEART_NEW.remmove_heart()
+        if len(self.GAME_FRAME.HEART_NEW.heart_list) > 1:
+            self.GAME_FRAME.HEART_NEW.remove_one_heart()
         else:
-            self.GAME_FRAME.HEART_NEW.remmove_heart()
+            self.GAME_FRAME.HEART_NEW.remove_one_heart()
             self.UPDATION_AFTER_GAME_OVER()
         
         self._old_time_ = current_time      
@@ -185,7 +182,7 @@ class Game_engion:
         #insializing variables
         remove = True
         sneckx , snecky = self.GAME_FRAME.SNAKE.snake_coordinates[0]
-        foodx , foody = self.GAME_FRAME.FOOD.x , self.GAME_FRAME.FOOD.y
+        snake_cords = self.GAME_FRAME.SNAKE.snake_coordinates
         
         #moving the snack by direction
         if self.direction == "up":
@@ -199,34 +196,41 @@ class Game_engion:
         
         #checking if snack collision with food or not if yes 
         # create new food and add up score
-        if sneckx == foodx and snecky == foody:
+        if self.GAME_FRAME.FOOD.coords == (sneckx,snecky):
             remove = False
-            self.GAME_FRAME.FOOD.new_food(self.GAME_FRAME.SNAKE.snake_coordinates)
+            self.GAME_FRAME.FOOD.new_food(snake_cords)
             self.SCORE +=1
         
         #checking if any 
         heart_avl = self.GAME_FRAME.HEART.avialable
         coin_avl  = self.GAME_FRAME.COIN.avialable
+        
         if heart_avl or coin_avl:
             if heart_avl and self.GAME_FRAME.HEART.coords == (sneckx,snecky):
-                self.GAME_FRAME.HEART.delete_heart()
+                self.GAME_FRAME.HEART.delete_all(hide=True)
                 self.GAME_FRAME.HEART_NEW.add_one_heart()
                 self.SCORE += 2
             if coin_avl and self.GAME_FRAME.COIN.coords == (sneckx,snecky):
-                self.GAME_FRAME.COIN.delete_coin()
+                self.GAME_FRAME.COIN.delete_all(hide=True)
                 self.var.PLAYERP_COINE += 10
                 self.SCORE += 1
         else:
             # if they not exist creating new
             if self.SCORE and self.SCORE % self.chance_of_drop == 0:
                 item = choice((self.GAME_FRAME.HEART.new_heart,self.GAME_FRAME.COIN.new_coin))
-                item(self.GAME_FRAME.FOOD.new_coordinates())
+                item(snake_cords)
         
         #updaing things and collection after id
         self.GAME_FRAME.SNAKE.move_snake(sneckx,snecky,remove)
         self.GAME_FRAME.update_things(score = self.SCORE)
         self._check_collision(sneckx,snecky)
                 
+        #work on speed increcsing
+        if self.SCORE and not self.SCORE % self.increase_speed_after:
+            self.game_speed -= 10 
+            self.SCORE += 1
+            print(self.SCORE,"cool",self.game_speed)
+            
         self.master_after_ids = self.MASTER.after(
             self.game_speed,
             self.PLAY_THE_GAME
@@ -235,12 +239,6 @@ class Game_engion:
         #checking if game pause is called or not
         if self.stop_game_animation:
             self.MASTER.after_cancel(self.master_after_ids)
-        
-        #work on speed increcsing
-        if self.SCORE and not self.SCORE % self.increase_speed_after:
-            self.game_speed -= 10 
-            self.SCORE += 1
-            print(self.SCORE,"cool",self.game_speed)
             
     def PAUSE_GAME(self,status:str) -> None:
         """
@@ -288,7 +286,7 @@ class Game_engion:
         
         #removeing canvas binded keys and stoping game animation
         self.GAME_FRAME.remove_to_Master()
-        self._remove_bind_key()
+        self.remove_bind_key()
         self.stop_game_animation = True
     
     def UPDATION_AFTER_GAME_OVER(self) -> None:
@@ -340,12 +338,12 @@ class Game_engion:
         self.GAME_FRAME.update_things(score = self.SCORE)
                 
         #setting heart to therre inisisal value
-        self.GAME_FRAME.HEART_NEW.remove_all_heart()
+        self.GAME_FRAME.HEART_NEW.delete_all()
         self.GAME_FRAME.HEART_NEW.add_heart_in_range(self.var.INISISAL_HEART)
         
         #removeing heart and coin
-        self.GAME_FRAME.HEART.delete_heart()
-        self.GAME_FRAME.COIN.delete_coin()
+        self.GAME_FRAME.HEART.delete_all()
+        self.GAME_FRAME.COIN.delete_all()
         
         #setting sneck lenght to inisial lenght and directiong to 
         #down and cordinates to (0,0) all done by the method get_to_inisial_posision
@@ -376,7 +374,7 @@ class Game_engion:
         - This method should be called when starting or resuming the game.
         """
         self.GAME_FRAME.add_to_Master()
-        self._bild_key()
+        self.bild_key()
         self.stop_game_animation = False
 
 
@@ -384,12 +382,12 @@ class Game_engion:
 class setting_screen:
     '''
     this classs help us inisalizing gui game screen 
-    that can use to modify code
+    that can use to modify settings :0
     
     return:
         None
     '''
-    def __init__(self , master:Tk , var:Variable ,back_fucn) -> None:
+    def __init__(self , master:Tk , var:Variable, home_screen:inisial_screens ) -> None:
         '''
         Initialize the Game GUI.
 
@@ -406,173 +404,15 @@ class setting_screen:
         #inisalizing frame and important variables
         self.master = master
         self.var = var
-        self.back_func = back_fucn
+        self.home_screen = home_screen
+        self.main_frame = Frame(master = self.master, relief="flat", bg="black")
         
-        #creating frames
-        self.child_frame = Frame(master= self.master, relief= "flat", bg= "black")
-        self.gane_screen_frame = Frame(self.child_frame)
-        self.setting_screen_frame = Frame(self.child_frame)
+        self.setting_screen = setting_screen_gui(self.main_frame, self.var)
+        self.windows = WindowGenerator(root = self.master, var = var, setting_gui = self.setting_screen)
         
-        #setting up screen for the game and resulatiion
-        self._gameexit_button_height = None
-        self._game_screen_height = None
-        self._game_screen_width = None
-        self._settingscreen_height = None
-        self._settingscreen_width = None
-        self._calculate_screen_dimensions()
+        self.set_up()
         
-        #setting up screens for the game
-        self.game_screen = Game_screen(Master=self.gane_screen_frame, var=self.var)
-        self.game_screen.game_height = self._game_screen_height
-        self.game_screen.game_width = self._game_screen_width
-        self.game_screen.set_up()
-        self.possision_snack_and_idels()
-        self._add_back_button()
-
-        #adding setting screen for the game
-        self.window_screen = setting_option_menu(
-            master = self.setting_screen_frame,
-            var = var,
-            canvas_height = self._settingscreen_height,
-            canvas_width = self._settingscreen_width,
-            nevigation_height = self.game_screen._nevigation_height,
-            button_height = self._gameexit_button_height,
-            root = root
-        )
-        
-        self.windows = self.window_screen.windows
-        #adding inisial shop screen
-        self.window_screen.curent_screen = self.windows.Inisial_screen(self.setting_screen_frame,"please click on anything in game canvas to start with")
-        
-    def _add_back_button(self) -> None:
-        '''
-        set up the back button for the game
-        '''
-        #add back button for the game 
-        self.back_button = Canvas(
-            master = self.gane_screen_frame,
-            height = self._gameexit_button_height,
-            width = self._game_screen_width,
-            bg = self.var.theme2
-        )
-        
-        self.back_button_text_id = self.back_button.create_text(
-            self._game_screen_width // 2,self._gameexit_button_height // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "Back",
-            fill = self.var.theme1
-        )
-        
-    def back_button_func(self,event) -> None:
-        '''
-        the function for going back the function
-        '''
-        self.REMOVE_TO_MASTER()
-        self.back_func()
-        
-    def binding_keys(self) -> None:
-        '''
-        this method bind keys for the screen
-        '''
-        self.__get_idels_cordinates()
-        self.__binding_keys_id = [
-            self.game_screen.NEVIGATION_CANVAS.bind(
-                "<Button-1>",lambda event: self._check_bind_event_on_game_screen(event , 1)
-                ),
-            self.game_screen.GAME_CANVAS.bind(
-                "<Button-1>",lambda event: self._check_bind_event_on_game_screen(event , 2)
-                )
-        ]
-        self.back_button.bind("<Button-1>",self.back_button_func)
-    
-    def remove_binding_keys(self) -> None:
-        '''
-        this method removes binds keys for the screen
-        '''
-        self.game_screen.NEVIGATION_CANVAS.unbind("<Button-1>",self.__binding_keys_id[0])
-        self.game_screen.GAME_CANVAS.unbind("<Button-1>",self.__binding_keys_id[1])
-        self.back_button.unbind_all("<Button-1>")
-    
-    def __get_idels_cordinates(self) -> None:
-        '''
-        Get the coordinates of various elements on the game screen.
-
-        This method retrieves the coordinates of different elements on the game screen, such as menu options, score text, hearts, food, and snake body segments.
-
-        Returns:
-        - None
-        '''
-        self._cordinates_home_and_score = [
-            self.game_screen.NEVIGATION_CANVAS.bbox(self.game_screen.MENU_OPTION),
-            self.game_screen.NEVIGATION_CANVAS.bbox(self.game_screen.SCORE_TEXT)
-        ]
-        
-        self._hearts_cordinates = [
-            self.game_screen.NEVIGATION_CANVAS.bbox(body)
-            for heart in self.game_screen.HEART_NEW.hearts_list
-            for body in heart
-        ]
-
-        self._cordinates_food = [
-            self.game_screen.GAME_CANVAS.bbox(self.game_screen.FOOD.food)
-        ]
-        
-        self._cordinates_sneck = [
-            self.game_screen.GAME_CANVAS.bbox(snack)
-            for snack in self.game_screen.SNAKE.snake_body
-        ]
-        
-        self._cordinates_canvas_heart = [
-            self.game_screen.GAME_CANVAS.bbox(heart)
-            for heart in self.game_screen.HEART.hearts
-        ]
-        
-        self._cordinates_coin = [
-            self.game_screen.GAME_CANVAS.bbox(coin)
-            for coin in self.game_screen.COIN.coin
-        ]
-        
-    def _check_bind_event_on_game_screen(self, event , screen:int) -> None:#fix things here too !!!!!!!!!!!!!!!!!!!!!!
-        """Check and handle events based on the current game screen and event coordinates.
-
-        Args:
-            event: The event object containing information about the event.
-            screen (int): The current game screen (1 or 2).
-
-        Prints:
-            A message indicating the type of action based on the event coordinates and the game screen.
-        """
-        if screen == 1:
-            if self.__check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text1")
-                
-            elif self.__check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text2")
-                
-            else:
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text3")
-                
-        elif screen == 2:
-            if self.__check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text4")
-                
-            elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text5")
-                
-            elif self.__check_cords_in_range(self._cordinates_coin, (event.x , event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"coin window")
-            
-            elif self.__check_cords_in_range(self._cordinates_canvas_heart, (event.x , event.y)):
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"heart window")
-                
-            else:
-                window = self.windows.Inisial_screen(self.setting_screen_frame,"text6")
-        
-        #setting up the window acording to window they selected
-        self.window_screen.change_screen(window)
-                
-    
-    def __check_cords_in_range(self, list_cords:list[tuple,tuple], coordinates:tuple[int,int]) -> bool:
+    def __check_cords_in_range(self, list_cords:list[tuple], coordinates:tuple[int]) -> bool:
         """
         Check if the given coordinates fall within any of the ranges specified in the list of coordinates.
 
@@ -591,91 +431,276 @@ class setting_screen:
                 return True
         return False
     
-    def _calculate_screen_dimensions(self) -> None:#FIX IT THE EXIT BUTTON HEIGHT
+    def __get_idels_cordinates(self) -> None:
         '''
-        Calculate the screen dimensions for the game and settings screen.
+        Get the coordinates of various elements on the game screen.
 
-        This method calculates the height and width of both the game screen and the settings screen.
-        The game screen height is set to the same value as the game height stored in the class variable.
-        The settings screen height is also set to the game height.
-        The game screen width is calculated as half of the game width plus one eighth of the game width.
-        The settings screen width is calculated as the difference between the game width and the game screen width.
-
-        Parameters:
-            None
+        This method retrieves the coordinates of different elements on the game screen, such as menu options, score text, hearts, food, and snake body segments.
 
         Returns:
-            None
+        - None
         '''
-        self._gameexit_button_height = 30
-        self._game_screen_height = self.var.game_height - self._gameexit_button_height - 14
-        self._settingscreen_height = self.var.game_height -14
-        self._game_screen_width = (self.var.game_width // 2) + (self.var.game_width // 8)
-        self._settingscreen_width = self.var.game_width - self._game_screen_width
-    
-    def possision_snack_and_idels(self) -> None:
-        '''
-        possison the sneck and idels like food and heart and stuff
-        and postion etc........
-        '''
-        self.game_screen.SNAKE.delete_all()
-        center_borderx = self._game_screen_width // 2
-        center_bordery = self.game_screen._game_bord_height // 2
-        box_size = self.var.game_box_size
-        
-        self.game_screen.SNAKE.snake_coordinates = [(center_borderx,center_bordery-box_size)]
-        self.game_screen.SNAKE.snake_body = [self.game_screen.SNAKE._create_body(
-            center_borderx,center_bordery - box_size)
+        nevigation_canvas = self.setting_screen.GAME_SCREEN.NEVIGATION_CANVAS
+        game_canvas = self.setting_screen.GAME_SCREEN.GAME_CANVAS
+        self._cordinates_home_and_score = [
+            nevigation_canvas.bbox(self.setting_screen.GAME_SCREEN.MENU_OPTION),
+            nevigation_canvas.bbox(self.setting_screen.GAME_SCREEN.SCORE_TEXT)
         ]
-        # adding snacke body to left
-        x = center_borderx
-        for _ in range(4):
-            x += box_size
-            self.game_screen.SNAKE.move_snake(x - box_size , center_bordery - box_size,False)
         
-        #adding snacke body to right
-        x = center_borderx
-        for _ in range(4):
-            x -= box_size
-            self.game_screen.SNAKE.move_snake(x+box_size , center_bordery,False)
+        self._hearts_cordinates = [
+            nevigation_canvas.bbox(body)
+            for heart in self.setting_screen.GAME_SCREEN.HEART_NEW.heart_list
+            for body in heart
+        ]
+        
+        self._cordinates_food = [
+            game_canvas.bbox(self.setting_screen.GAME_SCREEN.FOOD.food)
+        ]
+        
+        self._cordinates_sneck = [
+            game_canvas.bbox(snack)
+            for snack in self.setting_screen.GAME_SCREEN.SNAKE.snake_body
+        ]
+        
+        self._cordinates_canvas_heart = [
+            game_canvas.bbox(heart)
+            for heart in self.setting_screen.GAME_SCREEN.HEART.hearts
+        ]
+        
+        self._cordinates_coin = [
+            game_canvas.bbox(coin)
+            for coin in self.setting_screen.GAME_SCREEN.COIN.coins
+        ]
 
-        #adding food:
-        snake_cords = self.game_screen.SNAKE.snake_coordinates
-        self.game_screen.FOOD.new_food(cordinates = snake_cords)
-        self.game_screen.COIN.new_coin(coordinates= self.game_screen.FOOD.new_coordinates())
-        self.game_screen.HEART.new_heart(coordinates= self.game_screen.FOOD.new_coordinates())
-        # self.game_screen.HEART.new_heart(coordinates = )
-        
+    def __shift_button_button1(self, event) -> None:
+        """
+        Handle the event when navigation button 1 is clicked.
+
+        This method updates the background colors and text colors of two navigation buttons to reflect
+        the active state of button 1. It also switches the visible screen by hiding the basic setting 
+        and account setting screens, and displaying the current screen.
+
+        Args:
+            event: The event that triggered this method.
+        """
+        self.setting_screen.nevigation_button1.config(bg = self.var.theme1)
+        self.setting_screen.nevigation_button1.itemconfig(self.setting_screen._text_nev_button_id[0], fill = self.var.theme2)
+        self.setting_screen.nevigation_button2.config(bg = self.var.theme2)
+        self.setting_screen.nevigation_button2.itemconfig(self.setting_screen._text_nev_button_id[1], fill = self.var.theme1)
+    
+    def __shift_button_button2(self, event) -> None:
+        """
+        Handle the event when navigation button 2 is clicked.
+
+        This method updates the background colors and text colors of two navigation buttons to reflect
+        the active state of button 2. It also switches the visible screen by hiding the current screen 
+        and account setting screens, and displaying the basic setting screen.
+
+        Args:
+            event: The event that triggered this method.
+        """
+        self.setting_screen.nevigation_button1.config(bg = self.var.theme2)
+        self.setting_screen.nevigation_button1.itemconfig(self.setting_screen._text_nev_button_id[0], fill = self.var.theme1)
+        self.setting_screen.nevigation_button2.config(bg = self.var.theme1)
+        self.setting_screen.nevigation_button2.itemconfig(self.setting_screen._text_nev_button_id[1], fill = self.var.theme2)   
+    
+    def __save_button_method(self, event) -> None:
+        print(event.x)
+    
+    def __back_button_method(self, event) -> None:
+        self.REMOVE_TO_MASTER()
+        self.home_screen.add_to_master()
+        self.home_screen.start_animation(self.var.home_speed)
+        self.home_screen.update_nessassaery(update=True)
+    
+    def _check_bind_event_on_game_screen(self, event , screen:int) -> None:
+        """Check and handle events based on the current game screen and event coordinates.
+
+        Args:
+            event: The event object containing information about the event.
+            screen (int): The current game screen (1 or 2).
+
+        Prints:
+            A message indicating the type of action based on the event coordinates and the game screen.
+        """
+        if screen == 1:
+            if self.__check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text1")
+                print("you touched text")
+                
+            elif self.__check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text2")
+                print("you rouched heart")
+                
+            else:
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text3")
+                print("you touched background")
+                
+        elif screen == 2:
+            if self.__check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text4")
+                print("woops you touched snake")
+                
+            elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text5")
+                print("you touched food")
+                
+            elif self.__check_cords_in_range(self._cordinates_coin, (event.x , event.y)):
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"coin window")
+                print("you touched coin")
+            
+            elif self.__check_cords_in_range(self._cordinates_canvas_heart, (event.x , event.y)):
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"heart window")
+                print("you touched another heart")
+                
+            else:
+                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text6")
+                print("you touched background")
+     
+    def set_up(self):
+        self.setting_screen._something()
+        self.__get_idels_cordinates()
+    
+    def bind_keys(self) -> None:
+        self._bind_keys_id = [
+            self.setting_screen.back_button.bind("<Button-1>",self.__back_button_method),
+            self.setting_screen.save_button.bind("<Button-1>",self.__save_button_method),
+            
+            self.setting_screen.GAME_SCREEN.NEVIGATION_CANVAS.bind(
+                "<Button-1>", lambda event: self._check_bind_event_on_game_screen(event, 1)
+            ),
+            self.setting_screen.GAME_SCREEN.GAME_CANVAS.bind(
+                "<Button-1>", lambda event: self._check_bind_event_on_game_screen(event , 2)
+            ),
+            
+            self.setting_screen.nevigation_button1.bind("<Button-1>",self.__shift_button_button1),
+            self.setting_screen.nevigation_button2.bind("<Button-1>",self.__shift_button_button2)
+        ]
+    
+    def remove_bind_keys(self) -> None:
+        '''
+        this method removes binds keys for the screen
+        '''
+        self.setting_screen.back_button.unbind("<Button-1>", self._bind_keys_id[0])
+        self.setting_screen.save_button.unbind("<Button-1>", self._bind_keys_id[1])
+        self.setting_screen.GAME_SCREEN.NEVIGATION_CANVAS.unbind("<Button-1>",self._bind_keys_id[2])
+        self.setting_screen.GAME_SCREEN.GAME_CANVAS.unbind("<Button-1>",self._bind_keys_id[3])
+        self.setting_screen.nevigation_button1.unbind("<Button-1>", self._bind_keys_id[4])
+        self.setting_screen.nevigation_button2.unbind("<Button-1>", self._bind_keys_id[5])
+    
     def ADD_TO_MASTER(self) -> None:
         '''
         add the setting screen to master
         '''
-        self.child_frame.grid()
-        self.gane_screen_frame.grid(row = 0,column=0)
-        self.setting_screen_frame.grid(row = 0,column = 1)
+        self.main_frame.grid()
+        self.bind_keys()
+        # self.gane_screen_frame.grid(row = 0,column=0)
+        # self.setting_screen_frame.grid(row = 0,column = 1)
         
-        self.game_screen.add_to_Master()
-        self.back_button.pack()
-        self.window_screen.PACK_CURRENT_SCREEN()
-        self.binding_keys()
+        # self.game_screen.add_to_Master()
+        # self.back_button.pack()
+        # self.window_screen.PACK_CURRENT_SCREEN()
+        # self.binding_keys()
     
     def REMOVE_TO_MASTER(self):
         '''
         remove the setting screen from the master
         '''
-        self.remove_binding_keys()
-        self.game_screen.remove_to_Master()
-        self.window_screen.REMOVE_CURRENT_SCREEN()
-        self.gane_screen_frame.grid_forget()
-        self.setting_screen_frame.grid_forget()
-        self.child_frame.grid_forget()
+        self.setting_screen._remove()
+        self.remove_bind_keys()
+        self.main_frame.grid_forget()
+        print(root.children.values())
+        
+        # self.remove_binding_keys()
+        # self.game_screen.remove_to_Master()
+        # self.window_screen.REMOVE_CURRENT_SCREEN()
+        # self.gane_screen_frame.grid_forget()
+        # self.back_button.pack_forget()
+        # self.setting_screen_frame.grid_forget()
 
 
 
+def play_home():
+    """
+    Transition to the game screen from the home screen.
 
+    Behavior:
+    - Removes the home screen from the master window.
+    - Adds the game screen to the master window and starts the game.
+    - Prints a message indicating the transition.
+    """
+    home_screen.remove_from_master()
+    game.ADD_TO_SCREEN()
+    game.PLAY_THE_GAME()
+    print(root.children.values())
 
+def shop_home():
+    """
+    Display shopping options.
 
+    Behavior:
+    - Prints a message indicating the user's intent to access shopping.
+    """
+    home_screen.remove_from_master()
+    shop.ADD_TO_MASTER()
+    print(root.children.values())
+    
+def about_me_home():
+    """
+    Display information about the creator.
 
+    Behavior:
+    - Prints a message indicating the user's intent to learn about the creator.
+    """
+    print("hmmm u wanna know about me me crying :)")
+    
+def resume_pause_menu():
+    """
+    Resume the game from the pause menu.
+
+    Behavior:
+    - Removes the pause menu from the master window.
+    - Adds the game screen to the master window and resumes the game.
+    - Prints a message indicating the action taken.
+    """
+    pause_menu.remove_from_master()
+    game.ADD_TO_SCREEN()
+    game.PLAY_THE_GAME()
+
+def restart_pause_menu():
+    """
+    Restart the game from the pause menu.
+
+    Behavior:
+    - Removes the pause menu from the master window.
+    - Resets game settings to default and starts the game.
+    - Prints a message indicating the action taken.
+    """
+    game.set_everrything_to_default()
+    pause_menu.remove_from_master()
+    game.ADD_TO_SCREEN()
+    game.PLAY_THE_GAME()
+
+def home_pause_menu():
+    """
+    Return to the home screen from the pause menu.
+
+    Behavior:
+    - Removes the pause menu from the master window.
+    - Resets game settings to default.
+    - Adds the home screen to the master window and starts its animation.
+    - Prints a message indicating the action taken.
+    """
+    pause_menu.remove_from_master()
+    game.set_everrything_to_default()
+    home_screen.add_to_master()
+    home_screen.start_animation(var.game_speed)
+    home_screen.update_nessassaery(update=True)
+
+def update_everything():
+    pause_menu.update_everything()
+    home_screen.update_everything()
+    game.update_everything()
 
 def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     """
@@ -684,7 +709,7 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     Parameters:
     - Master (Tk): The master Tkinter window.
     - var (variable): An object containing variables/settings for the home screen.
-
+    
     Returns:
     - inisial_screens: An instance of the initialized home screen.
     """
@@ -708,9 +733,6 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     Home_window.add_food("red", True)
     Home_window.add_heart("red", False)
     Home_window.add_coin("#ffff00",False)
-    #setting up the random possision
-    Home_window.heart.new_heart(Home_window.food.new_coordinates())
-    Home_window.coin.new_coin(Home_window.food.new_coordinates())
     #adding header and footer
     Home_window.HomeScreen_HeaderFooter_modle1_inisalization(var = var)
     
@@ -766,8 +788,7 @@ def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     Home_window.add_windows(lable, button, button1, button2, middle=1)
     return Home_window
 
-
-def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
+def pause_menu_initialization(master:Tk, var:Variable) -> inisial_screens:
     """
     Creates a pause menu screen for the game.
 
@@ -845,118 +866,6 @@ def pause_menu_stabalization(master:Tk, var:Variable) -> inisial_screens:
     return pause_game_screen
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def play_home():
-    """
-    Transition to the game screen from the home screen.
-
-    Behavior:
-    - Removes the home screen from the master window.
-    - Adds the game screen to the master window and starts the game.
-    - Prints a message indicating the transition.
-    """
-    home_screen.remove_from_master()
-    game.ADD_TO_SCREEN()
-    game.PLAY_THE_GAME()
-
-def shop_home():
-    """
-    Display shopping options.
-
-    Behavior:
-    - Prints a message indicating the user's intent to access shopping.
-    """
-    home_screen.remove_from_master()
-    shop.ADD_TO_MASTER()
-    
-    
-def about_me_home():
-    """
-    Display information about the creator.
-
-    Behavior:
-    - Prints a message indicating the user's intent to learn about the creator.
-    """
-    print("hmmm u wanna know about me me crying :)")
-    print(home_screen.Header[0].bbox())
-    print(home_screen.child_window.coords(home_screen._header_ids[0]))
-
-def resume_pause_menu():
-    """
-    Resume the game from the pause menu.
-
-    Behavior:
-    - Removes the pause menu from the master window.
-    - Adds the game screen to the master window and resumes the game.
-    - Prints a message indicating the action taken.
-    """
-    pause_menu.remove_from_master()
-    game.ADD_TO_SCREEN()
-    game.PLAY_THE_GAME()
-
-def restart_pause_menu():
-    """
-    Restart the game from the pause menu.
-
-    Behavior:
-    - Removes the pause menu from the master window.
-    - Resets game settings to default and starts the game.
-    - Prints a message indicating the action taken.
-    """
-    pause_menu.remove_from_master()
-    game.set_everrything_to_default()
-    game.ADD_TO_SCREEN()
-    game.PLAY_THE_GAME()
-
-def home_pause_menu():
-    """
-    Return to the home screen from the pause menu.
-
-    Behavior:
-    - Removes the pause menu from the master window.
-    - Resets game settings to default.
-    - Adds the home screen to the master window and starts its animation.
-    - Prints a message indicating the action taken.
-    """
-    pause_menu.remove_from_master()
-    game.set_everrything_to_default()
-    home_screen.add_to_master()
-    home_screen.start_animation(var.game_speed)
-    home_screen.update_nessassaery(update=True)
-
-def update_everything():
-    pause_menu.update_everything()
-    home_screen.update_everything()
-    game.update_everything()
-
-
-
-
 def main(): 
     """
     Main function to initialize the game application.
@@ -967,13 +876,8 @@ def main():
     - Starts the animation of the home screen.
     """
     root.geometry(f"{var.game_width+5}x{var.game_height+5}")
-    root.resizable(width=False,height=False)
+    # root.resizable(width=False,height=False)
     root.title(var.INISIAL_HOME_TEXT)
-    game.pause_screen = pause_menu
-    home_screen.start_animation(var.game_speed)
-    
-def lolololtest():
-    home_screen.add_to_master()
     home_screen.start_animation(var.game_speed)
     
 
@@ -983,12 +887,12 @@ if __name__ == "__main__":
     var = Variable()
     
     home_screen = home_screen_inisalization(root, var)
-    pause_menu = pause_menu_stabalization(root, var)
-    game = Game_engion(Master=root, var=var)
-    shop = setting_screen(root , var ,lolololtest)
+    pause_menu = pause_menu_initialization(root, var)
+    game = Game_engion(Master=root, var=var, pause_screen=pause_menu)
+    shop = setting_screen(root , var, home_screen = home_screen)
     
     main()
-    
+    print(root.children.values())
     root.update()
     root.mainloop()
     

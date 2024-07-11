@@ -641,8 +641,8 @@ class Heart:
         new_y1 = (self.box_size / 2) + y1
         radius = (new_y1 - y1) / 2
         
-        first = self.canvas.create_arc(x1, new_y1 - radius, new_x1, new_y1 + radius, fill = self.color, start = 0, extend = 180)
-        second = self.canvas.create_arc(new_x1, new_y1 - radius, x2, new_y1 + radius, fill = self.color,start = 0, extend = 180)
+        first = self.canvas.create_arc(x1, new_y1 - radius, new_x1, new_y1 + radius, fill = self.color, start = 0, extent = 180)
+        second = self.canvas.create_arc(new_x1, new_y1 - radius, x2, new_y1 + radius, fill = self.color,start = 0, extent = 180)
         third = self.canvas.create_polygon(x1, new_y1, x2, new_y1, (x1 + x2) / 2, y2, fill = self.color)
         
         self.hearts = (first, second, third)
@@ -1063,7 +1063,7 @@ class Heart_NEV:
         self._calculate_dimension()
         self.limit = limit
         self.heart_list = []
-        self.heart = Heart(self.canvas, self.box_size, self.color, False)
+        self.heart = Heart(self.canvas, self.color, self.box_size, False)
         
         if initialize:
             self.initial_posision()
@@ -1126,7 +1126,7 @@ class Heart_NEV:
         heart = self.heart._create_heart_shape(self.coords)
         
         self.heart_list.append(heart)
-        self.__update_coords(update = "dh")
+        self.__update_coords(update = "ih")
     
     def add_heart_in_range(self, range_int:int = 0) -> None:
         """
@@ -1151,7 +1151,7 @@ class Heart_NEV:
         for ids in self.heart_list.pop():
             self.canvas.delete(ids)
         
-        self.__update_coords(update = "ih")
+        self.__update_coords(update = "dh")
     
     def delete_all(self, hide:bool = True) -> None:
         """
@@ -1200,7 +1200,7 @@ class Heart_NEV:
         
         for heart in reversed(self.heart_list):
             self.heart._move_resize_heart_shape(self.coords,heart)
-            self.__update_coords(update= "dh")
+            self.__update_coords(update= "ih")
 
 class goofy_Snakes:
     """

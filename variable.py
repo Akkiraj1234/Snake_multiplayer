@@ -34,6 +34,8 @@ class Variable:
         self.FONT_STYLE =  "Press Start 2P" 
         self.Form_font = "Myanmar Text"
         self.INISIAL_HOME_TEXT = "Sneck suffarie :0"
+        self.CHANCE_OF_DROP = 17
+        self.INCREASE_SPEED_AFTER = 20
         
         self.game_speed = 100
         self.game_box_size = 30
@@ -67,6 +69,7 @@ class Variable:
         self.COIN_COLOR     = "#ffff00"
         self.SNAKE_COLOR    = self._player_acc_info["cur_snake_color"]
         self.INISISAL_HEART = self._player_acc_info["inisial_heart"]
+        self.HEART_LIMIT    = 5
         self.SNAKE_LOSS_COUNTDOWN = self._player_acc_info["countdown_time_s"]
         
         self.owned_heart_color  = self._player_acc_info["owned_heart_color"]
@@ -160,10 +163,32 @@ class Variable:
         with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
             json.dump(self._game_setting,game_setting)
     
-    def basic_setting_screen_var(self,canvas , button_method):
+    def basic_setting_screen_var(self,canvas, sec_account_calling_method) -> tuple[tuple[any,any]]:
         '''
         inisalize variable and widgets required to show in basic 
         setting screen canvs
+        tuple[
+            tuple[Label, Label],
+            tuple[Entry, Entry],
+            tuple[Label, OptionMenu],
+            tuple[Label, OptionMenu],
+            tuple[Label, Scale],
+            tuple[Label, Scale],
+            tuple[Button, None]
+        ]
+        
+        what is assessasabe :0 
+            index[0] -> None, None
+            index[1] -> bssv_width_entry:Entry
+                        bssv_height_entry:Entry
+            index[2] -> bssv_speed_get:StringVar
+            index[3] -> bssv_size_get:StringVar
+            index[4] -> bssv_text_get:Scale
+            index[5] -> bssv_volume_get:Scale
+            index[6] -> bssv_Account_Setting_button:Button
+        
+        NOTE:
+            1. Label,OptionMenu referanse will not stored so u cant assess them
         '''
         option1 = ("Slow", "Normal", "Fast", "Extreme")
         option2 = ("Small", "Medium", "Large", "Extra Large")
@@ -175,9 +200,9 @@ class Variable:
         lable5 = Label(canvas ,text="text size   :", font=('Arial',self.home_text_size,'bold'))
         lable6 = Label(canvas ,text="Volume level:", font=('Arial',self.home_text_size,'bold'))
         
-        self.bssv_back_button = Button(
+        self.bssv_Account_Setting_button = Button(
             canvas ,text="Account Setting",font=('Arial',self.home_text_size,'bold'),
-            relief="groove", width=30 , command=button_method
+            relief="groove", width=30 , command = sec_account_calling_method
         )
         self.bssv_width_entry = Entry(canvas, width=15, font=('Arial',self.home_text_size,'bold'))
         self.bssv_height_entry = Entry(canvas ,width=15, font=('Arial',self.home_text_size,'bold'))
@@ -213,7 +238,7 @@ class Variable:
             (lable4 , size_get),
             (lable5 , self.bssv_text_get),
             (lable6 , self.bssv_volume_get),
-            (self.bssv_back_button , None)
+            (self.bssv_Account_Setting_button , None)
         )
     
     def setting_option_menu_var(self,canvas, changepass_method,createnewacc_method,changeaccount_method,goback_method):
@@ -281,3 +306,28 @@ class Variable:
         """
         self.update_user_settings()
         self.updaing_game_setting()
+    
+class demo_variable:
+    
+    def __init__(self, dict1:dict) -> None:
+        """
+        inisialize game arttibutes
+        """
+        self.add_new_element(dict1)
+        
+    
+    def update_with_dict(self, dict1:dict) -> None:
+        """
+        Update the attributes of the instance with the values from the provided dictionary.
+        """
+        for key, value in dict1.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def add_new_element(self, dict1:dict) -> None:
+        """
+        add new elemnt to class by dict
+        """
+        for key, value in dict1.items():
+            setattr(self, key, value)
+                

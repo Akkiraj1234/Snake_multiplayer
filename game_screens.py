@@ -1,11 +1,336 @@
 from tkinter import Canvas, Frame, Button, Label, Entry, Toplevel ,Tk, messagebox
 from random import choice
 
-from game_idles import Food, goofy_Snakes, Snake, Heart_NEV, Heart, Coin
-from variable import Variable
+from game_idles import Food, Snake, Heart, Coin, Heart_NEV, goofy_Snakes, validate_coordinates
+from variable import Variable, demo_variable
 
+
+class Game_screen:
+    """
+    Class to manage the game screen, including navigation setup,
+    game canvas setup, updating game elements, and adding/removing
+    from the master widget.
+
+    Attributes:
+        var (variable): An object containing game variables.
+        MASTER (Tk): The parent Tkinter window.
+        NEVIGATION_CANVAS (Canvas): The canvas for navigation elements.
+        GAME_CANVAS (Canvas): The canvas for game elements.
+        SNAKE (Snake): The snake object.
+        FOOD (Food): The food object.
+        HEART (Heart): The heart object.
+        MENU_OPTION (Text): The menu option text.
+        SCORE_TEXT (Text): The score text.
+        _game_bord_height (int): Height of the game board.
+        _nevigation_height (int): Height of the navigation canvas.
+
+    Methods:
+        __init__(Master, var): Initializes the game screen.
+        adjust_window_size(): Adjusts window size based on game and navigation heights.
+        nevigation_setup(): Sets up the navigation canvas with heart, score text, and menu option.
+        game_canvas_setup(): Sets up the game canvas with snake and food.
+        update_things(**kwargs): Updates game elements based on provided keyword arguments.
+        add_to_Master(): Packs the navigation and game canvases.
+        remove_to_Master(): Removes navigation and game canvases from master widget.
+    """
+   
+    def __init__(self,Master:Tk, var:Variable, initialize:bool = True) -> None:
+        """
+        Initialize the game screen. 
+        with main game canvas and nevigation panel
+        and sneck ,  food in hevigation heart score board,
+        and menu option
+
+        Args:
+            Master (Tk): The parent Tkinter window.
+            var (variable): An object containing game variables.
+        
+        Note: 
+            1. this method directly interect with variable method
+        """
+   
+        self.var = var
+        self.root = Master
+        self.MASTER = Frame(self.root)
+        self.var1 = None
+        self.demo = False
+        
+        self.NEVIGATION_CANVAS = None
+        self.GAME_CANVAS = None
+        self.SNAKE = None
+        self.FOOD = None
+        self.HEART = None
+        self.COIN = None
+        self.HEART_NEW = None
+        self.MENU_OPTION = None
+        self.SCORE_TEXT = None
+        
+        if initialize:
+            self.SET_UP()
+    
+    def SET_UP(self) -> None:
+        """
+        genrate the game canvas by adjusting 
+        window_size and nevigation_size create the
+        game_canvas with all things set up
+        """
+        self.adjust_window_size()
+        self.nevigation_setup()
+        self.game_canvas_setup()
+        
+    def adjust_window_size(self) -> None:
+        """
+        Adjust the window size based on game height and navigation heights.
+        
+        Note:
+            The navigation height is calculated as one-eighth of the game height,
+            but if the calculated height is less than or equal to the size of game
+            boxes, it defaults to the size of game boxes.
+        
+        Attributes created:
+            _nevigation_height (int): The height of the navigation canvas.
+            _game_bord_height (int): The height of the game board canvas.
+        """
+        var = self.var if not self.demo else self.var1
+        #game_variables
+        self.game_height = var.game_height
+        self.game_width = var.game_width
+        self._game_bord_height = None
+        self._nevigation_height = None
+        
+        nevigation_h = self.game_height // 8
+        nevigation_height = nevigation_h // var.game_box_size
+        
+        if not bool(nevigation_height):
+            self._nevigation_height = nevigation_h
+        else:
+            self._nevigation_height = var.game_box_size
+            
+        self._game_bord_height = self.game_height - self._nevigation_height
+    
+    def nevigation_setup(self) -> None:
+        """
+        This method sets up the navigation canvas with essential elements such as a heart icon
+        representing the player's remaining lives, a score text displaying the current score,
+        and a menu option for accessing game options or pausing the game.
+        """
+        var = self.var if not self.demo else self.var1
+        
+        braking_into_4 =  self._nevigation_height // 4
+        
+        self.NEVIGATION_CANVAS = Canvas(
+            master = self.MASTER,
+            bg = var.NEV_COLOR,
+            width = self.game_width,
+            height = self._nevigation_height
+            )
+        
+        self.HEART_NEW = Heart_NEV(
+            canvas = self.NEVIGATION_CANVAS,
+            color = var.HEART_COLOR,
+            initial_heart = var.INISISAL_HEART,
+            limit = var.HEART_LIMIT
+            )
+        
+        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
+            self.game_width // 2,
+            braking_into_4 * 2,
+            font = ("Arial",braking_into_4 * 2,"bold"),
+            text = f"Score: 0",
+            fill = var.TEXT_COLOR
+            )
+        
+        self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
+            braking_into_4 * 4,
+            braking_into_4 * 2,
+            font = ("Arial", braking_into_4 * 2, "bold"),
+            text = "Menu",
+            fill = var.TEXT_COLOR
+            )
+    
+    def game_canvas_setup(self) -> None:
+        """
+        This method sets up the game canvas with the snake and food objects.
+        It creates a canvas widget with the specified background color, width,
+        and height. Then, it initializes the snake and food objects on the canvas
+        using the provided game variables.
+        """
+        var = self.var if not self.demo else self.var1
+        
+        self.GAME_CANVAS = Canvas(
+            master = self.MASTER,
+            bg = var.CANVAS_COLOR,
+            width = self.game_width,
+            height = self._game_bord_height
+            )
+        
+        self.SNAKE = Snake(
+            canvas = self.GAME_CANVAS,
+            lenght = var.SNAKE_LENGHT,
+            coordinates = var.SNAKE_CORDINATES,
+            color = var.SNAKE_COLOR,
+            box_size = var.game_box_size
+            )
+        
+        self.FOOD = Food(
+            canvas = self.GAME_CANVAS,
+            box_size = var.game_box_size,
+            color = var.FOOD_COLOR,
+            )
+        
+        self.HEART = Heart(
+            canvas = self.GAME_CANVAS,
+            box_size = var.game_box_size,
+            color = var.HEART_COLOR
+        )
+        
+        self.COIN = Coin(
+            canvas = self.GAME_CANVAS,
+            box_size = var.game_box_size,
+            color = var.COIN_COLOR
+        )
+        
+    def update_things(self,**kwargs) -> None:
+        """
+        Update game elements based on provided keyword arguments.
+
+        Args:
+            **kwargs: Keyword arguments to update game elements. Available args:
+                      - score: Score to be updated.
+        """
+        if kwargs.get('score',None) is not None:
+            self.NEVIGATION_CANVAS.itemconfig(
+                self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
+            )
+            print("updated ",kwargs['score'])
+        else:
+            print("error : 0012, cant update text of score !")
+        
+    def update_everything(self) -> None:
+        """
+        this method update all elemets posstion and color acording to new one
+        """
+        var = self.var if not self.demo else self.var1
+        self.adjust_window_size()
+        
+        #updating nevigation and its itemes================
+        braking_into_4 =  self._nevigation_height // 4
+        
+        if self.NEVIGATION_CANVAS: self.NEVIGATION_CANVAS.config(
+            bg = var.NEV_COLOR,
+            width = self.game_width,
+            height = self._nevigation_height
+            )
+        
+        if self.HEART:
+            self.HEART_NEW.update_color(var.HEART_COLOR)
+            self.HEART_NEW.update_size()
+            self.HEART_NEW.initial_heart = var.INISISAL_HEART
+            self.HEART_NEW.limit = var.HEART_LIMIT
+        
+        if self.SCORE_TEXT and self.MENU_OPTION:
+            #tuple1 contain text id and its x cords
+            tuple1 = ((self.SCORE_TEXT,self.game_width // 2), (self.MENU_OPTION,braking_into_4 * 4))
+            
+            for text_id , xcords in tuple1:
+                # updating color and size
+                self.NEVIGATION_CANVAS.itemconfig(
+                    text_id[0],
+                    font = ("Arial",braking_into_4 * 2,"bold"),
+                    fill = var.TEXT_COLOR
+                )
+                # updating postion.
+                self.NEVIGATION_CANVAS.coords(
+                    text_id,
+                    xcords,#x
+                    braking_into_4 * 2#y
+                )
+        #updating canvas and its itemes===================
+        if self.GAME_CANVAS: self.GAME_CANVAS.config(
+            bg = var.CANVAS_COLOR,
+            width = self.game_width,
+            height = self._game_bord_height
+            )
+        if self.SNAKE: 
+            self.SNAKE.update_color(var.SNAKE_COLOR)
+            
+        if self.FOOD: 
+            self.FOOD.update_color(var.FOOD_COLOR)
+            self.FOOD._calculate_dimension()
+            
+        if self.HEART: 
+            self.HEART.update_color(var.HEART_COLOR)
+            self.HEART._calculate_dimension()
+            
+        if self.COIN: 
+            self.COIN.update_color(var.COIN_COLOR)
+            self.COIN._calculate_dimension()
+
+    def demo_screen_var_update(self, initialize:bool = False,**kwargs) -> demo_variable:
+        """
+        Update screen variables with provided keyword arguments and optionally initialize the screen.
+        
+        Args:
+            initialize (bool, optional): Whether to call the SET_UP method after updating variables. Defaults to False.
+            
+            **kwargs: Arbitrary keyword arguments for updating screen variables. Expected keys:\
+                    game_height , game_width , game_box_size , HEART_LIMIT , INISISAL_HEART
+                    HEART_COLOR,  NEV_COLOR , TEXT_COLOR , CANVAS_COLOR , COIN_COLOR
+                    FOOD_COLOR , SNAKE_COLOR , SNAKE_CORDINATES , SNAKE_LENGHT
+                
+        Returns:
+            tuple: _description_
+        """        
+        var = {
+            "game_height" : self.var.game_height,
+            "game_width" : self.var.game_width,
+            "game_box_size": self.var.game_box_size,
+            "HEART_LIMIT":self.var.HEART_LIMIT,
+            "INISISAL_HEART":self.var.INISISAL_HEART,
+            "HEART_COLOR":self.var.HEART_COLOR,
+            "NEV_COLOR": self.var.NEV_COLOR,
+            "TEXT_COLOR":self.var.TEXT_COLOR,
+            "CANVAS_COLOR":self.var.CANVAS_COLOR,
+            "FOOD_COLOR":self.var.FOOD_COLOR,
+            "COIN_COLOR":self.var.COIN_COLOR,
+            "SNAKE_COLOR":self.var.SNAKE_COLOR,
+            "SNAKE_LENGHT":self.var.SNAKE_LENGHT,
+            "SNAKE_CORDINATES":self.var.SNAKE_CORDINATES,
+        }
+        var.update(kwargs)
+        self.demo = True
+        
+        if self.var1 is None:
+            self.var1 = demo_variable(var)
+        else:
+            self.var1.update_with_dict(var)
+        
+        if initialize:
+            self.SET_UP()
+        else:
+            self.adjust_window_size()
+            self.update_everything()
+            
+        return var
+        
+    def add_to_Master(self) -> None:
+        """
+        Pack the navigation and game canvases and add it to master
+        """
+        self.MASTER.pack()    
+        self.NEVIGATION_CANVAS.pack()
+        self.GAME_CANVAS.pack()
+
+    def remove_to_Master(self)-> None:
+        """
+        remove the navigation and game canvases. from master
+        """
+        self.NEVIGATION_CANVAS.pack_forget()
+        self.GAME_CANVAS.pack_forget()
+        self.MASTER.pack_forget()
 
 class inisial_screens:
+    
     """
     A class representing an initial screen setup for a game.
 
@@ -96,14 +421,17 @@ class inisial_screens:
         ]
         
         #arttibutes used for game_screen elements
-        self.random_food_color = None
-        self.random_heart_color = None
-        self.random_coin_color = None
+        self.random_food_color = False
+        self.random_heart_color = False
+        self.random_coin_color = False
+        #important regardin animation
         self.speed = None
-        self.animation_after_ids=None
+        self.animation_after_ids = None
+        #header footer and middele button posstion
         self._middel_windows = 0
-        self.header_info = (0,0)
-        self.footer_info = (0,0)
+        self.header_info = (0,0) #padding x and y
+        self.footer_info = (0,0) ##padding x and y
+        #windows ids created id on canvas
         self._Windows_ids = []
         self._header_ids = [None,None,None]
         self._footer_ids = [None,None,None]
@@ -124,7 +452,8 @@ class inisial_screens:
         self.food=Food(
             canvas = self.child_window,
             box_size = self.box_size,
-            color = color
+            color = color,
+            initialize = True
         )
         
     def add_heart(self, color:str, randome_color=False) -> None:
@@ -140,7 +469,8 @@ class inisial_screens:
         self.heart = Heart(
             canvas = self.child_window,
             box_size = self.box_size,
-            color = color
+            color = color,
+            initialize = True
         )
     
     def add_coin(self, color:str, randome_color=False) -> None:
@@ -156,7 +486,8 @@ class inisial_screens:
         self.coin = Coin(
             canvas = self.child_window,
             box_size = self.box_size,
-            color = color
+            color = color,
+            initialize = True
         )
     
     def add_snakes(self, color:str, coordinates:list, lenght:int, direction:str) -> None:
@@ -491,10 +822,10 @@ class inisial_screens:
             canvas = self.child_window,
             box_size = box_size,
             color = "#ffff00",
-            insalize = False,
+            initialize = False
         )
         
-        home_coin.new_coin((x , y),False)
+        home_coin._create_coin_shape(coordinates = (x , y))
         
         def update(header1,header2,footer1,var, home_coin,gamewidth,box_size,padx,pady):
             header1.config(text = f"High score: {var.HIGHT_SCORE}")
@@ -530,25 +861,26 @@ class inisial_screens:
         for snake in self.snakes:
             
             snake.move_the_snakes()
+            snake_cords = snake.snake.snake_coordinates
             x , y = snake.coordinates
             
-            if bool(self.food) and x == self.food.x and y == self.food.y:
+            if bool(self.food) and (x, y )==  self.food.coords:
                 if self.random_food_color:
                     color = choice(self.color_list)
                     self.food.update_color(color)
-                self.food.new_food()
+                self.food.new_food(snake_cords)
             
-            if bool(self.food) and bool(self.heart) and (x , y) == self.heart.coords:
+            if bool(self.heart) and (x , y) == self.heart.coords:
                 if self.random_heart_color:
                     color = choice(self.color_list)
-                    self.heart.change_color(color)
-                self.heart.new_heart(self.food.new_coordinates())
+                    self.heart.update_color(color)
+                self.heart.new_heart(snake_cords)
             
-            if bool(self.food) and bool(self.coin) and (x , y) == self.coin.coords:
+            if bool(self.coin) and (x , y) == self.coin.coords:
                 if self.random_coin_color:
                     color = choice(self.color_list)
-                    self.coin.change_color(color)
-                self.coin.new_coin(self.food.new_coordinates())
+                    self.coin.update_color(color)
+                self.coin.new_coin(snake_cords)
                 
         self.animation_after_ids = self.child_window.after(speed,self.start_animation,speed)
         
@@ -618,261 +950,247 @@ class inisial_screens:
         self.child_window.pack_forget()
 
 
-class Game_screen:
+class setting_screen_gui:
+    """_summary_
+
+    Returns:
+        _type_: _description_
     """
-    Class to manage the game screen, including navigation setup,
-    game canvas setup, updating game elements, and adding/removing
-    from the master widget.
-
-    Attributes:
-        var (variable): An object containing game variables.
-        MASTER (Tk): The parent Tkinter window.
-        NEVIGATION_CANVAS (Canvas): The canvas for navigation elements.
-        GAME_CANVAS (Canvas): The canvas for game elements.
-        SNAKE (Snake): The snake object.
-        FOOD (Food): The food object.
-        HEART (Heart): The heart object.
-        MENU_OPTION (Text): The menu option text.
-        SCORE_TEXT (Text): The score text.
-        _game_bord_height (int): Height of the game board.
-        _nevigation_height (int): Height of the navigation canvas.
-
-    Methods:
-        __init__(Master, var): Initializes the game screen.
-        adjust_window_size(): Adjusts window size based on game and navigation heights.
-        nevigation_setup(): Sets up the navigation canvas with heart, score text, and menu option.
-        game_canvas_setup(): Sets up the game canvas with snake and food.
-        update_things(**kwargs): Updates game elements based on provided keyword arguments.
-        add_to_Master(): Packs the navigation and game canvases.
-        remove_to_Master(): Removes navigation and game canvases from master widget.
-    """
-   
-    def __init__(self,Master:Tk, var:Variable) -> None:
-        """
-        Initialize the game screen. 
-        with main game canvas and nevigation panel
-        and sneck ,  food in hevigation heart score board,
-        and menu option
-
-        Args:
-            Master (Tk): The parent Tkinter window.
-            var (variable): An object containing game variables.
-        """
-   
+    def __init__(self, master:Tk|Frame, var:Variable) -> None:
+        self.master = master
         self.var = var
-        self.root = Master
-        self.MASTER = Frame(self.root)
         
-        self.NEVIGATION_CANVAS = None
-        self.GAME_CANVAS = None
-        self.SNAKE = None
-        self.FOOD = None
-        self.HEART = None
-        self.COIN = None
-        self.HEART_NEW = None
-        self.MENU_OPTION = None
-        self.SCORE_TEXT = None
+        self.game_screen_frame = Frame(self.master)
+        self.setting_screen_frame = Frame(self.master)
         
-        #game_variables
-        self.game_height = self.var.game_height
-        self.game_width = self.var.game_width
-        self._game_bord_height = None
-        self._nevigation_height = None   
-        
-    def set_up(self) -> None:
-        """
-        genrate the game canvas by adjusting 
-        window_size and nevigation_size create the
-        game_canvas with all things set up
-        """
-        self.adjust_window_size()
-        self.nevigation_setup()
-        self.game_canvas_setup()
-        
-    def adjust_window_size(self) -> None:
-        """
-        Adjust the window size based on game height and navigation heights.
-        
-        Note:
-            The navigation height is calculated as one-eighth of the game height,
-            but if the calculated height is less than or equal to the size of game
-            boxes, it defaults to the size of game boxes.
-        
-        Attributes created:
-            _nevigation_height (int): The height of the navigation canvas.
-            _game_bord_height (int): The height of the game board canvas.
-        """
-        nevigation_h = self.game_height // 8
-        nevigation_height = nevigation_h // self.var.game_box_size
-        
-        if not bool(nevigation_height):
-            self._nevigation_height = nevigation_h
-        else:
-            self._nevigation_height = self.var.game_box_size
-            
-        self._game_bord_height = self.game_height - self._nevigation_height
+        self._calculate_dimension()
+        self.Initialize_First_Screen()
+        self.Initialize_second_Screen()
+        self.current_screen = self.demo_screen
     
-    def nevigation_setup(self) -> None:
-        """
-        This method sets up the navigation canvas with essential elements such as a heart icon
-        representing the player's remaining lives, a score text displaying the current score,
-        and a menu option for accessing game options or pausing the game.
-        """
-        braking_into_4 =  self._nevigation_height // 4
+    def _calculate_dimension(self):
+        '''
+        Calculate the screen dimensions for the game and settings screen.
+        '''
+        self._gameexit_button_height = 30
+        self._game_screen_height = self.var.game_height - self._gameexit_button_height - 7
+        self._game_screen_width = self.var.game_width // 1.6
+        self._settingscreen_height = self.var.game_height - 7
+        self._settingscreen_width = self.var.game_width - self._game_screen_width -7
+        self.main_screen_height = None
         
-        self.NEVIGATION_CANVAS = Canvas(
-            master = self.MASTER,
-            bg = self.var.NEV_COLOR,
-            width = self.game_width,
-            height = self._nevigation_height
-            )
+    def _possision_snack_and_idels(self) -> None:
+        '''
+        possison the sneck and idels like food and heart and stuff
+        and postion etc........
+        '''
+        center_borderx = self._game_screen_width // 2
+        center_bordery = self.GAME_SCREEN._game_bord_height // 2
+        box_size = self.var.game_box_size
+        center_borderx, center_bordery = validate_coordinates((center_borderx,center_bordery), box_size)
         
-        self.HEART_NEW = Heart_NEV(
-            canvas = self.NEVIGATION_CANVAS,
-            color = self.var.HEART_COLOR,
-            inisial_heart = self.var.INISISAL_HEART
-            )
+        self.GAME_SCREEN.SNAKE.delete_all()
+        self.GAME_SCREEN.SNAKE.snake_coordinates = [(center_borderx,center_bordery-box_size)]
+        self.GAME_SCREEN.SNAKE.snake_body = [self.GAME_SCREEN.SNAKE._create_body(
+            center_borderx,center_bordery - box_size)
+        ]
         
-        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
-            self.game_width // 2,
-            braking_into_4 * 2,
-            font = ("Arial",braking_into_4 * 2,"bold"),
-            text = f"Score: 0",
-            fill = self.var.TEXT_COLOR
-            )
+        # adding snacke body to left
+        x = center_borderx
+        for _ in range(4):
+            x += box_size
+            self.GAME_SCREEN.SNAKE.move_snake(x - box_size , center_bordery - box_size,False)
         
-        self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
-            braking_into_4 * 4,
-            braking_into_4 * 2,
-            font = ("Arial", braking_into_4 * 2, "bold"),
-            text = "Menu",
-            fill = self.var.TEXT_COLOR
-            )
+        #adding snacke body to right
+        x = center_borderx
+        for _ in range(4):
+            x -= box_size
+            self.GAME_SCREEN.SNAKE.move_snake(x+box_size , center_bordery,False)
+        
+        #adding food:
+        snake_cords = self.GAME_SCREEN.SNAKE.snake_coordinates
+        self.GAME_SCREEN.FOOD.new_food(coordinates = snake_cords)
+        snake_cords += [self.GAME_SCREEN.FOOD.coords]
+        self.GAME_SCREEN.COIN.new_coin(coordinates = snake_cords)
+        snake_cords += [self.GAME_SCREEN.COIN.coords]
+        self.GAME_SCREEN.HEART.new_heart(coordinates = snake_cords)
+        self.GAME_SCREEN.HEART_NEW.add_heart_in_range(range_int = 2)
     
-    def game_canvas_setup(self) -> None:
+    def _adding_second_screen_element(self) -> None:
         """
-        This method sets up the game canvas with the snake and food objects.
-        It creates a canvas widget with the specified background color, width,
-        and height. Then, it initializes the snake and food objects on the canvas
-        using the provided game variables.
+        inisalize the second_screen with all obj requird in screen
+        like nevigation buttons-2, save button-1
+        inclue :-
+            - nevigation_button1  : game button canvs
+            - nevigation_button2  : account button canvs
+            - _text_nev_button_id : (tuple)button1 and button2 text id
+            - _text_nev_button2   : account_button_text_id
+            - save_button         : save button canvas
+            - save_button_text_id : save button_text id
+            - demo_screen         : demo screen for setting
+            - main_screen_height  : the main screen_height
+
+        return :
+            None
         """
-        self.GAME_CANVAS = Canvas(
-            master = self.MASTER,
-            bg = self.var.CANVAS_COLOR,
-            width = self.game_width,
-            height = self._game_bord_height
-            )
-        
-        self.SNAKE = Snake(
-            canvas = self.GAME_CANVAS,
-            lenght = self.var.SNAKE_LENGHT,
-            coordinates = self.var.SNAKE_CORDINATES,
-            color = self.var.SNAKE_COLOR,
-            box_size = self.var.game_box_size
-            )
-        
-        self.FOOD = Food(
-            canvas = self.GAME_CANVAS,
-            box_size = self.var.game_box_size,
-            color = self.var.FOOD_COLOR
-            )
-        
-        self.HEART = Heart(
-            canvas = self.GAME_CANVAS,
-            box_size = self.var.game_box_size,
-            color = self.var.HEART_COLOR,
-            insalize=False
+        nev_button_height = self.GAME_SCREEN._nevigation_height
+        #adding account and shop button and writing text on it :0
+        self.nevigation_button1 = Canvas(
+            master = self.setting_screen_frame,
+            height = nev_button_height,
+            width = (self._settingscreen_width // 2 ) - 7,
+            bg = self.var.theme1
         )
-        
-        self.COIN = Coin(
-            canvas = self.GAME_CANVAS,
-            box_size = self.var.game_box_size,
-            color = self.var.COIN_COLOR,
-            insalize = False 
+        self.nevigation_button2 = Canvas(
+            master = self.setting_screen_frame,
+            height = nev_button_height,
+            width = (self._settingscreen_width // 2 ) - 7,
+            bg = self.var.theme2
         )
+        button_text_id1 = self.nevigation_button1.create_text(
+            self._settingscreen_width // 4,
+            nev_button_height // 2,
+            font = ("Arial",self.var.home_text_size,'bold'),
+            text = "shop",
+            fill = self.var.theme2,
+            anchor = "center"
+        )
+        button_text_id2 = self.nevigation_button2.create_text(
+            self._settingscreen_width // 4,
+            nev_button_height // 2,
+            font = ("Arial",self.var.home_text_size,'bold'),
+            text = "setting",
+            fill = self.var.theme1,
+            anchor = "center"
+        )
+        self._text_nev_button_id = (button_text_id1,button_text_id2)
         
-    def update_things(self,**kwargs) -> None:
+        #adding down save button and its text 
+        self.save_button = Canvas(
+            master = self.setting_screen_frame,
+            height = self._gameexit_button_height,
+            width = self._settingscreen_width ,
+            bg = self.var.theme2
+        )
+        self.save_button_text_id = self.save_button.create_text(
+            self._settingscreen_width // 2,
+            self._gameexit_button_height // 2,
+            font = ("Arial",self.var.home_text_size,'bold'),
+            text = "Save",
+            fill = self.var.theme1,
+            anchor = "center"
+        )
+        # calculating main screen_ height and creating demo screen :0
+        self.main_screen_height = self._settingscreen_height - self._gameexit_button_height - nev_button_height
+        self.demo_screen = Canvas(
+            master = self.setting_screen_frame,
+            height = self.main_screen_height,
+            width = self._settingscreen_width,
+            bg = self.var.theme2
+        )
+    
+    def Initialize_First_Screen(self):
+        self.GAME_SCREEN = Game_screen(self.game_screen_frame,self.var,False)
+        self.GAME_SCREEN.demo_screen_var_update(
+            initialize=True,
+            game_height = self._game_screen_height,
+            game_width = self._game_screen_width
+        )
+        self.back_button = Canvas(
+            master = self.game_screen_frame,
+            height = self._gameexit_button_height,
+            width = self._game_screen_width,
+            bg = self.var.theme2
+        )
+        self.back_button_text_id = self.back_button.create_text(
+            self._game_screen_width //2 , self._gameexit_button_height // 2,
+            font = ("Arial", self.var.home_text_size, "bold"),
+            text = "back",
+            fill = self.var.theme1
+        )
+        self._possision_snack_and_idels()
+        self.GAME_SCREEN.add_to_Master()
+        self.back_button.pack()
+
+    def Initialize_second_Screen(self):
+        self._adding_second_screen_element()
+        self.nevigation_button1.grid(row = 0, column = 0)
+        self.nevigation_button2.grid(row = 0, column = 1)
+        self.demo_screen.grid(row = 1, column = 0, columnspan = 2)
+        self.save_button.grid(row = 2, column = 0, columnspan = 2)
+    
+    def change_screen(self,canvas:Canvas):
         """
-        Update game elements based on provided keyword arguments.
+        Change the current screen to a new canvas in the application.
+
+        This method performs the following actions:
+        1. Invokes the `__shift_button_button1` method with `None` as the argument.
+        2. Removes the currently displayed screen (stored in `self.curent_screen`) from the grid.
+        3. Updates `self.curent_screen` to the provided `canvas`.
+        4. Displays the new canvas by placing it in the grid at row 1, column 0, spanning two columns.
 
         Args:
-            **kwargs: Keyword arguments to update game elements. Available args:
-                      - score: Score to be updated.
+            canvas (Canvas): The new canvas to be displayed on the screen.
         """
-        if kwargs.get('score',None):
-            self.NEVIGATION_CANVAS.itemconfig(
-                self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
-            )
+        # self.__shift_button_button1(None)
+        self.curent_screen.grid_forget()
+        self.curent_screen = canvas
+        self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)    
         
-    def update_everything(self):
-        """
-        this method update all elemets posstion and color acording to new one
-        """
-        #updating game elements
-        self.game_height = self.var.game_height
-        self.game_width = self.var.game_width
-        self.adjust_window_size()
-        
-        #updating nevigation and its itemes================
-        braking_into_4 =  self._nevigation_height // 4
-        
-        if self.NEVIGATION_CANVAS: self.NEVIGATION_CANVAS.config(
-            bg = self.var.NEV_COLOR,
-            width = self.game_width,
-            height = self._nevigation_height
-            )
-        
-        if self.HEART:
-            self.HEART_NEW.update_color(self.var.HEART_COLOR)
-            self.HEART_NEW.update_size()
-        
-        if self.SCORE_TEXT and self.MENU_OPTION:
-            #tuple1 contain text id and its x cords
-            tuple1 = ((self.SCORE_TEXT,self.game_width // 2), (self.MENU_OPTION,braking_into_4 * 4))
-            
-            for text_id , xcords in tuple1:
-                # updating color and size
-                self.NEVIGATION_CANVAS.itemconfig(
-                    text_id[0],
-                    font = ("Arial",braking_into_4 * 2,"bold"),
-                    fill = self.var.TEXT_COLOR
-                )
-                # updating postion.
-                self.NEVIGATION_CANVAS.coords(
-                    text_id,
-                    xcords,#x
-                    braking_into_4 * 2#y
-                )
-        #updating canvas and its itemes===================
-        if self.GAME_CANVAS: self.GAME_CANVAS.config(
-            bg = self.var.CANVAS_COLOR,
-            width = self.game_width,
-            height = self._game_bord_height
-            )
-        if self.SNAKE: self.SNAKE.update_color(self.var.SNAKE_COLOR)
-        if self.FOOD: self.FOOD.update_color(self.var.FOOD_COLOR)
-        if self.HEART: self.HEART.update_color(self.var.HEART_COLOR)
-        if self.COIN: self.COIN.update_color(self.var.COIN_COLOR)
+    def _something(self):
+        self.game_screen_frame.grid(row = 0, column = 0)
+        self.setting_screen_frame.grid(row = 0, column = 1)
     
-    def add_to_Master(self,side = "left",side_status = True) -> None:
-        """
-        Pack the navigation and game canvases and add it to master
-        """
-        if side_status:
-            self.MASTER.pack()
-        else:
-            self.MASTER.pack(side=side)
-            
-        self.NEVIGATION_CANVAS.pack()
-        self.GAME_CANVAS.pack()
+    def save_fucn(self,event):#need to fix
+        pass
+        # # getting_value
+        # width = self.__width_get.get()
+        # height = self.__Height_get.get()
+        # speed = self.__Speed_get.get()
+        # size = self.__Size_get.get()
+        # text = self.__Text_get.get()
+        # volume = self.__Volume_get.get()
+        
+        # #checking_if_value_is_ryt_or_not
+        # if not (width.isdigit() and 360 <= int(width) <= 1440):
+        #     messagebox.showerror("Error", "Width shoude be number and under and equal to 360 and 1440!")
+        #     return None
+        # if not (height.isdigit() and 180 <= int(height) <= 720):
+        #     messagebox.showerror("Error", "Height shoude be number and under and equal to 180 and 720!")
+        #     return None
+        # speed = 100 if speed == 'Extreme' else 150 if speed == 'Fast' else 200 if speed ==  'Normal' else 300
+        # size = 15 if size == 'Small' else 30 if size == "Medium" else 45 if size == 'Large' else 50
+        
+        # #saving_things :0
+        # self.var.game_width = int(width)
+        # self.var.game_height = int(height)
+        # self.var.home_speed = speed
+        # self.var.home_boxsize = size
+        # self.var.home_text_size = text
+        # self.var.volume_level = volume
+        
+        
+        # self.var.update()
+        
+        # #amm just for check u know
+        # print("=========================")
+        # print(width)
+        # print(height)
+        # print(speed)
+        # print(size)
 
-    def remove_to_Master(self)-> None:
-        """
-        remove the navigation and game canvases. from master
-        """
-        self.NEVIGATION_CANVAS.pack_forget()
-        self.GAME_CANVAS.pack_forget()
-        self.MASTER.pack_forget()
+    def _remove(self):
+        self.GAME_SCREEN.remove_to_Master()
+        self.back_button.pack_forget()
+        self.game_screen_frame.grid_forget()
+        self.nevigation_button1.grid_forget()
+        self.nevigation_button2.grid_forget()
+        self.demo_screen.grid_forget()
+        self.save_button.grid_forget()
+        self.setting_screen_frame.grid_forget()
+
+        
+        
 
 
 class WindowGenerator:
@@ -888,7 +1206,7 @@ class WindowGenerator:
         font_size (int): The font size for texts.
         __value (list): A private list to capture values from entry widgets.
     """
-    def __init__(self,root:Tk ,theme:tuple[str,str] ,font_size:int, height:int, width:int) -> None:
+    def __init__(self,root:Tk ,var:Variable, setting_gui:setting_screen_gui) -> None:
         """
         Initialize the setting window screen with specified parameters.
 
@@ -898,43 +1216,100 @@ class WindowGenerator:
             font_size (int): The font size for texts.
         """
         self.root = root
-        self.theme1 = theme[0]
-        self.theme2 = theme[1]
-        self.font_s = font_size
-        self.height = height
-        self.width = width
-        self.__value = None
-        self.font = "Myanmar Text"
-
-    def Inisial_screen(self, master:Frame, text:str = "demo texxt") -> Canvas:
-        """
-        !!!!!!!!!!!!!!!Demo will be removed!!!!!!!!!!!!!!!!!!!!!!
-        
-        Create an initial screen canvas with specified parameters.
-
-        Args:
-            master (tkinter.Widget): The master widget to contain the canvas.
-            height (int): The height of the canvas.
-            widths (int): The width of the canvas.
-            text (str, optional): The text to display on the canvas. Defaults to "demo texxt".
-
-        Returns:
-            Canvas: The canvas containing the initial screen with the specified text.
-        """
-        inisial_screen = Canvas(
-            master = master,
-            height = self.height,
-            width = self.width,
-            bg = self.theme1
-        )
-        inisial_screen.create_text(
-            self.width // 2 , self.height // 2,
-            font = (self.font, self.font_s, 'bold'),
-            text = text,
-            fill = self.theme2,
-        )
-        return inisial_screen
+        self.var = var
+        self.setting_gui = setting_gui
     
+    def __account_setting_calling_func(self) -> None:
+        """
+        this function helps to confirm user password and also if password
+        ryt then take them to account setting canvas:0
+        """
+        get_pass = self.taking_password_for_verification_window()
+        if get_pass == self.var._player_acc_info["password"]:
+            messagebox.showinfo("password matched","password matched now u can modify you account")
+            self.setting_gui.current_screen.grid_forget()
+            # self.
+        else:
+            messagebox.showinfo("wrong password","wrong password u cant modify your account")
+    
+    def __change_password_func(self) -> None:
+        value1, value2 = self.change_password_window()
+        
+        if value1 is None:
+            return None
+        
+        if not (value1 == value2):
+            messagebox.showwarning("Password Mismatch", "The new password and confirmation do not match.")
+            return None
+        
+        self.var.update_password(value1)
+        
+        if value1 == self.var._player_acc_info["password"]:
+            messagebox.showinfo("Password Changed Successfully", "Your password has been updated successfully.")
+        else:
+            messagebox.showerror("Password Change Failed", "There was an error updating your password. Please try again.")
+    
+    def __create_new_account(self):
+        self.create_new_account_window()
+    
+    def __change_account(self):
+        self.change_account_window()
+    
+    def __go_back(self):
+        self.account_setting_screen.grid_forget()
+        self.basic_setting_screen.grid(row = 1 , column = 0,columnspan = 2)
+        
+    def create_shop_window(self,width:int, height:int, canvas:Canvas, info:tuple[tuple]) -> None:
+        pass
+    
+    def create_account_window_or_update(self,master, width:int, height:int, grid_info:dict) -> tuple[Canvas,Canvas]:
+        
+        
+        #1. creating canvas for account option beasic account setting
+        self.basic_setting_screen = Canvas(
+            master = master,
+            height = height,
+            width = width,
+            bg = self.var.theme1
+        )
+        #collecing its var and all widgets in tuple[tuple[any, any]]
+        args = self.var.basic_setting_screen_var(
+            canvas = self.basic_setting_screen,
+            sec_account_calling_method = self.__account_setting_calling_func
+        )
+        #adding widget list (args) to the basic_setting_screen
+        self.creating_form_on_canvas(
+            height = height,
+            width = width,
+            canvas = self.basic_setting_screen,
+            *args
+        )
+        
+        #2. creating canvas for account option account main setting
+        self.account_setting_screen = Canvas(
+            master = master,
+            height = height,
+            width = width,
+            bg = self.var.theme1
+        )
+        #collecing its var and all widgets in tuple[tuple[any, any]]
+        args = self.var.setting_option_menu_var(
+            canvas = self.account_setting_screen,
+            changepass_method = self.__change_password_func,
+            createnewacc_method = self.__create_new_account,
+            changeaccount_method = self.__create_new_account,
+            goback_method = self.__go_back
+        )
+        #adding widget list (args) to the account_setting_screen
+        self.creating_form_on_canvas(
+            height = height,
+            width = width,
+            canvas = self.account_setting_screen,
+            *args
+        )
+        
+        
+        
     def creating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
         '''
         this method create a form on a canvas and return it
@@ -1166,328 +1541,3 @@ class WindowGenerator:
             self.root.attributes('-disabled', False)
             self.root.grab_set()
             self.root.focus_set()
-
-
-
-class setting_option_menu:
-    '''
-    this class will inisalize option menu for the setting where they can change settings
-    '''
-    
-    def __init__(self,master:Frame,var:Variable,canvas_height:int, canvas_width:int, nevigation_height:int, button_height:int , root) -> None:
-        self._master = master
-        self.var = var
-        self.root = root
-        self._canvas_height = canvas_height
-        self._canvas_width  = canvas_width
-        self._nevigation_height  = nevigation_height
-        self._game_button_height = button_height
-        
-        self.height_main_canvs = (self._canvas_height - self._nevigation_height) - self._game_button_height
-        self.width_main_canvs  = self._canvas_width - 14
-        
-        self.curent_screen = None
-        
-        #creating_instance
-        self.windows = WindowGenerator(
-            root = self.root,
-            theme = (self.var.theme1 , self.var.theme2),
-            font_size = self.var.home_text_size,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs
-        )
-        
-        self.INISALIZING_SETTING_SCREEN()
-        self.inisalizing_windows()
-        
-    def inisalizing_windows(self) -> None:
-        basic_setting_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        
-        args = self.var.basic_setting_screen_var(
-            basic_setting_screen,
-            self.__acoount_setting_calling_func
-        )
-        
-        self.basic_setting_screen = self.windows.creating_form_on_canvas(
-            self.height_main_canvs,
-            self.width_main_canvs,
-            basic_setting_screen,
-            *args
-        )
-        account_setting_screen = Canvas(
-            master = self._master,
-            height = self.height_main_canvs,
-            width = self.width_main_canvs,
-            bg = self.var.theme1
-        )
-        
-        args = self.var.setting_option_menu_var(
-            account_setting_screen,
-            self.__change_password_func,
-            self.__create_new_account,
-            self.__change_account,
-            self.__go_back
-        )
-        
-        #setting_widget_in Canvas
-        self.account_setting_screen = self.windows.creating_form_on_canvas(
-            self.height_main_canvs,
-            self.width_main_canvs,
-            account_setting_screen,
-            *args
-        )
-        
-    def INISALIZING_SETTING_SCREEN(self) -> None:
-        '''
-        inisalize the setting screen with all obj requird in screen
-        like nevigation nuttons-2, save button-1
-        inclue :-
-            - nevigation_button1 : game button canvs
-            - nevigation_button2 : account button canvs
-            - _text_nev_button1  : game_button_text_id
-            - _text_nev_button2  : account_button_text_id
-            - save_button        : save button canvas
-            - _save_button_text_itemid : save button_text id
-
-        return :
-            None
-        '''
-        #nevigation button1 game option
-        self.nevigation_button1 = Canvas(
-            master = self._master,
-            height = self._nevigation_height,
-            width= self._canvas_width // 2 -7 , #7 is the width of white border for adjusing width
-            bg = self.var.theme1
-        )
-        #nevigation button2 account option
-        self.nevigation_button2 = Canvas(
-            master = self._master,
-            height = self._nevigation_height,
-            width= self._canvas_width // 2 -7 ,
-            bg = self.var.theme2
-        )
-        #nevigation button1 game option text and itemid
-        self._text_nev_button1 = self.nevigation_button1.create_text(
-            self._canvas_width // 4 , self._nevigation_height //2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "Shop",
-            fill = self.var.theme2
-        )
-        #nevigation button2 account option text and itemid
-        self._text_nev_button2 = self.nevigation_button2.create_text(
-            self._canvas_width // 4 , self._nevigation_height //2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "Setting",
-            fill = self.var.theme1
-        )
-        
-        #adding save buttone
-        self.save_button = Canvas(
-            master = self._master,
-            height = self._game_button_height,
-            width = self._canvas_width -14,
-            bg = self.var.theme2
-        )
-        #save_button_text_id
-        self._save_button_text_itemid = self.save_button.create_text(
-            self._canvas_width // 2,self._game_button_height // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "Save",
-            fill = self.var.theme1
-        )
-        
-    def __acoount_setting_calling_func(self) ->None:
-        '''
-        this function helps to confirm user password and also if password
-        ryt then take them to account setting canvas:0
-        '''
-        get_pass = self.windows.taking_password_for_verification_window()
-        if get_pass == self.var._player_acc_info["password"]:
-            messagebox.showinfo("password matched","password matched now u can modify you account")
-            self.basic_setting_screen.grid_forget()
-            self.account_setting_screen.grid(row = 1 , column = 0,columnspan = 2)
-        else:
-            messagebox.showinfo("wrong password","wrong password u cant modify your account")
-    
-    def __change_password_func(self):
-        value1 , value2 = self.windows.change_password_window()
-        
-        if value1 is None:
-            return None
-        
-        if not (value1 == value2):
-            messagebox.showwarning("Password Mismatch", "The new password and confirmation do not match.")
-            return None
-        
-        self.var.update_password(value1)
-        
-        if value1 == self.var._player_acc_info["password"]:
-            messagebox.showinfo("Password Changed Successfully", "Your password has been updated successfully.")
-        else:
-            messagebox.showerror("Password Change Failed", "There was an error updating your password. Please try again.")
-        
-    def __create_new_account(self):
-        self.windows.create_new_account_window()
-    
-    def __change_account(self):
-        self.windows.change_account_window()
-    
-    def __go_back(self):
-        self.account_setting_screen.grid_forget()
-        self.basic_setting_screen.grid(row = 1 , column = 0,columnspan = 2)
-        
-    def save_fucn(self,event):#need to fix
-        # getting_value
-        width = self.__width_get.get()
-        height = self.__Height_get.get()
-        speed = self.__Speed_get.get()
-        size = self.__Size_get.get()
-        text = self.__Text_get.get()
-        volume = self.__Volume_get.get()
-        
-        #checking_if_value_is_ryt_or_not
-        if not (width.isdigit() and 360 <= int(width) <= 1440):
-            messagebox.showerror("Error", "Width shoude be number and under and equal to 360 and 1440!")
-            return None
-        if not (height.isdigit() and 180 <= int(height) <= 720):
-            messagebox.showerror("Error", "Height shoude be number and under and equal to 180 and 720!")
-            return None
-        speed = 100 if speed == 'Extreme' else 150 if speed == 'Fast' else 200 if speed ==  'Normal' else 300
-        size = 15 if size == 'Small' else 30 if size == "Medium" else 45 if size == 'Large' else 50
-        
-        #saving_things :0
-        self.var.game_width = int(width)
-        self.var.game_height = int(height)
-        self.var.home_speed = speed
-        self.var.home_boxsize = size
-        self.var.home_text_size = text
-        self.var.volume_level = volume
-        
-        
-        self.var.update()
-        
-        #amm just for check u know
-        print("=========================")
-        print(width)
-        print(height)
-        print(speed)
-        print(size)
-        
-    def change_screen(self,canvas:Canvas):
-        """
-        Change the current screen to a new canvas in the application.
-
-        This method performs the following actions:
-        1. Invokes the `__shift_button_button1` method with `None` as the argument.
-        2. Removes the currently displayed screen (stored in `self.curent_screen`) from the grid.
-        3. Updates `self.curent_screen` to the provided `canvas`.
-        4. Displays the new canvas by placing it in the grid at row 1, column 0, spanning two columns.
-
-        Args:
-            canvas (Canvas): The new canvas to be displayed on the screen.
-        """
-        self.__shift_button_button1(None)
-        self.curent_screen.grid_forget()
-        self.curent_screen = canvas
-        self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)    
-    
-    def __shift_button_button1(self,event):
-        """
-        Handle the event when navigation button 1 is clicked.
-
-        This method updates the background colors and text colors of two navigation buttons to reflect
-        the active state of button 1. It also switches the visible screen by hiding the basic setting 
-        and account setting screens, and displaying the current screen.
-
-        Args:
-            event: The event that triggered this method.
-        """
-        self.nevigation_button1.config(bg = self.var.theme1)
-        self.nevigation_button1.itemconfig(self._text_nev_button2, fill = self.var.theme2)
-        self.nevigation_button2.config(bg = self.var.theme2)
-        self.nevigation_button2.itemconfig(self._text_nev_button1, fill = self.var.theme1)
-        #button1 acction code 
-        self.basic_setting_screen.grid_forget()#even if its not grid already its simply pass so needa worry
-        self.account_setting_screen.grid_forget()
-        self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)
-    
-    def __shift_button_button2(self,event):
-        """
-        Handle the event when navigation button 2 is clicked.
-
-        This method updates the background colors and text colors of two navigation buttons to reflect
-        the active state of button 2. It also switches the visible screen by hiding the current screen 
-        and account setting screens, and displaying the basic setting screen.
-
-        Args:
-            event: The event that triggered this method.
-        """
-        self.nevigation_button1.config(bg = self.var.theme2)
-        self.nevigation_button1.itemconfig(self._text_nev_button1, fill = self.var.theme1)
-        self.nevigation_button2.config(bg = self.var.theme1)
-        self.nevigation_button2.itemconfig(self._text_nev_button2, fill = self.var.theme2)
-        #button2 acction code 
-        self.curent_screen.grid_forget()
-        self.account_setting_screen.grid_forget()
-        self.basic_setting_screen.grid(row = 1 , column = 0,columnspan = 2)
-        
-    def BIND_KEYS(self) -> None:
-        '''
-        bind the keys for setting screen
-            - nevigation_button1 -game
-            - nevigation_button2 -account
-            - save_button
-        '''
-        self.nevigation_button1.bind("<Button-1>",self.__shift_button_button1)
-        self.nevigation_button2.bind("<Button-1>",self.__shift_button_button2)
-        self.save_button.bind("<Button-1>",self.save_fucn)
-    
-    def REMOVE_BIND_KEYS(self) -> None:
-        '''
-        undbin all the setting keys at once
-        '''
-        self.nevigation_button1.unbind_all("<Button-1>")
-        self.nevigation_button2.unbind_all("<Button-1>")
-        self.save_button.unbind_all("<Button-1>")
-        
-    def PACK_CURRENT_SCREEN(self) -> None:
-        """
-        Packs the current screen and associated navigation and save
-        buttons into the grid layout and add binding of keys.
-        
-        If current_screen is None, the method returns None.
-        """
-        if self.curent_screen is None:
-            return None
-        
-        self.nevigation_button1.grid(row = 0, column = 0)
-        self.nevigation_button2.grid(row = 0, column = 1)
-        self.curent_screen.grid(row = 1 , column = 0,columnspan = 2)
-        self.save_button.grid(row = 2 , column = 0 , columnspan = 2)
-        
-        self.BIND_KEYS()
-    
-    def REMOVE_CURRENT_SCREEN(self) -> None:
-        """
-        Removes the current screen and associated navigation and 
-        save buttons from the grid layout and remove all binded keys.
-        
-        If current_screen is None, the method returns None.
-        """
-        if self.curent_screen is None:
-            return None
-        self.REMOVE_BIND_KEYS()
-        
-        self.nevigation_button1.grid_forget()
-        self.nevigation_button2.grid_forget()
-        self.curent_screen.grid_forget()
-        self.save_button.grid_forget()
-
-
-
-
