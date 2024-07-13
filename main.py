@@ -2,6 +2,7 @@ from variable import Variable
 from game_screens import inisial_screens, Game_screen , WindowGenerator, setting_screen_gui
 from tkinter import Tk,Frame,Button,Label,Canvas
 from random import choice
+import webbrowser
 import time
 
 
@@ -408,7 +409,7 @@ class setting_screen:
         self.main_frame = Frame(master = self.master, relief="flat", bg="black")
         
         self.setting_screen = setting_screen_gui(self.main_frame, self.var)
-        self.windows = WindowGenerator(root = self.master, var = var, setting_gui = self.setting_screen)
+        self.windows = WindowGenerator(root = root, var = var, setting_gui = self.setting_screen)
         
         self.set_up()
         
@@ -560,6 +561,7 @@ class setting_screen:
     def set_up(self):
         self.setting_screen._something()
         self.__get_idels_cordinates()
+        # self.windows.create_account_window_or_update()
     
     def bind_keys(self) -> None:
         self._bind_keys_id = [
@@ -620,6 +622,114 @@ class setting_screen:
 
 
 
+class about_me_class:
+    def __init__(self, root: Tk, width: int, height: int, var: Variable, home_screen:inisial_screens) -> None:
+        self.width = width
+        self.height = height
+        self.var = var
+        self.home_screen = home_screen
+        self.master = Frame(
+            master=root,
+            width=width,
+            height=height,
+            bg=self.var.CANVAS_COLOR
+        )
+        self.text_label = None
+        self.initialize()
+
+    def initialize(self) -> None:
+        about_me_text = (
+            "About Me\n\n"
+            "I am a passionate game developer currently working on a multiplayer snake game. "
+            "My journey into coding began at a young age, and I have developed strong skills in Python, C++, and game development. "
+            "With a background in mobile phone repair and programming, I have honed my technical expertise and creativity. "
+            "My goal is to create engaging and relaxing games that help players feel better when they are feeling down. "
+            "In addition to game development, I enjoy realistic sketching, reading romantic books, and playing chess.\n\n"
+            "Social Media Handles:\n"
+            
+        )
+        self.text_label = Label(
+            master=self.master,
+            text=about_me_text,
+            anchor='nw',
+            justify='left',
+            padx=10,
+            pady=10,
+            fg=self.var.TEXT_COLOR,
+            bg=self.var.CANVAS_COLOR,
+            font=(self.var.Form_font, self.var.home_text_size),
+            wraplength=self.master.winfo_reqwidth() - 30
+        )
+        self.text_label.grid(row=0,column=0,columnspan=4,padx=10,pady=10)
+
+        # Add buttons for social media and email
+        social_media_links = [
+            ("Instagram (private acc)", "https://instagram.com/akki_raj_._"),
+            ("Instagram (code acc)", "https://instagram.com/its_just_me_akki"),
+            ("Instagram (Art acc)", "https://instagram.com/akki_artist_"),
+            ("(X) Twitter", "https://x.com/Akhand_raj_"),
+            ("Email", "mailto:akhandr153@gmail.com"),
+            ("GitHub", "https://github.com/Akkiraj1234")
+        ]
+        
+        for num in range(4):
+            platform,url = social_media_links[num]
+            button = Button(
+                self.master,
+                text=platform,
+                fg="blue",
+                bg = self.var.CANVAS_COLOR,
+                cursor="hand2",
+                relief="flat",
+                command=lambda url=url: self.open_url(url)
+            )
+            button.grid(row=1, column=num)
+        
+        for num in range(2):
+            platform,url = social_media_links[num+4]
+            button = Button(
+                self.master,
+                text=platform,
+                fg="blue",
+                bg = self.var.CANVAS_COLOR,
+                cursor="hand2",
+                relief="flat",
+                command=lambda url=url: self.open_url(url)
+            )
+            button.grid(row=2, column=num + 1,pady=10)
+        
+        back_button = Button(
+            self.master,
+            text="Back",
+            fg=self.var.TEXT_COLOR,
+            bg=self.var.CANVAS_COLOR,
+            cursor="hand2",
+            relief="flat",
+            font=(self.var.FONT_STYLE, self.var.home_text_size),
+            command=self.back_button_method
+        )
+        back_button.grid(row=3, column=0, columnspan=4)
+    
+    def update_things(self):
+        pass
+    
+    def back_button_method(self):
+        self.remove_to_master()
+        self.home_screen.add_to_master()
+        self.home_screen.start_animation(self.var.game_speed)
+        
+    def open_url(self, url):
+        webbrowser.open_new(url)
+
+    def add_to_master(self) -> None:
+        self.master.pack()
+        self.update_things()
+    
+    def remove_to_master(self) -> None:
+        self.master.pack_forget()
+        
+        
+        
 def play_home():
     """
     Transition to the game screen from the home screen.
@@ -652,7 +762,9 @@ def about_me_home():
     Behavior:
     - Prints a message indicating the user's intent to learn about the creator.
     """
-    print("hmmm u wanna know about me me crying :)")
+    home_screen.remove_from_master()
+    home_screen.stop_animation()
+    about_me_.add_to_master()
     
 def resume_pause_menu():
     """
@@ -890,6 +1002,7 @@ if __name__ == "__main__":
     pause_menu = pause_menu_initialization(root, var)
     game = Game_engion(Master=root, var=var, pause_screen=pause_menu)
     shop = setting_screen(root , var, home_screen = home_screen)
+    about_me_ = about_me_class(root,var.game_width,var.game_height,var,home_screen)
     
     main()
     print(root.children.values())

@@ -1182,14 +1182,15 @@ class setting_screen_gui:
         # print(size)
 
     def _remove(self):
-        self.GAME_SCREEN.remove_to_Master()
-        self.back_button.pack_forget()
-        self.game_screen_frame.grid_forget()
-        self.nevigation_button1.grid_forget()
-        self.nevigation_button2.grid_forget()
-        self.demo_screen.grid_forget()
-        self.save_button.grid_forget()
-        self.setting_screen_frame.grid_forget()
+        pass
+        # self.GAME_SCREEN.remove_to_Master()
+        # self.back_button.pack_forget()
+        # self.game_screen_frame.grid_forget()
+        # self.nevigation_button1.grid_forget()
+        # self.nevigation_button2.grid_forget()
+        # self.demo_screen.grid_forget()
+        # self.save_button.grid_forget()
+        # self.setting_screen_frame.grid_forget()
 
         
         
@@ -1220,6 +1221,14 @@ class WindowGenerator:
         self.root = root
         self.var = var
         self.setting_gui = setting_gui
+        
+        self.shop_canvas = None
+        self.account_canvas1 = None
+        self.account_canvas2 = None
+        self.shop_canvas_button = None
+        self.shop_canvas_shape_id = None
+        self.shop_canvas_text_id = None
+        
     
     def __account_setting_calling_func(self) -> None:
         """
@@ -1261,8 +1270,75 @@ class WindowGenerator:
         self.account_setting_screen.grid_forget()
         self.basic_setting_screen.grid(row = 1 , column = 0,columnspan = 2)
         
-    def create_shop_window(self,width:int, height:int, canvas:Canvas, info:tuple[tuple]) -> None:
-        pass
+    def create_shop_window(self,master:Frame, width:int, height:int, info:tuple[dict]) -> None:
+        if not self.shop_canvas:
+            self.shop_canvas = Canvas(
+                master = master,
+                width = width,
+                height = height,
+                bg = self.var.theme1
+            )
+            
+        if not self.shop_canvas_button:
+            self.shop_canvas_button = [
+                Button(
+                    self.shop_canvas,
+                    bg = self.var.theme1,
+                    fg=self.var.theme2,
+                    font = ("Arial",10, "bold"),
+                    # text = "buy",
+                ) for _ in range(6)
+            ]
+        
+        if not self.shop_canvas_shape_id:
+            self.shop_canvas_shape_id = [
+                Canvas.create_rectangle(
+                    self.shop_canvas,
+                    0 , 0 , 0 , 0 ,
+                    state = "hidden"
+                ) for _ in range(6)
+            ]
+        if not self.shop_canvas_text_id:
+            self.shop_canvas_text_id = [
+                Canvas.create_text(
+                    self.shop_canvas,
+                    0 , 0 , state = "hidden"
+                )
+            ]
+        
+        self._add_square_obj_in_canvas(self.shop_canvas,width,info)
+        return self.shop_canvas
+    
+    def _add_square_obj_in_canvas(self,canvas:Canvas,width:int,info:tuple[dict]):
+        #calculating_info
+        box_size = (width / 1.4) // 3
+        pad = (width / 3.25) // 4
+        
+        x , y = pad,pad
+        for i in range(3):
+            info_dict = info[i]
+            canvas.create_rectangle(
+                x, y, x + box_size, y + box_size, fill=info_dict["color"]
+            )
+            canvas.create_text(
+                x + box_size / 2, y+ box_size / 2, fill="black",
+                text = info_dict["price"]
+            )
+            canvas.create_window(
+                x + box_size / 2,(y+box_size)+(pad/2),
+                anchor = "center", window = self.shop_canvas_button[i]
+            )
+            x += box_size + pad
+        
+        x , y = pad,box_size + pad + pad
+        for i in range(3,6):
+            info_dict = info[i]
+            canvas.create_rectangle(
+                x, y, x + box_size, y + box_size, fill=info_dict["color"]
+            )
+            x += box_size + pad
+        
+        
     
     def create_account_window_or_update(self,master, width:int, height:int, grid_info:dict) -> tuple[Canvas,Canvas]:
         
@@ -1309,9 +1385,7 @@ class WindowGenerator:
             canvas = self.account_setting_screen,
             *args
         )
-        
-        
-        
+             
     def creating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
         '''
         this method create a form on a canvas and return it
@@ -1543,3 +1617,22 @@ class WindowGenerator:
             self.root.attributes('-disabled', False)
             self.root.grab_set()
             self.root.focus_set()
+
+
+# root = Tk()
+# demo = (
+#         {"color":"red","price":300,"id":1},
+#         {"color":"yellow","price":380,"id":2},
+#         {"color":"green","price":380,"id":3},
+#         {"color":"white","price":380,"id":4},
+#         {"color":"blue","price":380,"id":5},
+#         {"color":"black","price":500,"id":6},
+#         "update_to"
+#     )
+# var = Variable()
+# ref_win = WindowGenerator(root,var,None)
+# lol = ref_win.create_shop_window(root,300,400,demo)
+# print(lol, lol == ref_win.shop_canvas)
+# lol.pack()
+
+# root.mainloop()
