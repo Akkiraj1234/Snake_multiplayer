@@ -29,8 +29,9 @@ class Variable:
         self.get_the_info()
         
         #fixed and constant variables
-        self.SNAKE_LENGHT = 3
         self.SNAKE_CORDINATES = (0,0)
+        self.SNAKE_LOSS_COUNTDOWN = 2
+        self.HEART_LIMIT = 5
         self.FONT_STYLE =  "Press Start 2P" 
         self.Form_font = "Myanmar Text"
         self.INISIAL_HOME_TEXT = "Sneck suffarie :0"
@@ -40,6 +41,46 @@ class Variable:
         self.game_speed = 100
         self.game_box_size = 30
     
+    @property
+    def CANVAS_COLOR(self) -> str:
+        return self._player_acc_info["canvas_info"]["items"][self._player_acc_info["canvas_info"]["selected_index"]]["color"]
+    
+    @property
+    def NEV_COLOR(self) -> str:
+        return self._player_acc_info["nevigation_info"]["items"][self._player_acc_info["nevigation_info"]["selected_index"]]["color"]
+    
+    @property
+    def TEXT_COLOR(self) -> str:
+        return self._player_acc_info["text_info"]["items"][self._player_acc_info["text_info"]["selected_index"]]["color"]
+    
+    @property
+    def FOOD_COLOR(self) -> str:
+        return self._player_acc_info["food_info"]["items"][self._player_acc_info["food_info"]["selected_index"]]["color"]
+    
+    @property
+    def HEART_COLOR(self) -> str:
+        return self._player_acc_info["heart_info"]["items"][self._player_acc_info["heart_info"]["selected_index"]]["color"]
+    
+    @property
+    def COIN_COLOR(self) -> str:
+        return self._player_acc_info["coin_info"]["items"][self._player_acc_info["coin_info"]["selected_index"]]["color"]
+    
+    @property
+    def SNAKE_COLOR(self) -> str:
+        return self._player_acc_info["snake_info"]["items"][self._player_acc_info["snake_info"]["selected_index"]]["color"]
+    
+    @property
+    def SNAKE_LENGHT(self) -> int:
+        return self._player_acc_info["snake_info"]["upgradable"] * self._player_acc_info["inisiak_snake"]
+    
+    @property
+    def INISISAL_HEART(self) -> int:
+        return self._player_acc_info["heart_info"]["upgradable"] * self._player_acc_info["inisial_heart"]
+
+    @property
+    def COIN_VALUE(self) -> int:
+        return self._player_acc_info["coin_info"]["upgradable"] * self._player_acc_info["coin_value"]
+        
     def get_the_info(self):
         """
         Initialize the game and user variables by loading data from JSON files.
@@ -61,22 +102,14 @@ class Variable:
         self.active_user_name     = self._player_acc_info["name"]
         self.PLAYERP_COINE  = self._player_acc_info["points"]
         self.HIGHT_SCORE    = self._player_acc_info["HIGH_SCORE"]
-        self.NEV_COLOR      = self._player_acc_info["Cur_nev_color"]
-        self.TEXT_COLOR     = self._player_acc_info["cur_text_color"]
-        self.HEART_COLOR    = self._player_acc_info["cur_heart_color"]
-        self.CANVAS_COLOR   = self._player_acc_info["cur_canvas_color"]
-        self.FOOD_COLOR     = self._player_acc_info["cur_food_color"]
-        self.COIN_COLOR     = "#ffff00"
-        self.SNAKE_COLOR    = self._player_acc_info["cur_snake_color"]
-        self.INISISAL_HEART = self._player_acc_info["inisial_heart"]
-        self.HEART_LIMIT    = 5
-        self.SNAKE_LOSS_COUNTDOWN = self._player_acc_info["countdown_time_s"]
         
-        self.owned_heart_color  = self._player_acc_info["owned_heart_color"]
-        self.owned_nev_color    = self._player_acc_info["inisial_heart"]
-        self.owned_food_color   = self._player_acc_info["owned_food_color"]
-        self.owned_snake_color  = self._player_acc_info["owned_snake_color"]
-        self.owned_canvas_color = self._player_acc_info["owned_canvas_color"]
+        self.canvas_info = self._player_acc_info["canvas_info"]
+        self.nevigation_info    = self._player_acc_info["nevigation_info"]
+        self.text_info = self._player_acc_info["text_info"]
+        self.food_info   = self._player_acc_info["food_info"]
+        self.snake_info  = self._player_acc_info["snake_info"]
+        self.heart_info  = self._player_acc_info["heart_info"]
+        self.coin_info = self._player_acc_info["coin_info"]
         
     def getting_and_extracting_info(self) -> None:
         """
@@ -107,20 +140,14 @@ class Variable:
         self._player_acc_info["name"]              = self.active_user_name
         self._player_acc_info["HIGH_SCORE"]        = self.HIGHT_SCORE
         self._player_acc_info["points"]            = self.PLAYERP_COINE
-        self._player_acc_info["Cur_nev_color"]     = self.NEV_COLOR
-        self._player_acc_info["cur_text_color"]    = self.TEXT_COLOR
-        self._player_acc_info["cur_heart_color"]   = self.HEART_COLOR
-        self._player_acc_info["cur_canvas_color"]  = self.CANVAS_COLOR
-        self._player_acc_info["cur_food_color"]    = self.FOOD_COLOR
-        self._player_acc_info["cur_snake_color"]   = self.SNAKE_COLOR
-        self._player_acc_info["inisial_heart"]     = self.INISISAL_HEART
-        self._player_acc_info["countdown_time_s"]  = self.SNAKE_LOSS_COUNTDOWN
         
-        self._player_acc_info["owned_nev_color"]   = self.owned_nev_color
-        self._player_acc_info["owned_heart_color"] = self.owned_heart_color
-        self._player_acc_info["owned_canvas_color"]= self.owned_canvas_color
-        self._player_acc_info["owned_food_color"]  = self.owned_food_color
-        self._player_acc_info["owned_snake_color"] = self.owned_snake_color
+        self._player_acc_info["canvas_info"] = self.canvas_info
+        self._player_acc_info["nevigation_info"] = self.nevigation_info
+        self._player_acc_info["text_info"] = self.text_info
+        self._player_acc_info["food_info"] = self.food_info 
+        self._player_acc_info["snake_info"] = self.snake_info 
+        self._player_acc_info["heart_info"] = self.heart_info
+        self._player_acc_info["coin_info"] = self.coin_info
         
         with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
             json.dump(self._player_acc_info, player_file,)
@@ -139,26 +166,6 @@ class Variable:
         self._game_setting["theme"]["theme1"]           = self.theme1
         self._game_setting["theme"]["theme2"]           = self.theme2
         self._game_setting["game_info"]["Account"]      = self._active_account
-        
-        with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
-            json.dump(self._game_setting,game_setting)
-            
-    def updaing_game_setting(self) -> None:
-        """
-        Update game settings in the 'setting.json' file.
-        by anything chnageed on the variable
-        """
-        self._game_setting["basic_info"]["game_width"] = self.game_width
-        self._game_setting["basic_info"]["game_height"] = self.game_height
-        self._game_setting["basic_info"]["box_size"] = self.home_boxsize
-        self._game_setting["basic_info"]["speed"] = self.home_speed
-        self._game_setting["basic_info"]["text_size"] = self.home_text_size
-        self._game_setting["basic_info"]["volume_level"] = self.volume_level
-        self._game_setting["theme"]["theme1"] = self.theme1
-        self._game_setting["theme"]["theme2"] = self.theme2
-        self._game_setting["game_info"]["box_size"] = self.game_box_size
-        self._game_setting["game_info"]["game_speed"] = self.game_speed
-        self._game_setting["game_info"]["Account"] = self._active_account
         
         with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
             json.dump(self._game_setting,game_setting)
@@ -282,8 +289,6 @@ class Variable:
             (create_new_account , change_account),
             (go_back , None)
         )
-        
-        
     
     def update_password(self,password) -> None:
         """
@@ -299,13 +304,13 @@ class Variable:
         with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
             json.dump(self._player_acc_info, player_file)
         
-    
     def update(self) -> None:
         """
         Update both user and game settings.
         """
         self.update_user_settings()
         self.updaing_game_setting()
+
     
 class demo_variable:
     
@@ -330,4 +335,3 @@ class demo_variable:
         """
         for key, value in dict1.items():
             setattr(self, key, value)
-                

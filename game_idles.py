@@ -180,6 +180,24 @@ def validate_coordinates(cords ,box_size:int) -> tuple[int:int]:
     
     return (x , y)
 
+def check_cords_in_range(self, list_cords:list[tuple], coordinates:tuple[int]) -> bool:
+    """
+    Check if the given coordinates fall within any of the ranges specified in the list of coordinates.
+
+    Parameters:
+    - list_cords (list[tuple, tuple]): A list of tuples representing coordinate ranges. Each tuple contains
+        four integers (x1, y1, x2, y2), defining a rectangular area.
+    - coordinates (tuple[int, int]): A tuple representing the coordinates to be checked.
+
+    Returns:
+    - bool: True if the coordinates fall within any of the specified ranges, False otherwise.
+    """
+    x , y = coordinates
+    for group in list_cords:
+        x1 , y1 , x2 , y2 = group
+        if x1 < x < x2 and y1 < y < y2:
+            return True
+    return False
 
 class Snake:
     """

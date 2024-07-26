@@ -1,6 +1,6 @@
 from variable import Variable
-from game_screens import inisial_screens, Game_screen , WindowGenerator, setting_screen_gui
-from tkinter import Tk,Frame,Button,Label,Canvas
+from game_screens import inisial_screens, Game_screen , WindowGenerator, setting_screen_gui , WindowCreator
+from tkinter import Tk,Frame,Button,Label
 from random import choice
 import webbrowser
 import time
@@ -410,8 +410,13 @@ class setting_screen:
         
         self.setting_screen = setting_screen_gui(self.main_frame, self.var)
         self.windows = WindowGenerator(root = root, var = var, setting_gui = self.setting_screen)
-        
         self.set_up()
+        self.screen_frame = self.setting_screen.game_screen_frame
+        self.setting_frame = self.setting_screen.setting_screen_frame
+        self.setting_frame_height = self.setting_screen.main_screen_height
+        self.setting_frame_width = self.setting_screen._settingscreen_width
+        self.windows2 = WindowCreator(self.setting_frame,self.var,self.setting_frame_width,self.setting_frame_height)
+        
         
     def __check_cords_in_range(self, list_cords:list[tuple], coordinates:tuple[int]) -> bool:
         """
@@ -524,39 +529,49 @@ class setting_screen:
         Prints:
             A message indicating the type of action based on the event coordinates and the game screen.
         """
+        def None1(lol):
+            pass
+        
+        def None2(lol):
+            pass
+        
         if screen == 1:
             if self.__check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text1")
-                print("you touched text")
+                self.windows2.change_window(self.var.text_info,None1,None2)
+                self.windows2.add_to_window()
                 
             elif self.__check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text2")
-                print("you rouched heart")
+                self.windows2.change_window(self.var.heart_info,None1,None2)
+                self.windows2.add_to_window()
                 
-            else:
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text3")
-                print("you touched background")
+            else:                
+                self.windows2.change_window(self.var.nevigation_info,None1,None2)
+                self.windows2.add_to_window()
                 
         elif screen == 2:
             if self.__check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text4")
-                print("woops you touched snake")
+                method1 = lambda color : self.setting_screen.GAME_SCREEN.SNAKE.update_color(color)
+                self.windows2.change_window(self.var.snake_info,method1,None2)
+                self.windows2.add_to_window()
                 
             elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text5")
-                print("you touched food")
+                
+                self.windows2.change_window(self.var.food_info,None1,None2)
+                self.windows2.add_to_window()
                 
             elif self.__check_cords_in_range(self._cordinates_coin, (event.x , event.y)):
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"coin window")
-                print("you touched coin")
+                
+                self.windows2.change_window(self.var.coin_info,None1,None2)
+                self.windows2.add_to_window()
             
             elif self.__check_cords_in_range(self._cordinates_canvas_heart, (event.x , event.y)):
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"heart window")
-                print("you touched another heart")
+                
+                self.windows2.change_window(self.var.heart_info,None1,None2)
+                self.windows2.add_to_window()
                 
             else:
-                # window = self.windows.Inisial_screen(self.setting_screen_frame,"text6")
-                print("you touched background")
+                self.windows2.change_window(self.var.canvas_info,None1,None2)
+                self.windows2.add_to_window()
      
     def set_up(self):
         self.setting_screen._something()
@@ -594,7 +609,7 @@ class setting_screen:
         '''
         add the setting screen to master
         '''
-        self.main_frame.grid()
+        self.main_frame.pack()
         self.bind_keys()
         # self.gane_screen_frame.grid(row = 0,column=0)
         # self.setting_screen_frame.grid(row = 0,column = 1)
@@ -610,7 +625,7 @@ class setting_screen:
         '''
         self.setting_screen._remove()
         self.remove_bind_keys()
-        self.main_frame.grid_forget()
+        self.main_frame.pack_forget()
         print(root.children.values())
         
         # self.remove_binding_keys()
@@ -813,6 +828,7 @@ def update_everything():
     pause_menu.update_everything()
     home_screen.update_everything()
     game.update_everything()
+    root.config(bg = var.CANVAS_COLOR)
 
 def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
     """
@@ -990,6 +1006,7 @@ def main():
     root.geometry(f"{var.game_width+5}x{var.game_height+5}")
     # root.resizable(width=False,height=False)
     root.title(var.INISIAL_HOME_TEXT)
+    root.config(bg=var.CANVAS_COLOR)
     home_screen.start_animation(var.game_speed)
     
 

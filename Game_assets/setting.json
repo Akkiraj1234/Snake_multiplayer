@@ -13,6 +13,8 @@
     },
     "game_info": {
         "Account": "demo_player",
-        "verstion": "1.0"
+        "verstion": "1.0",
+        "box_size": 30,
+        "game_speed": 100
     }
 }
