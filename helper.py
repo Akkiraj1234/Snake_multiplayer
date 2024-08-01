@@ -155,7 +155,7 @@ def validate_coordinates(cords ,box_size:int) -> tuple[int:int]:
     
     return (x , y)
 
-def check_cords_in_range(self, list_cords:list[tuple], coordinates:tuple[int]) -> bool:
+def check_cords_in_range(list_cords:list[tuple], coordinates:tuple[int]) -> bool:
     """
     Check if the given coordinates fall within any of the ranges specified in the list of coordinates.
 
@@ -173,3 +173,8 @@ def check_cords_in_range(self, list_cords:list[tuple], coordinates:tuple[int]) -
         if x1 < x < x2 and y1 < y < y2:
             return True
     return False
+
+def round_up_coords(height:int, width:int, box_size:int, coordinates:tuple) -> tuple[int,int]:
+    coordinates[0] = min((height // box_size),max(0,coordinates[0]))*box_size
+    coordinates[1] = min((width // box_size),max(0,coordinates[1]))*box_size
+    return coordinates

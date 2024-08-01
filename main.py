@@ -1,5 +1,6 @@
 from variable import Variable
-from game_screens import inisial_screens, Game_screen , WindowGenerator, setting_screen_gui , WindowCreator
+from game_screens import inisial_screens, Game_screen, setting_screen_gui , WindowCreator
+from helper import check_cords_in_range
 from tkinter import Tk,Frame,Button,Label
 from random import choice
 import webbrowser
@@ -379,7 +380,6 @@ class Game_engion:
         self.stop_game_animation = False
 
 
-
 class setting_screen:
     '''
     this classs help us inisalizing gui game screen 
@@ -406,109 +406,37 @@ class setting_screen:
         self.master = master
         self.var = var
         self.home_screen = home_screen
+        
         self.main_frame = Frame(master = self.master, relief="flat", bg="black")
+        self.game_screen_frame = Frame(self.main_frame)
+        self.setting_screen_frame = Frame(self.main_frame)
         
-        self.setting_screen = setting_screen_gui(self.main_frame, self.var)
-        self.windows = WindowGenerator(root = root, var = var, setting_gui = self.setting_screen)
-        self.set_up()
-        self.screen_frame = self.setting_screen.game_screen_frame
-        self.setting_frame = self.setting_screen.setting_screen_frame
-        self.setting_frame_height = self.setting_screen.main_screen_height
-        self.setting_frame_width = self.setting_screen._settingscreen_width
-        self.windows2 = WindowCreator(self.setting_frame,self.var,self.setting_frame_width,self.setting_frame_height)
+        self.setting_screen = setting_screen_gui(
+            game_frame = self.game_screen_frame,
+            setting_frame = self.setting_screen_frame,
+            var = self.var,
+            initialize = True
+        )
         
+        self._get_arttbutes()
         
-    def __check_cords_in_range(self, list_cords:list[tuple], coordinates:tuple[int]) -> bool:
-        """
-        Check if the given coordinates fall within any of the ranges specified in the list of coordinates.
-
-        Parameters:
-        - list_cords (list[tuple, tuple]): A list of tuples representing coordinate ranges. Each tuple contains
-            four integers (x1, y1, x2, y2), defining a rectangular area.
-        - coordinates (tuple[int, int]): A tuple representing the coordinates to be checked.
-
-        Returns:
-        - bool: True if the coordinates fall within any of the specified ranges, False otherwise.
-        """
-        x , y = coordinates
-        for group in list_cords:
-            x1 , y1 , x2 , y2 = group
-            if x1 < x < x2 and y1 < y < y2:
-                return True
-        return False
+        self.window = WindowCreator(
+            master = self.setting_screen_frame,
+            var = self.var,
+            width = self._setting_frame_width,
+            height = self._setting_frame_height
+        )
     
-    def __get_idels_cordinates(self) -> None:
-        '''
-        Get the coordinates of various elements on the game screen.
-
-        This method retrieves the coordinates of different elements on the game screen, such as menu options, score text, hearts, food, and snake body segments.
-
-        Returns:
-        - None
-        '''
-        nevigation_canvas = self.setting_screen.GAME_SCREEN.NEVIGATION_CANVAS
-        game_canvas = self.setting_screen.GAME_SCREEN.GAME_CANVAS
-        self._cordinates_home_and_score = [
-            nevigation_canvas.bbox(self.setting_screen.GAME_SCREEN.MENU_OPTION),
-            nevigation_canvas.bbox(self.setting_screen.GAME_SCREEN.SCORE_TEXT)
-        ]
-        
-        self._hearts_cordinates = [
-            nevigation_canvas.bbox(body)
-            for heart in self.setting_screen.GAME_SCREEN.HEART_NEW.heart_list
-            for body in heart
-        ]
-        
-        self._cordinates_food = [
-            game_canvas.bbox(self.setting_screen.GAME_SCREEN.FOOD.food)
-        ]
-        
-        self._cordinates_sneck = [
-            game_canvas.bbox(snack)
-            for snack in self.setting_screen.GAME_SCREEN.SNAKE.snake_body
-        ]
-        
-        self._cordinates_canvas_heart = [
-            game_canvas.bbox(heart)
-            for heart in self.setting_screen.GAME_SCREEN.HEART.hearts
-        ]
-        
-        self._cordinates_coin = [
-            game_canvas.bbox(coin)
-            for coin in self.setting_screen.GAME_SCREEN.COIN.coins
-        ]
-
-    def __shift_button_button1(self, event) -> None:
+    def _get_arttbutes(self) -> None:
         """
-        Handle the event when navigation button 1 is clicked.
-
-        This method updates the background colors and text colors of two navigation buttons to reflect
-        the active state of button 1. It also switches the visible screen by hiding the basic setting 
-        and account setting screens, and displaying the current screen.
-
-        Args:
-            event: The event that triggered this method.
+        get all the artibutes from game screen which is nesseassary
         """
-        self.setting_screen.nevigation_button1.config(bg = self.var.theme1)
-        self.setting_screen.nevigation_button1.itemconfig(self.setting_screen._text_nev_button_id[0], fill = self.var.theme2)
-        self.setting_screen.nevigation_button2.config(bg = self.var.theme2)
-        self.setting_screen.nevigation_button2.itemconfig(self.setting_screen._text_nev_button_id[1], fill = self.var.theme1)
-    
-    def __shift_button_button2(self, event) -> None:
-        """
-        Handle the event when navigation button 2 is clicked.
-
-        This method updates the background colors and text colors of two navigation buttons to reflect
-        the active state of button 2. It also switches the visible screen by hiding the current screen 
-        and account setting screens, and displaying the basic setting screen.
-
-        Args:
-            event: The event that triggered this method.
-        """
-        self.setting_screen.nevigation_button1.config(bg = self.var.theme2)
-        self.setting_screen.nevigation_button1.itemconfig(self.setting_screen._text_nev_button_id[0], fill = self.var.theme1)
-        self.setting_screen.nevigation_button2.config(bg = self.var.theme1)
-        self.setting_screen.nevigation_button2.itemconfig(self.setting_screen._text_nev_button_id[1], fill = self.var.theme2)   
+        self._setting_frame_height = self.setting_screen.main_screen_height
+        self._setting_frame_width = self.setting_screen._settingscreen_width
+        
+        self.coordinates_home_and_score, self.hearts_coordinates,\
+            self.coordinates_food, self.coordinates_snake, self.coordinates_canvas_heart,\
+                self.coordinates_coin = self.setting_screen.get_idels_coordinates()
     
     def __save_button_method(self, event) -> None:
         print(event.x)
@@ -536,47 +464,42 @@ class setting_screen:
             pass
         
         if screen == 1:
-            if self.__check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
-                self.windows2.change_window(self.var.text_info,None1,None2)
-                self.windows2.add_to_window()
+            if check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
+                self.window.change_window(self.var.text_info,None1,None2)
+                self.window.add_to_window()
                 
-            elif self.__check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
-                self.windows2.change_window(self.var.heart_info,None1,None2)
-                self.windows2.add_to_window()
+            elif check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
+                self.window.change_window(self.var.heart_info,None1,None2)
+                self.window.add_to_window()
                 
             else:                
-                self.windows2.change_window(self.var.nevigation_info,None1,None2)
-                self.windows2.add_to_window()
+                self.window.change_window(self.var.nevigation_info,None1,None2)
+                self.window.add_to_window()
                 
         elif screen == 2:
-            if self.__check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
+            if check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
                 method1 = lambda color : self.setting_screen.GAME_SCREEN.SNAKE.update_color(color)
-                self.windows2.change_window(self.var.snake_info,method1,None2)
-                self.windows2.add_to_window()
+                self.window.change_window(self.var.snake_info,method1,None2)
+                self.window.add_to_window()
                 
-            elif self.__check_cords_in_range(self._cordinates_food, (event.x, event.y)):
+            elif check_cords_in_range(self._cordinates_food, (event.x, event.y)):
                 
-                self.windows2.change_window(self.var.food_info,None1,None2)
-                self.windows2.add_to_window()
+                self.window.change_window(self.var.food_info,None1,None2)
+                self.window.add_to_window()
                 
-            elif self.__check_cords_in_range(self._cordinates_coin, (event.x , event.y)):
+            elif check_cords_in_range(self._cordinates_coin, (event.x , event.y)):
                 
-                self.windows2.change_window(self.var.coin_info,None1,None2)
-                self.windows2.add_to_window()
+                self.window.change_window(self.var.coin_info,None1,None2)
+                self.window.add_to_window()
             
-            elif self.__check_cords_in_range(self._cordinates_canvas_heart, (event.x , event.y)):
+            elif check_cords_in_range(self._cordinates_canvas_heart, (event.x , event.y)):
                 
-                self.windows2.change_window(self.var.heart_info,None1,None2)
-                self.windows2.add_to_window()
+                self.window.change_window(self.var.heart_info,None1,None2)
+                self.window.add_to_window()
                 
             else:
-                self.windows2.change_window(self.var.canvas_info,None1,None2)
-                self.windows2.add_to_window()
-     
-    def set_up(self):
-        self.setting_screen._something()
-        self.__get_idels_cordinates()
-        # self.windows.create_account_window_or_update()
+                self.window.change_window(self.var.canvas_info,None1,None2)
+                self.window.add_to_window()
     
     def bind_keys(self) -> None:
         self._bind_keys_id = [
@@ -588,10 +511,7 @@ class setting_screen:
             ),
             self.setting_screen.GAME_SCREEN.GAME_CANVAS.bind(
                 "<Button-1>", lambda event: self._check_bind_event_on_game_screen(event , 2)
-            ),
-            
-            self.setting_screen.nevigation_button1.bind("<Button-1>",self.__shift_button_button1),
-            self.setting_screen.nevigation_button2.bind("<Button-1>",self.__shift_button_button2)
+            )
         ]
     
     def remove_bind_keys(self) -> None:
@@ -602,39 +522,27 @@ class setting_screen:
         self.setting_screen.save_button.unbind("<Button-1>", self._bind_keys_id[1])
         self.setting_screen.GAME_SCREEN.NEVIGATION_CANVAS.unbind("<Button-1>",self._bind_keys_id[2])
         self.setting_screen.GAME_SCREEN.GAME_CANVAS.unbind("<Button-1>",self._bind_keys_id[3])
-        self.setting_screen.nevigation_button1.unbind("<Button-1>", self._bind_keys_id[4])
-        self.setting_screen.nevigation_button2.unbind("<Button-1>", self._bind_keys_id[5])
+    
+    def update_size_and_color(self):
+        self.setting_screen.update_size_and_color()
+        self._get_arttbutes()
+        self.window.update_size_and_color()
     
     def ADD_TO_MASTER(self) -> None:
         '''
         add the setting screen to master
         '''
+        self.setting_screen.add_to_master()
         self.main_frame.pack()
         self.bind_keys()
-        # self.gane_screen_frame.grid(row = 0,column=0)
-        # self.setting_screen_frame.grid(row = 0,column = 1)
-        
-        # self.game_screen.add_to_Master()
-        # self.back_button.pack()
-        # self.window_screen.PACK_CURRENT_SCREEN()
-        # self.binding_keys()
     
     def REMOVE_TO_MASTER(self):
         '''
         remove the setting screen from the master
         '''
-        self.setting_screen._remove()
-        self.remove_bind_keys()
+        self.setting_screen.remove_to_master()
         self.main_frame.pack_forget()
-        print(root.children.values())
-        
-        # self.remove_binding_keys()
-        # self.game_screen.remove_to_Master()
-        # self.window_screen.REMOVE_CURRENT_SCREEN()
-        # self.gane_screen_frame.grid_forget()
-        # self.back_button.pack_forget()
-        # self.setting_screen_frame.grid_forget()
-
+        self.remove_bind_keys()
 
 
 class about_me_class:
