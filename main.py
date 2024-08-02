@@ -1,5 +1,5 @@
 from variable import Variable
-from game_screens import inisial_screens, Game_screen, setting_screen_gui , WindowCreator
+from game_screens import inisial_screens, Game_screen, setting_screen_gui , shop_screen , account_screen
 from helper import check_cords_in_range
 from tkinter import Tk,Frame,Button,Label
 from random import choice
@@ -420,12 +420,24 @@ class setting_screen:
         
         self._get_arttbutes()
         
-        self.window = WindowCreator(
+        self.accont_window = account_screen(
             master = self.setting_screen_frame,
             var = self.var,
             width = self._setting_frame_width,
             height = self._setting_frame_height
         )
+        
+        self.shop_window = shop_screen(
+            master = self.setting_screen_frame,
+            var = self.var,
+            width = self._setting_frame_width,
+            height = self._setting_frame_height
+        )
+        
+        self.setting_screen.add_accont_shop_screen(
+            account = self.accont_window.canvas
+        )
+        
     
     def _get_arttbutes(self) -> None:
         """
@@ -434,12 +446,13 @@ class setting_screen:
         self._setting_frame_height = self.setting_screen.main_screen_height
         self._setting_frame_width = self.setting_screen._settingscreen_width
         
-        self.coordinates_home_and_score, self.hearts_coordinates,\
-            self.coordinates_food, self.coordinates_snake, self.coordinates_canvas_heart,\
-                self.coordinates_coin = self.setting_screen.get_idels_coordinates()
+        self._coordinates_home_and_score, self._hearts_coordinates,\
+            self._coordinates_food, self._coordinates_snake, self._coordinates_canvas_heart,\
+                self._coordinates_coin = self.setting_screen.get_idels_coordinates()
     
     def __save_button_method(self, event) -> None:
-        print(event.x)
+        new_info_dict = self.accont_window.get_value()
+        self.var.update_by_dict(new_info_dict)
     
     def __back_button_method(self, event) -> None:
         self.REMOVE_TO_MASTER()
@@ -464,42 +477,40 @@ class setting_screen:
             pass
         
         if screen == 1:
-            if check_cords_in_range(self._cordinates_home_and_score, (event.x, event.y)):
-                self.window.change_window(self.var.text_info,None1,None2)
-                self.window.add_to_window()
+            # window = self.setting_screen.GAME_SCREEN
+            if check_cords_in_range(self._coordinates_home_and_score, (event.x, event.y)):
+                # method1 = lambda color : window.SCORE_TEXT
+                # window.MENU_OPTION
+                self.shop_window.change_window(self.var.text_info,None1,None2)
                 
-            elif check_cords_in_range(self._hearts_cordinates, (event.x, event.y)):
-                self.window.change_window(self.var.heart_info,None1,None2)
-                self.window.add_to_window()
+            elif check_cords_in_range(self._hearts_coordinates, (event.x, event.y)):
+                self.shop_window.change_window(self.var.heart_info,None1,None2)
                 
             else:                
-                self.window.change_window(self.var.nevigation_info,None1,None2)
-                self.window.add_to_window()
+                self.shop_window.change_window(self.var.nevigation_info,None1,None2)
                 
         elif screen == 2:
-            if check_cords_in_range(self._cordinates_sneck, (event.x, event.y)):
+            if check_cords_in_range(self._coordinates_snake, (event.x, event.y)):
                 method1 = lambda color : self.setting_screen.GAME_SCREEN.SNAKE.update_color(color)
-                self.window.change_window(self.var.snake_info,method1,None2)
-                self.window.add_to_window()
+                self.shop_window.change_window(self.var.snake_info,method1,None2)
                 
-            elif check_cords_in_range(self._cordinates_food, (event.x, event.y)):
+            elif check_cords_in_range(self._coordinates_food, (event.x, event.y)):
                 
-                self.window.change_window(self.var.food_info,None1,None2)
-                self.window.add_to_window()
+                self.shop_window.change_window(self.var.food_info,None1,None2)
                 
-            elif check_cords_in_range(self._cordinates_coin, (event.x , event.y)):
+            elif check_cords_in_range(self._coordinates_coin, (event.x , event.y)):
                 
-                self.window.change_window(self.var.coin_info,None1,None2)
-                self.window.add_to_window()
+                self.shop_window.change_window(self.var.coin_info,None1,None2)
             
-            elif check_cords_in_range(self._cordinates_canvas_heart, (event.x , event.y)):
+            elif check_cords_in_range(self._coordinates_canvas_heart, (event.x , event.y)):
                 
-                self.window.change_window(self.var.heart_info,None1,None2)
-                self.window.add_to_window()
+                self.shop_window.change_window(self.var.heart_info,None1,None2)
                 
             else:
-                self.window.change_window(self.var.canvas_info,None1,None2)
-                self.window.add_to_window()
+                self.shop_window.change_window(self.var.canvas_info,None1,None2)
+                
+        shop_window = self.shop_window.main_canvas
+        self.setting_screen.change_screen(shop_window, second_screen = True)
     
     def bind_keys(self) -> None:
         self._bind_keys_id = [
@@ -526,7 +537,7 @@ class setting_screen:
     def update_size_and_color(self):
         self.setting_screen.update_size_and_color()
         self._get_arttbutes()
-        self.window.update_size_and_color()
+        self.shop_window.update_size_and_color()
     
     def ADD_TO_MASTER(self) -> None:
         '''

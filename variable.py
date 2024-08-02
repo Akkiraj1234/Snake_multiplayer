@@ -234,6 +234,7 @@ class Variable:
         self.bssv_speed_get.set('Small'if size == 15 else "Medium" if size == 30 else 'Large' if size == 45 else 'Extra Large')
         speed = self.home_speed
         self.bssv_size_get.set('Extreme' if speed == 100 else 'Fast' if speed == 150 else 'Normal' if speed == 200 else 'Slow')
+        
         self.bssv_text_get.set(self.home_text_size)
         self.bssv_volume_get.set(self.volume_level)
         
@@ -311,7 +312,8 @@ class Variable:
         self.update_user_settings()
         self.updaing_game_setting()
 
-    
+    def update_by_dict(self, info) -> None:
+        print(info)
 class demo_variable:
     
     def __init__(self, dict1:dict) -> None:
