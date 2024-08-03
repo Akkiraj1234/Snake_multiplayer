@@ -267,6 +267,17 @@ class Game_screen:
         if self.COIN: 
             self.COIN.update_color(var.COIN_COLOR)
             self.COIN._calculate_dimension()
+    
+    def update_text(self, color:str) -> None:
+        tuple1 = (self.SCORE_TEXT, self.MENU_OPTION)
+        
+        if self.SCORE_TEXT and self.MENU_OPTION:
+            
+            for text_id in tuple1:
+                self.NEVIGATION_CANVAS.itemconfig(
+                        text_id,
+                        fill = color
+                    ) 
 
     def demo_screen_var_update(self, initialize:bool = False,**kwargs) -> demo_variable:
         """
@@ -1442,9 +1453,9 @@ class shop_screen:
                 text = "select"
             )
             self.current_data["selected_index"] = index
+            self.current_update_method(data[index]["color"])
             
         self.current_data["items"] = data
-        self.current_update_method(data[index]["color"])
     
     def _button2_method(self,index_num) -> None:
         """
@@ -1473,7 +1484,8 @@ class shop_screen:
                 
                 
         elif index_num == 3:
-            print("save")
+            self.current_save_method()
+            print("saved")
             
         elif index_num == 4:
             if len(self.current_data["items"]) > 6:

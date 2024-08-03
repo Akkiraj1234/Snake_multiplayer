@@ -459,6 +459,8 @@ class setting_screen:
         self.home_screen.add_to_master()
         self.home_screen.start_animation(self.var.home_speed)
         self.home_screen.update_nessassaery(update=True)
+        self.home_screen.update_everything()
+        game.update_everything()
     
     def _check_bind_event_on_game_screen(self, event , screen:int) -> None:
         """Check and handle events based on the current game screen and event coordinates.
@@ -470,44 +472,48 @@ class setting_screen:
         Prints:
             A message indicating the type of action based on the event coordinates and the game screen.
         """
-        def None1(lol):
-            pass
-        
-        def None2(lol):
-            pass
-        
+        window = self.setting_screen.GAME_SCREEN
         if screen == 1:
-            # window = self.setting_screen.GAME_SCREEN
             if check_cords_in_range(self._coordinates_home_and_score, (event.x, event.y)):
-                # method1 = lambda color : window.SCORE_TEXT
-                # window.MENU_OPTION
-                self.shop_window.change_window(self.var.text_info,None1,None2)
+                method1 = lambda color : window.update_text(color=color)
+                method2 = lambda : setattr(self.var,'text_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.text_info,method1,method2)
                 
             elif check_cords_in_range(self._hearts_coordinates, (event.x, event.y)):
-                self.shop_window.change_window(self.var.heart_info,None1,None2)
+                method1 = lambda color : (window.HEART.update_color(color),window.HEART_NEW.update_color(color))
+                method2 = lambda : setattr(self.var,'heart_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.heart_info,method1,method2)
                 
-            else:                
-                self.shop_window.change_window(self.var.nevigation_info,None1,None2)
+            else:
+                method1 = lambda color : window.NEVIGATION_CANVAS.config(bg = color)
+                method2 = lambda : setattr(self.var,'nevigation_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.nevigation_info,method1,method2)
                 
         elif screen == 2:
             if check_cords_in_range(self._coordinates_snake, (event.x, event.y)):
-                method1 = lambda color : self.setting_screen.GAME_SCREEN.SNAKE.update_color(color)
-                self.shop_window.change_window(self.var.snake_info,method1,None2)
+                method1 = lambda color : window.SNAKE.update_color(color)
+                method2 = lambda : setattr(self.var,'snake_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.snake_info,method1,method2)
                 
             elif check_cords_in_range(self._coordinates_food, (event.x, event.y)):
-                
-                self.shop_window.change_window(self.var.food_info,None1,None2)
+                method1 = lambda color : window.FOOD.update_color(color)
+                method2 = lambda : setattr(self.var,'food_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.food_info,method1,method2)
                 
             elif check_cords_in_range(self._coordinates_coin, (event.x , event.y)):
-                
-                self.shop_window.change_window(self.var.coin_info,None1,None2)
+                method1 = lambda color : window.COIN.update_color(color)
+                method2 = lambda : setattr(self.var,'coin_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.coin_info,method1,method2)
             
             elif check_cords_in_range(self._coordinates_canvas_heart, (event.x , event.y)):
-                
-                self.shop_window.change_window(self.var.heart_info,None1,None2)
+                method1 = lambda color : (window.HEART.update_color(color),window.HEART_NEW.update_color(color))
+                method2 = lambda : setattr(self.var,'canvas_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.heart_info,method1,method2)
                 
             else:
-                self.shop_window.change_window(self.var.canvas_info,None1,None2)
+                method1 = lambda color : window.GAME_CANVAS.config(bg = color)
+                method2 = lambda : setattr(self.var,'nevigation_info',self.shop_window.current_data)
+                self.shop_window.change_window(self.var.canvas_info,method1,method2)
                 
         shop_window = self.shop_window.main_canvas
         self.setting_screen.change_screen(shop_window, second_screen = True)
