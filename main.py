@@ -1,6 +1,6 @@
 from variable import Variable
 from game_screens import inisial_screens, Game_screen, setting_screen_gui , shop_screen , account_screen
-from helper import check_cords_in_range
+from helper import check_cords_in_range, deep_copy
 from tkinter import Tk,Frame,Button,Label
 from random import choice
 import webbrowser
@@ -459,7 +459,7 @@ class setting_screen:
         self.home_screen.add_to_master()
         self.home_screen.start_animation(self.var.home_speed)
         self.home_screen.update_nessassaery(update=True)
-        self.home_screen.update_everything()
+        self.home_screen.update_everything(self.var)
         game.update_everything()
     
     def _check_bind_event_on_game_screen(self, event , screen:int) -> None:
@@ -693,7 +693,6 @@ def shop_home():
     """
     home_screen.remove_from_master()
     shop.ADD_TO_MASTER()
-    print(root.children.values())
     
 def about_me_home():
     """
@@ -947,7 +946,6 @@ if __name__ == "__main__":
     about_me_ = about_me_class(root,var.game_width,var.game_height,var,home_screen)
     
     main()
-    print(root.children.values())
     root.update()
     root.mainloop()
     

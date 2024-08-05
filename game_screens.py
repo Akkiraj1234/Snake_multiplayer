@@ -3,6 +3,7 @@ from random import choice
 
 from game_idles import *
 from variable import Variable, demo_variable
+from helper import deep_copy
 
 
 class Game_screen:
@@ -237,7 +238,7 @@ class Game_screen:
             for text_id , xcords in tuple1:
                 # updating color and size
                 self.NEVIGATION_CANVAS.itemconfig(
-                    text_id[0],
+                    text_id,
                     font = ("Arial",braking_into_4 * 2,"bold"),
                     fill = var.TEXT_COLOR
                 )
@@ -1093,8 +1094,6 @@ class account_screen:
             (self._AS_button , None)
         )
         
-        print(self.height)
-        print(type(self.height))
         self._creating_form_on_canvas(self.height,self.width,self.canvas,*args_)
         
     def _create_window2(self):
@@ -1267,20 +1266,25 @@ class shop_screen:
         Parameters:
         master (Frame|Tk): The parent widget for the main canvas.
         var (Variable): An instance of the Variable class to hold theme and other settings.
+        width (int) : inisial width of the canvas
+        height (int) : inisial height of the canvas
         """
         self.main_canvas = None
         self.shop_shape_id = []
         self.shop_button_id = []
         self.shape_text_id = []
         self.button_text_id = []
-        self.footer_shape_id = []
-        self.footer_text_id = []
         self.upgradable_id = []
         self.upgradable_text = None
+        
+        self.footer_shape_id = []
+        self.footer_text_id = []
+        
         self.master = master
         self.var = var
         
-        
+        self._current_value = 0
+        self._orignal_index = None
         self.current_data = None
         self.current_Sindex = None
         self.current_update_method = None
@@ -1288,33 +1292,45 @@ class shop_screen:
         
         self.set_up()
         self.resize_window(width,height)
+        self._bind_key()
     
-    def _bind_key_and_get_cords(self) -> None:
-        """
-        The way its contains coordinates are :
-        _button_coords = index-[0,1,2,3,4,5,6,7,8,9]
-        From 0 to 5 its shop canvas button coordinates.
-        From 6 to 9 its conatins coordinates in this squence:
-        upgradable_id[1](button), footer_shape_id[0-2](back,save,next)
-        """
+    def __is_visible(self, id) -> bool:
+        state = self.main_canvas.itemcget(id, 'state')
+        return state != 'hidden'
+    
+    def _bind_key(self) -> None:
+        """bind the canvas with button-1 click with a method _calling_func_method"""
         self.main_canvas.bind("<Button-1>",self._calling_func_method)
-        
-        self._button_coords = [
-            self.main_canvas.bbox(self.shop_button_id[num]) for num in range(6)
-        ]
-        self._button_coords.append(
-            self.main_canvas.bbox(self.upgradable_id[1])
-        )
-        for id in self.footer_shape_id:
-            self._button_coords.append(self.main_canvas.bbox(id))
     
     def _unbind_keys(self) -> None:
+        """unbind the canvas with button-1 click"""
         self.main_canvas.unbind_all("<Button-1>")
     
-    def _add_info_shopitems(self,data:tuple[dict]) -> None:
+    def _add_upgrade(self):
+        
+        if self.current_data["upgradable"] >= 5:
+            return 
+        
+        self.current_data["upgradable"] += 1
+        
+        self.main_canvas.itemconfig(
+            self.upgradable_id[2 + self.current_data["upgradable"]-1],
+            fill = "yellow",
+        )
+        
+        power = self.current_data["upgradable"]
+        charge = self.current_data["charge"]
+        
+        self.main_canvas.itemconfig(
+            self.upgradable_text,
+            text = (power * charge) if power < 5 else 'MAX',
+            state = "normal"
+        )
+            
+    def _add_info_shopitems(self , data:tuple[dict]) -> None:
         """
         add info in canvas and gui according to the data
-        for 6 shapes shapes, shape_text, button shape and text
+        for 6 shapes (shapes, shape_text, button shape and text)
 
         Args:
             data (tuple[dict]): data for the updation should be a tuple
@@ -1347,22 +1363,39 @@ class shop_screen:
             )
     
     def _add_info_upgradable(self) -> None:
-        for num in range(self.current_data["upgradable"]):
-            self.main_canvas.itemconfig(
-            self.upgradable_id[2 + num],
-            fill = "yellow",
-            state = "normal"
-            )
-        power = self.current_data["upgradable"]
-        charge = self.current_data["charge"]
-        self.main_canvas.itemconfig(
-            self.upgradable_text,
-            text = power * charge,
-            state = "normal"
-        )
+        """
+        Updates the canvas items for upgradable elements.
+
+        Sets the fill color to yellow and makes upgradable items visible based on 
+        current_data. Updates upgradable_text with the product of 'upgradable' and 
+        'charge' values.
+
+        Attributes:
+            current_data (dict): Contains 'upgradable' and 'charge' keys.
+        """
+        #making upgradalble visible if self.current_data["upgradable"] else return
         if self.current_data["upgradable"]:
             for id in self.upgradable_id:
                 self.main_canvas.itemconfig(id,state = "normal") 
+            self.main_canvas.itemconfig(self.upgradable_text,state = "normal") 
+        else:
+            return
+        
+        # coloring old upgradable... to yellow
+        for num in range(self.current_data["upgradable"]):
+            self.main_canvas.itemconfig(
+            self.upgradable_id[2 + num],
+            fill = "yellow"
+            )
+            
+        #adding money text..
+        power = self.current_data["upgradable"]
+        charge = self.current_data["charge"]
+        
+        self.main_canvas.itemconfig(
+            self.upgradable_text,
+            text = (power * charge) if power < 5 else 'MAX'
+        )
         
     def _calling_func_method(self,event) -> None:
         """
@@ -1379,53 +1412,66 @@ class shop_screen:
         coords = (event.x , event.y)
         
         if check_coords_in_range(self._button_coords[0],coords):
-            self._button_method(0)
+            if self.__is_visible(self.shop_button_id[0]): 
+                self._button_method(0)
             
         elif check_coords_in_range(self._button_coords[1],coords):
-            self._button_method(1)
+            if self.__is_visible(self.shop_button_id[1]):
+                self._button_method(1)
             
         elif check_coords_in_range(self._button_coords[2],coords):
-            self._button_method(2)
+            if self.__is_visible(self.shop_button_id[2]): 
+                self._button_method(2)
             
         elif check_coords_in_range(self._button_coords[3],coords):
-            self._button_method(3)
+            if self.__is_visible(self.shop_button_id[3]): 
+                self._button_method(3)
             
         elif check_coords_in_range(self._button_coords[4],coords):
-            self._button_method(4)
+            if self.__is_visible(self.shop_button_id[4]): 
+                self._button_method(4)
             
         elif check_coords_in_range(self._button_coords[5],coords):
-            self._button_method(5)
+            if self.__is_visible(self.shop_button_id[5]): 
+                self._button_method(5)
             
         elif check_coords_in_range(self._button_coords[6],coords):
-            self._button2_method(1)
+            if self.__is_visible(self.upgradable_id[1]): 
+                self._button2_method(1)
             
         elif check_coords_in_range(self._button_coords[7],coords):
-            self._button2_method(2)
+            if self.__is_visible(self.footer_shape_id[0]): 
+                self._button2_method(2)
             
         elif check_coords_in_range(self._button_coords[8],coords):
-            self._button2_method(3)
+            if self.__is_visible(self.footer_shape_id[1]):
+                self._button2_method(3)
             
         elif check_coords_in_range(self._button_coords[9],coords):
-            self._button2_method(4)
+            if self.__is_visible(self.footer_shape_id[2]):
+                self._button2_method(4)
     
     def _button_method(self,index_num) -> None:
         """
         handeling button event acording to button index
         """
-        index = self.current_Sindex + index_num
+        index = self.current_Sindex + index_num #for working with data
         data = self.current_data["items"]
         selected = self.current_data["selected_index"]
-                
+        
+        #checking if purchasing or not if not purchase
         if not data[index]["purchased"]:
             # handelling buying
-            if self.var.PLAYERP_COINE >= data[index]["price"]:
-                self.var.PLAYERP_COINE -= data[index]["price"]
+            if self._current_value >= data[index]["price"]:
+                self._current_value -= data[index]["price"]
             else:
                 messagebox.showwarning("buying info","purchase cant be made becouse of less money")
                 return
             
+            #updating dict data by actually index
             data[index]["purchased"] = True
             
+            #upating canvas element by index_num..
             self.main_canvas.itemconfig(
                 self.button_text_id[index_num],
                 text = "select"
@@ -1435,27 +1481,33 @@ class shop_screen:
                 text = ""
             )
         
+        #checking if its already selected then pass
         elif data[index]["purchased"] and data[index]["selected"]:
             return 
         
+        #checking if not selected then selecting
         elif data[index]["purchased"] and not data[index]["selected"]:
             
+            #making selected dict data to true and old selcted to false
             data[index]["selected"] = True
             data[selected]["selected"] = False
             
+            #updating canvas id by index_num
             self.main_canvas.itemconfig(
                 self.button_text_id[index_num],
                 text = "selected"
             )
-            print(selected%5)
-            self.main_canvas.itemconfig(
-                self.button_text_id[(selected)],
-                text = "select"
-            )
+            #update if selected come under current data else not
+            #becouee it wont be visully appear so just needa change in dict
+            if self.current_Sindex <= selected < (self.current_Sindex + 6):
+                self.main_canvas.itemconfig(
+                    self.button_text_id[(selected % 6)], #selcted % 6 for round up
+                    text = "select"
+                )
+            
+            #changing the current selected index
             self.current_data["selected_index"] = index
             self.current_update_method(data[index]["color"])
-            
-        self.current_data["items"] = data
     
     def _button2_method(self,index_num) -> None:
         """
@@ -1465,16 +1517,18 @@ class shop_screen:
         if index_num == 1:
             power = self.current_data["upgradable"]
             money = power * self.current_data["charge"]
-            if power < 5 and self.var.PLAYERP_COINE >= money:
-                self.current_data["upgradable"] += 1
-                self._add_info_upgradable()
-                self.var.PLAYERP_COINE -= money
+            if not( power < 5 ):
+                return
+            
+            if self._current_value >= money:
+                self._add_upgrade()
+                self._current_value -= money
             else:
                 messagebox.showwarning("buying info","purchase cant be made becouse of less money")
             
         elif index_num == 2:
             if not self.current_Sindex <= 5:
-                self.set_to_defult()
+                self.set_to_defult(upgradable = False)
                 self.current_Sindex -= 6
                 
                 data = self.current_data["items"]\
@@ -1482,22 +1536,20 @@ class shop_screen:
                 
                 self._add_info_shopitems(data)
                 
-                
         elif index_num == 3:
+            self.var.PLAYERP_COINE = self._current_value
             self.current_save_method()
             print("saved")
             
         elif index_num == 4:
-            if len(self.current_data["items"]) > 6:
-                self.set_to_defult()
+            if self.current_Sindex + 6 < len(self.current_data["items"]):
+                self.set_to_defult(upgradable = False)
                 self.current_Sindex += 6
                 
                 data = self.current_data["items"]\
                 [self.current_Sindex:self.current_Sindex+6]
                 
                 self._add_info_shopitems(data)
-        
-        self.current_update_method(None)
         
     def set_up(self) -> None:
         """
@@ -1508,10 +1560,12 @@ class shop_screen:
         height (int): The height of the canvas.
         """
         # Create the main canvas if it does not already exist
+        
         if not self.main_canvas : self.main_canvas = Canvas(
             master = self.master,
             bg = self.var.theme1
         )
+        
         # Create hidden rectangles for shop shapes if they do not already exist
         if not self.shop_shape_id : self.shop_shape_id = [
             self.main_canvas.create_rectangle(
@@ -1523,15 +1577,14 @@ class shop_screen:
         if not self.shop_button_id : self.shop_button_id = [
             self.main_canvas.create_rectangle(
                 0 , 0 , 0 , 0 ,
-               state = "hidden",
-               
+               state = "hidden"
             ) for _ in range(6)
         ]
         # Create hidden text elements for shape texts if they do not already exist
         if not self.shape_text_id : self.shape_text_id = [
             self.main_canvas.create_text(
                 0 , 0 , state = "hidden" ,
-                anchor = "center", text = "buy"
+                anchor = "center", text = "buy",
             ) for _ in range(6)
         ]
         # Create hidden text elements for button texts if they do not already exist
@@ -1544,7 +1597,7 @@ class shop_screen:
         if not self.upgradable_id : self.upgradable_id = [
             self.main_canvas.create_rectangle(
                 0 , 0 , 0 , 0 , 
-                state = "hidden"
+                state = "hidden",
             ) for _ in range(7)
         ]
         if not self.upgradable_text : 
@@ -1556,27 +1609,44 @@ class shop_screen:
         if not self.footer_shape_id : self.footer_shape_id = [
             self.main_canvas.create_rectangle(
                 0 , 0 , 0 , 0 ,
-                state = "disabled"
+                state = "normal"
             ) for _ in range(3)
         ]
         if not self.footer_text_id : self.footer_text_id = [
             self.main_canvas.create_text(
-                0 , 0 , state = "hidden" ,
-                anchor = "center", text = "buy"
-            ) for _ in range(3)
+                0 , 0 , state = "normal" ,
+                anchor = "center", text = text
+            ) for text in ('back', 'save', 'next')
         ]
+    
+    def add_styling(self) -> None:
+        background = "#f5f5f5"
+        button_number = "#007bff"
+        button_hovered = "#0056b3"
+        button_clicked = "004085"
+        text = "#ffffff"
+        
+        #styling artibutes
+        Button_styling = {'fill':self.var.theme2}#,'outline': 'black', 'width': 2}
+        text_styling = {'fill': self.var.theme1, 'font': (self.var.FONT_STYLE, self.var.home_text_size, 'bold')}
+        
     
     def resize_window(self, width:int , height:int) -> None:
         """
         Resizes the window and arranges shapes and buttons in a grid layout on the canvas.
+        and gather new coords for _button_coords in this squeanse
+        
+        The way its contains coordinates are :
+        _button_coords = index-[0,1,2,3,4,5,6,7,8,9]
+        From 0 to 5 its shop canvas button coordinates.
+        From 6 to 9 its conatins coordinates in this squence:
+        upgradable_id[1](button), footer_shape_id[0-2](back,save,next)
 
         Parameters:
         width (int): The width of the window.
         height (int): The height of the window.
         """
-        self._unbind_keys()
-        
-        
+        self._button_coords = []
         self.main_canvas.config(
             width=width,
             height=height
@@ -1590,7 +1660,6 @@ class shop_screen:
         self.pady = (devision / 2) / 3
         self.button_height = devision / 3
         self.shape_height = self.button_height * 2
-        print("pady" , self.pady,"\nmini_pady", self.mini_pady)
         
         def configure_canvas_item(number, x, y):
             self.main_canvas.coords(
@@ -1616,10 +1685,12 @@ class shop_screen:
                 (x + x + self.shape_width) / 2,
                 (button_y + button_y + self.button_height) / 2
             )
-
+            #gathering coords of shop item buttons
+            coords = tuple(map(int, [x, button_y, x + self.shape_width, button_y + self.button_height]))
+            self._button_coords.append(coords)
+            
         x, y = self.padx, self.pady
         number = 0
-
         for row in range(2):
             for col in range(3):
                 configure_canvas_item(number, x, y)
@@ -1653,6 +1724,9 @@ class shop_screen:
             (x + x + self.shape_width) // 2 ,
             (y + y + upgradable_height) // 2
         )
+        #gathering coords of .. upgradable button
+        coords = tuple(map(int,[x , y , x + self.shape_width, y + upgradable_height]))
+        self._button_coords.append(coords)
         
         dividiablex = upgradable_width / 3
         dividiabley = upgradable_height / 3
@@ -1684,12 +1758,11 @@ class shop_screen:
                 (x + x + self.shape_width) / 2,
                 (y + y + upgradable_height) / 2
             )
+            #collecting coords of.. back , next and save button
+            coords = tuple(map(int,[x,y, x + self.shape_width, y + upgradable_height]))
+            self._button_coords.append(coords)
             x += self.shape_width + self.padx
-        
-        #binding keys
-        self._bind_key_and_get_cords()
-        print(self._button_coords)
-    
+            
     def change_window(self, data:dict, update_method:callable, save_method:callable) -> None:
         """
         Changes the window's content based on the provided data, save method, and update method.
@@ -1699,10 +1772,16 @@ class shop_screen:
         save_method (callable): Method to save the current state of the window.
         update_method (callable): Method to update the canvas when an item is selected or upgraded.
         """
+        #if changing to new shop window changing current to orignal state
+        if self.current_update_method and self.current_data:
+            self.current_update_method(self.current_data["items"][self._orignal_index]["color"])
         
-        self.current_data = data
-        self.current_update_method = update_method
+        # adding new data :0
+        self.current_data = deep_copy(data)
         self.current_save_method = save_method
+        self.current_update_method = update_method
+        self._current_value = self.var.PLAYERP_COINE
+        self._orignal_index = data["selected_index"]
         self.current_Sindex = 0
         
         self.set_to_defult()
@@ -1710,7 +1789,6 @@ class shop_screen:
         #adding data to items :0
         self._add_info_shopitems(self.current_data["items"][0:6])
         self._add_info_upgradable()
-        self._bind_key_and_get_cords()
         
     def delete_window(self) -> None:
         """
@@ -1735,29 +1813,30 @@ class shop_screen:
         
         # self._button_coords = None
     
-    def set_to_defult(self) -> None:
+    def set_to_defult(self, shop_item = True, upgradable = True) -> None:
         """
         Resets the window and all its elements to their default state.
         """
-        for id in self.shop_shape_id:
-            self.main_canvas.itemconfig(id,state = "hidden")
-        
-        for id in self.shop_button_id:
-            self.main_canvas.itemconfig(id,state = "hidden")
-        
-        for id in self.shape_text_id:
-            self.main_canvas.itemconfig(id,state = "hidden")
-        
-        for id in self.button_text_id:
-            self.main_canvas.itemconfig(id,state = "hidden")
-        
-        if not self.current_data["upgradable"]:
-            for id in self.upgradable_id:
-                self.main_canvas.itemconfig(id,state = "hidden")
+        if shop_item:
             
-            self.main_canvas.itemconfig(
-                self.upgradable_text,state = "hidden"
-            )
+            for id in self.shop_shape_id:
+                self.main_canvas.itemconfig(id, state = "hidden", fill = '')
+        
+            for id in self.shop_button_id:
+                self.main_canvas.itemconfig(id, state = "hidden")
+        
+            for id in self.shape_text_id:
+                self.main_canvas.itemconfig(id, state = "hidden", text = '')
+        
+            for id in self.button_text_id:
+                self.main_canvas.itemconfig(id, state = "hidden",)
+        
+        if upgradable:
+            
+            for id in self.upgradable_id[2:]:
+                self.main_canvas.itemconfig(id, state = "hidden", fill = '')
+        
+            self.main_canvas.itemconfig(self.upgradable_text,state = "hidden", text = '')
         
     def update_size_and_color(self):
         pass
@@ -2510,3 +2589,23 @@ class WindowGenerator:
 # lol.pack()
 
 # root.mainloop()
+
+
+# def _get_coords(self) -> None:
+#         """
+#         The way its contains coordinates are :
+#         _button_coords = index-[0,1,2,3,4,5,6,7,8,9]
+#         From 0 to 5 its shop canvas button coordinates.
+#         From 6 to 9 its conatins coordinates in this squence:
+#         upgradable_id[1](button), footer_shape_id[0-2](back,save,next)
+#         """
+#         self._button_coords = [
+#             self.main_canvas.bbox(self.shop_button_id[num]) for num in range(6)
+#         ]
+#         self._button_coords.append(
+#             self.main_canvas.bbox(self.upgradable_id[1])
+#         )
+#         for id in self.footer_shape_id:
+#             self._button_coords.append(self.main_canvas.bbox(id))
+#         print('something')
+#         print(i for i in self._button_coords)
