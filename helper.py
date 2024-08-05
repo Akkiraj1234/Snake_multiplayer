@@ -178,3 +178,36 @@ def round_up_coords(height:int, width:int, box_size:int, coordinates:tuple) -> t
     coordinates[0] = min((height // box_size),max(0,coordinates[0]))*box_size
     coordinates[1] = min((width // box_size),max(0,coordinates[1]))*box_size
     return coordinates
+
+def deep_copy(original:dict|list|tuple|set):
+    # Create an empty dictionary to hold the copy
+    copied_dict = {}
+    
+    # Iterate through each key-value pair in the original dictionary
+    for key, value in original.items():
+        # If the value is a dictionary, recursively copy it
+        if isinstance(value, dict):
+            copied_dict[key] = deep_copy(value)
+        # If the value is a list, make a copy of the list and check for nested dictionaries
+        elif isinstance(value, list):
+            copied_list = []
+            for item in value:
+                if isinstance(item, dict):
+                    copied_list.append(deep_copy(item))
+                else:
+                    copied_list.append(item)
+            copied_dict[key] = copied_list
+        # If the value is a set, make a copy of the set and check for nested dictionaries
+        elif isinstance(value, set):
+            copied_set = set()
+            for item in value:
+                if isinstance(item, dict):
+                    copied_set.add(frozenset(deep_copy(item).items()))
+                else:
+                    copied_set.add(item)
+            copied_dict[key] = copied_set
+        # For all other data types, simply copy the value
+        else:
+            copied_dict[key] = value
+    
+    return copied_dict

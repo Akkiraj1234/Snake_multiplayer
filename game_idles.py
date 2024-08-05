@@ -407,7 +407,7 @@ class Food:
         self.coords = validate_coordinates(self.coords, self.box_size)
         
         if self.food:
-            self._move_resize_food()
+            self._move_resize_food(self.coords)
             
             
 class Heart:
@@ -623,7 +623,7 @@ class Heart:
         """
         self.box_size = box_size
         self._calculate_dimension()
-        self.coords = validate_coordinates(self.coords)
+        self.coords = validate_coordinates(self.coords,self.box_size)
         
         if self.hearts:
             self._move_resize_heart_shape(self.coords)
@@ -853,7 +853,7 @@ class Coin:
         """
         self.box_size = box_size
         self._calculate_dimension()
-        self.coords = validate_coordinates(self.coords)
+        self.coords = validate_coordinates(self.coords, self.box_size)
         
         if self.coins:
             self._move_resize_coin_shape(self.coords)
