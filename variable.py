@@ -95,6 +95,7 @@ class Variable:
         self.volume_level   = self._game_setting["basic_info"]["volume_level"]
         self.theme1         = self._game_setting["theme"]["theme1"]
         self.theme2         = self._game_setting["theme"]["theme2"]
+        self.theme3         = self._game_setting["theme"]["theme3"]
         self.version        = self._game_setting["game_info"]["verstion"]
         
         #user info that changes by every new_users

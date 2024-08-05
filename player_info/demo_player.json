@@ -1,1 +1,490 @@
-{"name": "demo_player", "password": "123", "HIGH_SCORE": 75, "points": 9990050, "inisial_heart": 1, "inisiak_snake": 1, "coin_value": 2, "text_info": {"selected_index": 0, "items": [{"color": "#FFFFFF", "selected": true, "purchased": true, "price": 0}, {"color": "#333333", "selected": false, "purchased": false, "price": 100}, {"color": "#4B0082", "selected": false, "purchased": false, "price": 120}, {"color": "#2F4F4F", "selected": false, "purchased": false, "price": 150}, {"color": "#800000", "selected": false, "purchased": false, "price": 250}, {"color": "#000000", "selected": false, "purchased": false, "price": 100}, {"color": "#F8F8FF", "selected": false, "purchased": false, "price": 150}, {"color": "#D3D3D3", "selected": false, "purchased": false, "price": 200}, {"color": "#FFD700", "selected": false, "purchased": false, "price": 300}, {"color": "#00FF00", "selected": false, "purchased": false, "price": 500}], "upgradable": 0, "charge": 0}, "nevigation_info": {"selected_index": 3, "items": [{"color": "#000000", "selected": false, "purchased": true, "price": 0}, {"color": "#32CD32", "selected": false, "purchased": false, "price": 200}, {"color": "#1E90FF", "selected": false, "purchased": true, "price": 380}, {"color": "#FF6347", "selected": true, "purchased": true, "price": 230}, {"color": "#FF69B4", "selected": false, "purchased": false, "price": 250}, {"color": "#8A2BE2", "selected": false, "purchased": false, "price": 500}], "upgradable": 0, "charge": 0}, "canvas_info": {"selected_index": 0, "items": [{"color": "#050B2B", "selected": true, "purchased": true, "price": 0}, {"color": "#228B22", "selected": false, "purchased": false, "price": 380}, {"color": "#2E8B57", "selected": false, "purchased": false, "price": 380}, {"color": "#006400", "selected": false, "purchased": false, "price": 380}, {"color": "#556B2F", "selected": false, "purchased": false, "price": 200}, {"color": "#8FBC8F", "selected": false, "purchased": false, "price": 500}, {"color": "#9ACD32", "selected": false, "purchased": false, "price": 380}, {"color": "#BDB76B", "selected": false, "purchased": false, "price": 200}, {"color": "#808000", "selected": false, "purchased": false, "price": 500}, {"color": "#3CB371", "selected": false, "purchased": false, "price": 2000}, {"color": "#6B8E23", "selected": false, "purchased": false, "price": 500}], "upgradable": 0, "charge": 0}, "food_info": {"selected_index": 0, "items": [{"color": "#ff0000", "selected": true, "purchased": true, "price": 0}, {"color": "#FFFF00", "selected": false, "purchased": false, "price": 380}, {"color": "#FFA500", "selected": false, "purchased": false, "price": 380}, {"color": "#800080", "selected": false, "purchased": false, "price": 380}, {"color": "#00FF00", "selected": false, "purchased": false, "price": 200}, {"color": "#FFC0CB", "selected": false, "purchased": false, "price": 500}, {"color": "#8B4513", "selected": false, "purchased": false, "price": 380}, {"color": "#00FFFF", "selected": false, "purchased": false, "price": 200}, {"color": "#FFD700", "selected": false, "purchased": false, "price": 500}, {"color": "#FF6347", "selected": false, "purchased": false, "price": 200}, {"color": "#4B0082", "selected": false, "purchased": false, "price": 500}, {"color": "#ADFF2F", "selected": false, "purchased": false, "price": 500}], "upgradable": 0, "charge": 0}, "heart_info": {"selected_index": 0, "items": [{"color": "#FF0000", "selected": true, "purchased": true, "price": 0}, {"color": "#E60000", "selected": false, "purchased": true, "price": 380}, {"color": "#FF69B4", "selected": false, "purchased": true, "price": 380}, {"color": "#FF1493", "selected": false, "purchased": false, "price": 380}, {"color": "#DB7093", "selected": false, "purchased": false, "price": 200}, {"color": "#C71585", "selected": false, "purchased": true, "price": 500}, {"color": "#FF4500", "selected": false, "purchased": false, "price": 380}, {"color": "#FF6347", "selected": false, "purchased": false, "price": 200}, {"color": "#CD5C5C", "selected": false, "purchased": false, "price": 500}], "upgradable": 1, "charge": 500}, "snake_info": {"selected_index": 0, "items": [{"color": "#ffff00", "selected": true, "purchased": true, "price": 0}, {"color": "#32CD32", "selected": false, "purchased": false, "price": 380}, {"color": "#1E90FF", "selected": false, "purchased": true, "price": 380}, {"color": "#FFD700", "selected": false, "purchased": false, "price": 380}, {"color": "#FF1493", "selected": false, "purchased": true, "price": 200}, {"color": "#8A2BE2", "selected": false, "purchased": true, "price": 500}, {"color": "#FF6347", "selected": false, "purchased": false, "price": 380}, {"color": "#00CED1", "selected": false, "purchased": false, "price": 200}, {"color": "#ADFF2F", "selected": false, "purchased": false, "price": 500}, {"color": "#FF69B4", "selected": false, "purchased": false, "price": 200}, {"color": "#FF8C00", "selected": false, "purchased": false, "price": 500}, {"color": "#7FFF00", "selected": false, "purchased": false, "price": 500}], "upgradable": 4, "charge": 100}, "coin_info": {"selected_index": 0, "items": [{"color": "#ff0000", "selected": true, "purchased": true, "price": 0}, {"color": "#FFFF00", "selected": false, "purchased": false, "price": 380}, {"color": "#FFA500", "selected": false, "purchased": false, "price": 380}, {"color": "#800080", "selected": false, "purchased": false, "price": 380}, {"color": "#00FF00", "selected": false, "purchased": false, "price": 220}, {"color": "#FFC0CB", "selected": false, "purchased": false, "price": 500}, {"color": "#8B4513", "selected": false, "purchased": false, "price": 380}, {"color": "#00FFFF", "selected": false, "purchased": false, "price": 250}, {"color": "#FFD700", "selected": false, "purchased": false, "price": 500}, {"color": "#FF6347", "selected": false, "purchased": false, "price": 200}, {"color": "#4B0082", "selected": false, "purchased": false, "price": 500}, {"color": "#ADFF2F", "selected": false, "purchased": false, "price": 500}], "upgradable": 1, "charge": 1000}}
+{
+    "name": "demo_player",
+    "password": "123",
+    "HIGH_SCORE": 75,
+    "points": 9990050,
+    "inisial_heart": 1,
+    "inisiak_snake": 1,
+    "coin_value": 2,
+    "text_info": {
+        "selected_index": 0,
+        "items": [
+            {
+                "color": "#FFFFFF",
+                "selected": true,
+                "purchased": true,
+                "price": 0
+            },
+            {
+                "color": "#333333",
+                "selected": false,
+                "purchased": false,
+                "price": 100
+            },
+            {
+                "color": "#4B0082",
+                "selected": false,
+                "purchased": false,
+                "price": 120
+            },
+            {
+                "color": "#2F4F4F",
+                "selected": false,
+                "purchased": false,
+                "price": 150
+            },
+            {
+                "color": "#800000",
+                "selected": false,
+                "purchased": false,
+                "price": 250
+            },
+            {
+                "color": "#000000",
+                "selected": false,
+                "purchased": false,
+                "price": 100
+            },
+            {
+                "color": "#F8F8FF",
+                "selected": false,
+                "purchased": false,
+                "price": 150
+            },
+            {
+                "color": "#D3D3D3",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#FFD700",
+                "selected": false,
+                "purchased": false,
+                "price": 300
+            },
+            {
+                "color": "#00FF00",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            }
+        ],
+        "upgradable": 0,
+        "charge": 0
+    },
+    "nevigation_info": {
+        "selected_index": 3,
+        "items": [
+            {
+                "color": "#000000",
+                "selected": false,
+                "purchased": true,
+                "price": 0
+            },
+            {
+                "color": "#32CD32",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#1E90FF",
+                "selected": false,
+                "purchased": true,
+                "price": 380
+            },
+            {
+                "color": "#FF6347",
+                "selected": true,
+                "purchased": true,
+                "price": 230
+            },
+            {
+                "color": "#FF69B4",
+                "selected": false,
+                "purchased": false,
+                "price": 250
+            },
+            {
+                "color": "#8A2BE2",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            }
+        ],
+        "upgradable": 0,
+        "charge": 0
+    },
+    "canvas_info": {
+        "selected_index": 0,
+        "items": [
+            {
+                "color": "#050B2B",
+                "selected": true,
+                "purchased": true,
+                "price": 0
+            },
+            {
+                "color": "#228B22",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#2E8B57",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#006400",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#556B2F",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#8FBC8F",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#9ACD32",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#BDB76B",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#808000",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#3CB371",
+                "selected": false,
+                "purchased": false,
+                "price": 2000
+            },
+            {
+                "color": "#6B8E23",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            }
+        ],
+        "upgradable": 0,
+        "charge": 0
+    },
+    "food_info": {
+        "selected_index": 0,
+        "items": [
+            {
+                "color": "#ff0000",
+                "selected": true,
+                "purchased": true,
+                "price": 0
+            },
+            {
+                "color": "#FFFF00",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#FFA500",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#800080",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#00FF00",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#FFC0CB",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#8B4513",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#00FFFF",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#FFD700",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#FF6347",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#4B0082",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#ADFF2F",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            }
+        ],
+        "upgradable": 0,
+        "charge": 0
+    },
+    "heart_info": {
+        "selected_index": 0,
+        "items": [
+            {
+                "color": "#FF0000",
+                "selected": true,
+                "purchased": true,
+                "price": 0
+            },
+            {
+                "color": "#E60000",
+                "selected": false,
+                "purchased": true,
+                "price": 380
+            },
+            {
+                "color": "#FF69B4",
+                "selected": false,
+                "purchased": true,
+                "price": 380
+            },
+            {
+                "color": "#FF1493",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#DB7093",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#C71585",
+                "selected": false,
+                "purchased": true,
+                "price": 500
+            },
+            {
+                "color": "#FF4500",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#FF6347",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#CD5C5C",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            }
+        ],
+        "upgradable": 1,
+        "charge": 500
+    },
+    "snake_info": {
+        "selected_index": 0,
+        "items": [
+            {
+                "color": "#ffff00",
+                "selected": true,
+                "purchased": true,
+                "price": 0
+            },
+            {
+                "color": "#32CD32",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#1E90FF",
+                "selected": false,
+                "purchased": true,
+                "price": 380
+            },
+            {
+                "color": "#FFD700",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#FF1493",
+                "selected": false,
+                "purchased": true,
+                "price": 200
+            },
+            {
+                "color": "#8A2BE2",
+                "selected": false,
+                "purchased": true,
+                "price": 500
+            },
+            {
+                "color": "#FF6347",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#00CED1",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#ADFF2F",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#FF69B4",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#FF8C00",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#7FFF00",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            }
+        ],
+        "upgradable": 4,
+        "charge": 100
+    },
+    "coin_info": {
+        "selected_index": 0,
+        "items": [
+            {
+                "color": "#ff0000",
+                "selected": true,
+                "purchased": true,
+                "price": 0
+            },
+            {
+                "color": "#FFFF00",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#FFA500",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#800080",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#00FF00",
+                "selected": false,
+                "purchased": false,
+                "price": 220
+            },
+            {
+                "color": "#FFC0CB",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#8B4513",
+                "selected": false,
+                "purchased": false,
+                "price": 380
+            },
+            {
+                "color": "#00FFFF",
+                "selected": false,
+                "purchased": false,
+                "price": 250
+            },
+            {
+                "color": "#FFD700",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#FF6347",
+                "selected": false,
+                "purchased": false,
+                "price": 200
+            },
+            {
+                "color": "#4B0082",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            },
+            {
+                "color": "#ADFF2F",
+                "selected": false,
+                "purchased": false,
+                "price": 500
+            }
+        ],
+        "upgradable": 1,
+        "charge": 1000
+    }
+}

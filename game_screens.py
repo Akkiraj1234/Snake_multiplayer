@@ -3,7 +3,7 @@ from random import choice
 
 from game_idles import *
 from variable import Variable, demo_variable
-from helper import deep_copy
+from helper import deep_copy, lighten_hex_color, darken_hex_color
 
 
 class Game_screen:
@@ -1283,6 +1283,7 @@ class shop_screen:
         self.master = master
         self.var = var
         
+        self.save = False
         self._current_value = 0
         self._orignal_index = None
         self.current_data = None
@@ -1306,7 +1307,60 @@ class shop_screen:
         """unbind the canvas with button-1 click"""
         self.main_canvas.unbind_all("<Button-1>")
     
-    def _add_upgrade(self):
+    def _one_time_styling(self) -> None:
+        #hand 2 inisalizing
+        def on_enter(event):
+            self.main_canvas.config(cursor="hand2")
+        
+        def on_leave(event):
+            self.main_canvas.config(cursor="")
+            
+        for id in self.shop_button_id:
+            self.main_canvas.tag_bind(id, "<Enter>", on_enter)
+            self.main_canvas.tag_bind(id, "<Leave>", on_leave)
+        
+        for id in self.footer_shape_id:
+            self.main_canvas.tag_bind(id, "<Enter>", on_enter)
+            self.main_canvas.tag_bind(id, "<Leave>", on_leave)
+        
+        id = self.upgradable_id[1]
+        self.main_canvas.tag_bind(id, "<Enter>", on_enter)
+        self.main_canvas.tag_bind(id, "<Leave>", on_leave)
+        
+    def _button_styling(self) -> None:
+        #styling artibutes
+        color = self.var.theme3
+        darken = darken_hex_color(color, 0.2)
+        Button_styling = {'fill': color, "activefill": darken, "activeoutline": darken,'outline': 'black',"activewidth":3}
+        text_styling = {'fill': self.var.theme2, 'font': (self.var.FONT_STYLE, self.var.home_text_size, 'bold')}
+        
+        # for all buttons
+        button_id = self.shop_button_id + self.footer_shape_id + [self.upgradable_id[1]]
+        for id in button_id:
+            self.main_canvas.itemconfig(id, **Button_styling)
+        
+        #this is for all text 
+        text_id = self.footer_text_id + self.button_text_id + self.shape_text_id + [self.upgradable_text]
+        for id in text_id: 
+            self.main_canvas.itemconfig(id, **text_styling)
+        
+        #canvas updation
+        self.main_canvas.config(
+            bg = self.var.theme1
+        )
+    
+    def _add_styling(self) -> None:
+        #this is for shape id
+        for id in self.shop_shape_id:
+            color = self.main_canvas.itemcget(id, "fill")
+            self.main_canvas.itemconfig(
+                id, activeoutline=color,
+                activewidth= 4,
+            )
+        #adding color to the upgradable button 
+        self.main_canvas.itemconfig(self.upgradable_id[1],fill = self.var.theme3)
+        
+    def _add_upgrade(self) -> None:
         
         if self.current_data["upgradable"] >= 5:
             return 
@@ -1352,16 +1406,17 @@ class shop_screen:
                 self.shape_text_id[num],
                 text = "" if dict_data["purchased"]
                 else dict_data["price"],
-                state = "normal"
+                state = "disabled"
             )
             self.main_canvas.itemconfig(
                 self.button_text_id[num],
                 text = "Buy" if not dict_data["purchased"]
                 else "Selected" if dict_data["selected"] 
                 else "Select",
-                state = "normal"
+                state = "disabled"
             )
-    
+        self._add_styling()
+        
     def _add_info_upgradable(self) -> None:
         """
         Updates the canvas items for upgradable elements.
@@ -1377,7 +1432,7 @@ class shop_screen:
         if self.current_data["upgradable"]:
             for id in self.upgradable_id:
                 self.main_canvas.itemconfig(id,state = "normal") 
-            self.main_canvas.itemconfig(self.upgradable_text,state = "normal") 
+            self.main_canvas.itemconfig(self.upgradable_text,state = "disabled") 
         else:
             return
         
@@ -1396,6 +1451,7 @@ class shop_screen:
             self.upgradable_text,
             text = (power * charge) if power < 5 else 'MAX'
         )
+        self._add_styling()
         
     def _calling_func_method(self,event) -> None:
         """
@@ -1539,6 +1595,7 @@ class shop_screen:
         elif index_num == 3:
             self.var.PLAYERP_COINE = self._current_value
             self.current_save_method()
+            self.save = True
             print("saved")
             
         elif index_num == 4:
@@ -1577,7 +1634,7 @@ class shop_screen:
         if not self.shop_button_id : self.shop_button_id = [
             self.main_canvas.create_rectangle(
                 0 , 0 , 0 , 0 ,
-               state = "hidden"
+               state = "hidden",
             ) for _ in range(6)
         ]
         # Create hidden text elements for shape texts if they do not already exist
@@ -1614,23 +1671,13 @@ class shop_screen:
         ]
         if not self.footer_text_id : self.footer_text_id = [
             self.main_canvas.create_text(
-                0 , 0 , state = "normal" ,
+                0 , 0 , state = "disabled" ,
                 anchor = "center", text = text
             ) for text in ('back', 'save', 'next')
         ]
-    
-    def add_styling(self) -> None:
-        background = "#f5f5f5"
-        button_number = "#007bff"
-        button_hovered = "#0056b3"
-        button_clicked = "004085"
-        text = "#ffffff"
+        self._one_time_styling()
+        self._button_styling()
         
-        #styling artibutes
-        Button_styling = {'fill':self.var.theme2}#,'outline': 'black', 'width': 2}
-        text_styling = {'fill': self.var.theme1, 'font': (self.var.FONT_STYLE, self.var.home_text_size, 'bold')}
-        
-    
     def resize_window(self, width:int , height:int) -> None:
         """
         Resizes the window and arranges shapes and buttons in a grid layout on the canvas.
@@ -1773,7 +1820,7 @@ class shop_screen:
         update_method (callable): Method to update the canvas when an item is selected or upgraded.
         """
         #if changing to new shop window changing current to orignal state
-        if self.current_update_method and self.current_data:
+        if (not self.save) and self.current_update_method and self.current_data:
             self.current_update_method(self.current_data["items"][self._orignal_index]["color"])
         
         # adding new data :0
@@ -1783,12 +1830,14 @@ class shop_screen:
         self._current_value = self.var.PLAYERP_COINE
         self._orignal_index = data["selected_index"]
         self.current_Sindex = 0
+        self.save = False
         
         self.set_to_defult()
         
         #adding data to items :0
         self._add_info_shopitems(self.current_data["items"][0:6])
         self._add_info_upgradable()
+        # self.add_styling()
         
     def delete_window(self) -> None:
         """
@@ -1833,13 +1882,22 @@ class shop_screen:
         
         if upgradable:
             
-            for id in self.upgradable_id[2:]:
+            for id in self.upgradable_id:
                 self.main_canvas.itemconfig(id, state = "hidden", fill = '')
         
             self.main_canvas.itemconfig(self.upgradable_text,state = "hidden", text = '')
         
-    def update_size_and_color(self):
-        pass
+    def update_size_and_color(self, width, height) -> None:
+        #resize withon method will resize the window
+        #and all its artibute and then gather the coords..
+        #acording to the new window size
+        self.resize_window(width, height)
+        #calling this method will add styling acording to
+        #new info come under var for (theme1, theme2, theme3)
+        self._button_styling()
+        
+        
+        
 
 
 class setting_screen_gui:
