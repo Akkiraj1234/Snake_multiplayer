@@ -975,14 +975,24 @@ class account_screen:
         
         self._create_window1()
         self._create_window2()
-        self.update_window1()
-        self.update_window2()
+        self.update(width, height)
     
-    @property
-    def _font(self):
-        return (self.var.INISIAL_HOME_TEXT,self.var.home_text_size,'bold')
+    def __change_window_method(Self):
+        pass
     
-    def _creating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
+    def __change_password(self):
+        pass
+    
+    def __new_account(self):
+        pass
+    
+    def __change_account(self):
+        pass
+    
+    def __go_back(self):
+        pass
+    
+    def _upating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
         '''
         this method create a form on a canvas and return it
         
@@ -1016,24 +1026,22 @@ class account_screen:
         start = distance * 2 // 3
         
         # adding to the window :0
-        for left , right in args:
+        for left_id , right_id in args:
             
-            if not (left and right):
-                canvas.create_window(middle1 *2 ,start ,window =left or right)
+            if not (left_id and right_id):
+                canvas.coords(left_id or right_id, middle1 *2 , start)
                 start += distance
                 continue
+            
             #addig_both_window_left and ryt
-            canvas.create_window(middle1 , start , window = left )#, anchor="w")
-            canvas.create_window(middle2 , start , window = right)
+            canvas.coords(left_id , middle1 , start )
+            canvas.coords(right_id , middle2 , start )
             start += distance
         
         #returning the canvas         
         return canvas
     
-    def _change_window_method(Self):
-        pass
-    
-    def _create_window1(self):
+    def _create_window1(self) -> None:
         """
         Create and configure window 1 with labels, entry fields, buttons, scales, and option menus.
 
@@ -1045,58 +1053,56 @@ class account_screen:
             - Button for account settings.
             - Places elements on the canvas.
         """
-        self.canvas = Canvas(
-            master = self.master,
-            width = self.width,
-            height = self.height
-        )
-        font = self._font
         option1 = ("Slow", "Normal", "Fast", "Extreme")
         option2 = ("Small", "Medium", "Large", "Extra Large")
         
-        Label1 = Label(self.canvas ,text="Game Width  :", font=font)
-        Label2 = Label(self.canvas ,text="Game Height :", font=font)
-        Label3 = Label(self.canvas ,text="Speed (Home):", font=font, justify="left")
-        Label4 = Label(self.canvas ,text="Size (Home) :",font=font, justify="left")
-        Label5 = Label(self.canvas ,text="text size   :", font=font, justify="left")
-        Label6 = Label(self.canvas ,text="Volume level:", font=font, justify="left")
+        self.canvas = Canvas(master = self.master)
+        
+        Label1 = Label(self.canvas ,text="Game Width  :", justify="center")
+        Label2 = Label(self.canvas ,text="Game Height :", justify="center")
+        Label3 = Label(self.canvas ,text="Speed (Home):", justify="left")
+        Label4 = Label(self.canvas ,text="Size (Home) :", justify="left")
+        Label5 = Label(self.canvas ,text="text size   :", justify="left")
+        Label6 = Label(self.canvas ,text="Volume level:", justify="left")
         
         self._AS_button = Button(
-            self.canvas, text="Account Setting", font = font, width = 30,
-            relief = "groove", command = self._change_window_method
+            self.canvas, text="Account Setting",relief = "groove", 
+            command = self.__change_window_method
         )
-        self._AS_width_entry = Entry(self.canvas, width=15, font=font)  
-        self._AS_height_entry = Entry(self.canvas, width=15, font =font)
+        self._AS_width_entry = Entry(self.canvas)  
+        self._AS_height_entry = Entry(self.canvas)
         
         self._AS_speed_var = StringVar(self.canvas)
         self._AS_size_var = StringVar(self.canvas)
         
         self._AS_text_var = Scale(
-            self.canvas, from_ = 5, to = 20, length = 107, orient="horizontal",
-            relief="groove", sliderlength = 10, sliderrelief = "flat", font = font
+            self.canvas, from_ = 5, to = 20, orient="horizontal",
+            relief="groove", sliderlength = 10, sliderrelief = "flat"
         )
         self._AS_volume_var = Scale(
-            self.canvas, from_ = 0, to = 100, length = 107, orient="horizontal",
-            relief="groove", sliderlength = 10, sliderrelief = "flat", font = font
+            self.canvas, from_ = 0, to = 100, orient="horizontal",
+            relief="groove", sliderlength = 10, sliderrelief = "flat"
         )
         self._AS_speed_OP = OptionMenu(self.canvas, self._AS_speed_var, *option1)
         self._AS_size_OP = OptionMenu(self.canvas , self._AS_size_var,  *option2)
         
         self._AS_lable = (Label1,Label2,Label3,Label4,Label5,Label6)
         
-        args_ = (
-            (Label1 , Label2),
-            (self._AS_width_entry , self._AS_height_entry),
-            (Label3 , self._AS_speed_OP),
-            (Label4 , self._AS_size_OP),
-            (Label5 , self._AS_text_var),
-            (Label6 , self._AS_volume_var),
-            (self._AS_button , None)
+        def add(item):
+            return self.canvas.create_window(0,0,window=item)
+        
+        self.canvas_ids = (
+            (add(Label1), add(Label2)),
+            (add(self._AS_width_entry) , add(self._AS_height_entry)),
+            (add(Label3) , add(self._AS_speed_OP)),
+            (add(Label4) , add(self._AS_size_OP)),
+            (add(Label5 ), add(self._AS_text_var)),
+            (add(Label6) , add(self._AS_volume_var)),
+            (add(self._AS_button) , None)
+            
         )
         
-        self._creating_form_on_canvas(self.height,self.width,self.canvas,*args_)
-        
-    def _create_window2(self):
+    def _create_window2(self) -> None:
         """
         Create and configure window 2 with labels, entry fields, and buttons.
         
@@ -1107,56 +1113,93 @@ class account_screen:
             - Buttons for changing password, creating new account, changing account, and going back.
             - Places elements on the canvas.
         """
-        self.canvas2 = Canvas(
-            master = self.master,
-            width = self.width,
-            height = self.height
-        )
-        Label1 = Label(self.canvas2, text = "Name", font = self._font)
-        Label2 = Label(self.canvas2, text = "Heigh Score", font = self._font)
-        Label3 = Label(self.canvas2, text = "Money", font = self._font)
+        self.canvas2 = Canvas(master = self.master)
+        
+        Label1 = Label(self.canvas2, text = "Name")
+        Label2 = Label(self.canvas2, text = "Heigh Score")
+        Label3 = Label(self.canvas2, text = "Money")
         self._A_lable = (Label1, Label2, Label3)
         
-        self._A_Name_var = Entry(self.canvas2, width=15, font = self._font)
-        self._A_heighscore_lable = Label(self.canvas2, text=self._font)
-        self._A_coin_lable = Label(self.canvas2, text="", font=self._font)
+        self._A_Name_var = Entry(self.canvas2)
+        self._A_heighscore_lable = Label(self.canvas2)
+        self._A_coin_lable = Label(self.canvas2)
         
         self._A_changepassword_button = Button(
-            self.canvas2, text="change password", font = self._font,
-            relief = "groove", width = 30, command=None
+            self.canvas2, text="change password",relief = "groove",
+            command = self.__change_password
         )
         self._A_newaccount_button = Button(
-            self.canvas2, text="new account", font=self._font,
-            relief="groove", width= 14, command= None
+            self.canvas2, text="new account",relief="groove",
+            command = self.__new_account
         )
         self._A_changeaccount_button = Button(
-            self.canvas2, text="change account", font=self._font,
-            relief="groove", width=14, command=None
+            self.canvas2, text="change account",relief="groove",
+            command = self.__change_account
         )
         self._A_go_back_button = Button(
-            self.canvas2, text= "<- go back", font= self._font,
-            relief="groove", width=30, command=None
+            self.canvas2, text= "<- go back", relief="groove",
+            command = self.__go_back
         )
         
-        args_ = (
-            (Label1 , self._A_Name_var),
-            (Label2 , self._A_heighscore_lable),
-            (Label3 , self._A_coin_lable),
-            (self._A_changepassword_button , None),
-            (self._A_newaccount_button , self._A_changeaccount_button),
-            (self._A_go_back_button, None)
+        def add(item):
+            return self.canvas2.create_window(0,0,window=item)
+        
+        self.canvas2_ids = (
+            (add(Label1) , add(self._A_Name_var)),
+            (add(Label2) , add(self._A_heighscore_lable)),
+            (add(Label3) , add(self._A_coin_lable)),
+            (add(self._A_changepassword_button) , None),
+            (add(self._A_newaccount_button) , add(self._A_changeaccount_button)),
+            (add(self._A_go_back_button), None)
         )
+    
+    def update_size_color(self, width:int , height:int) -> None:
+        #updating artibutes
+        self.width = width
+        self.height = height
+        font = (self.var.INISIAL_HOME_TEXT,self.var.home_text_size,'bold')
         
-        # self._creating_form_on_canvas(
-        #     height = self.height, width = self.width,
-        #     canvas = self.canvas, 
-        #     *args_
-        # )
-        self._creating_form_on_canvas(self.height,self.width,self.canvas2,*args_)
+        #updating window 1 items
+        self.canvas.config(
+            width = self.width,
+            height = self.height,
+            bg = self.var.theme1
+        )
+        for label in self._AS_lable:
+            label.config(font = font )
+
+        self._AS_button.config(font = font, width=30,)
+        self._AS_width_entry.config(width=15,font=font)
+        self._AS_height_entry.config(width=15,font=font)
+        self._AS_text_var.config(length=107, font = font)
+        self._AS_volume_var.config(length=107, font = font)
+        self._AS_speed_OP.config()
+        self._AS_size_OP.config()
+            
+        #updating canvas2 items    
+        self.canvas2.config(
+            width = self.width,
+            height = self.height,
+            bg = self.var.theme1
+        )
+        for label in self._A_lable:
+            label.config(font = font )
         
-    def update_window1(self) -> None:
+        self._A_Name_var.config(width=15, font = font)
+        self._A_heighscore_lable.config(font = font)
+        self._A_coin_lable.config(width=15, font = font)
+        self._A_changepassword_button.config( width = 30, font = font)
+        self._A_newaccount_button.config()
+        self._A_changeaccount_button.config()
+        self._A_go_back_button.config()
+        
+        #updating postion
+        self._creating_form_on_canvas(self.height, self.width, self.canvas, *self.canvas_ids)
+        self._creating_form_on_canvas(self.height, self.width, self.canvas2, *self.canvas2_ids)
+        
+    def update_window1_info(self) -> None:
         """
-        Update window with current game settings and font.
+        Update window with current game settings.
 
         Updates the following:
             - Inserts game width and height.
@@ -1173,18 +1216,10 @@ class account_screen:
         self._AS_speed_var.set('Extreme' if speed <= 100 else 'Fast' if speed <= 150 else 'Normal' if speed <= 200 else 'Slow')
         self._AS_text_var.set(self.var.home_text_size)
         self._AS_volume_var.set(self.var.volume_level)
-        
-        font = self._font
-        for lable in self._AS_lable:
-            lable.config(font=font)
-        
-        items = (self._AS_button,self._AS_width_entry,self._AS_height_entry,self._AS_text_var,self._AS_volume_var)
-        for item in items:
-            item.config(font=font)
     
-    def update_window2(self) -> None:
+    def update_window2_info(self) -> None:
         """
-        Update window with current user information and font settings.
+        Update window with current user information.
 
         Updates the following:
             - Inserts the active user's name.
@@ -1196,24 +1231,14 @@ class account_screen:
         self._A_Name_var.insert(0, self.var.active_user_name)
         self._A_heighscore_lable.config(text = self.var.HIGHT_SCORE)
         self._A_coin_lable.config(text = self.var.PLAYERP_COINE)
-        
-        font = self._font
-        for lable in self._A_lable:
-            lable.config(font = font)
-            
-        items = (
-            self._A_Name_var,self._A_heighscore_lable,self._A_coin_lable,self._A_changepassword_button,
-            self._A_newaccount_button,self._A_changeaccount_button,self._A_go_back_button
-        )
-        for item in items:
-            item.config(font = font)
 
-    def update(self) -> None:
+    def update(self, width:int, height:int) -> None:
         """
         update the account setting windows and account window
         """
-        self.update_window1()
-        self.update_window2()
+        self.update_size_color(width, height)
+        self.update_window1_info()
+        self.update_window2_info()
     
     def get_value(self) -> dict:
         """
@@ -2682,42 +2707,3 @@ class WindowGenerator:
             self.root.attributes('-disabled', False)
             self.root.grab_set()
             self.root.focus_set()
-
-
-# root = Tk()
-# demo = (
-#         {"color":"red","price":300,"id":1},
-#         {"color":"yellow","price":380,"id":2},
-#         {"color":"green","price":380,"id":3},
-#         {"color":"white","price":380,"id":4},
-#         {"color":"blue","price":380,"id":5},
-#         {"color":"black","price":500,"id":6},
-#         "update_to"
-#     )
-# var = Variable()
-# ref_win = WindowGenerator(root,var,None)
-# lol = ref_win.create_shop_window(root,300,400,demo)
-# print(lol, lol == ref_win.shop_canvas)
-# lol.pack()
-
-# root.mainloop()
-
-
-# def _get_coords(self) -> None:
-#         """
-#         The way its contains coordinates are :
-#         _button_coords = index-[0,1,2,3,4,5,6,7,8,9]
-#         From 0 to 5 its shop canvas button coordinates.
-#         From 6 to 9 its conatins coordinates in this squence:
-#         upgradable_id[1](button), footer_shape_id[0-2](back,save,next)
-#         """
-#         self._button_coords = [
-#             self.main_canvas.bbox(self.shop_button_id[num]) for num in range(6)
-#         ]
-#         self._button_coords.append(
-#             self.main_canvas.bbox(self.upgradable_id[1])
-#         )
-#         for id in self.footer_shape_id:
-#             self._button_coords.append(self.main_canvas.bbox(id))
-#         print('something')
-#         print(i for i in self._button_coords)

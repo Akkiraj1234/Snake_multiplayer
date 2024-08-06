@@ -606,3 +606,23 @@ setting = setting_screen(root , var)
 setting.ADD_TO_MASTER()
 
 root.mainloop()
+
+
+# def _get_coords(self) -> None:
+#         """
+#         The way its contains coordinates are :
+#         _button_coords = index-[0,1,2,3,4,5,6,7,8,9]
+#         From 0 to 5 its shop canvas button coordinates.
+#         From 6 to 9 its conatins coordinates in this squence:
+#         upgradable_id[1](button), footer_shape_id[0-2](back,save,next)
+#         """
+#         self._button_coords = [
+#             self.main_canvas.bbox(self.shop_button_id[num]) for num in range(6)
+#         ]
+#         self._button_coords.append(
+#             self.main_canvas.bbox(self.upgradable_id[1])
+#         )
+#         for id in self.footer_shape_id:
+#             self._button_coords.append(self.main_canvas.bbox(id))
+#         print('something')
+#         print(i for i in self._button_coords)
