@@ -980,7 +980,7 @@ class account_screen:
     
     @property
     def _font(self):
-        return ('Arial',self.var.home_text_size,'bold')
+        return (self.var.INISIAL_HOME_TEXT,self.var.home_text_size,'bold')
     
     def _creating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
         '''
@@ -1023,7 +1023,7 @@ class account_screen:
                 start += distance
                 continue
             #addig_both_window_left and ryt
-            canvas.create_window(middle1 , start , window = left)
+            canvas.create_window(middle1 , start , window = left )#, anchor="w")
             canvas.create_window(middle2 , start , window = right)
             start += distance
         
@@ -1056,10 +1056,10 @@ class account_screen:
         
         Label1 = Label(self.canvas ,text="Game Width  :", font=font)
         Label2 = Label(self.canvas ,text="Game Height :", font=font)
-        Label3 = Label(self.canvas ,text="Speed (Home):", font=font)
-        Label4 = Label(self.canvas ,text="Size (Home) :",font=font)
-        Label5 = Label(self.canvas ,text="text size   :", font=font)
-        Label6 = Label(self.canvas ,text="Volume level:", font=font)
+        Label3 = Label(self.canvas ,text="Speed (Home):", font=font, justify="left")
+        Label4 = Label(self.canvas ,text="Size (Home) :",font=font, justify="left")
+        Label5 = Label(self.canvas ,text="text size   :", font=font, justify="left")
+        Label6 = Label(self.canvas ,text="Volume level:", font=font, justify="left")
         
         self._AS_button = Button(
             self.canvas, text="Account Setting", font = font, width = 30,
@@ -1895,34 +1895,67 @@ class shop_screen:
         #calling this method will add styling acording to
         #new info come under var for (theme1, theme2, theme3)
         self._button_styling()
-        
-        
-        
 
 
 class setting_screen_gui:
-    """_summary_
+    """
+    A class to represent the GUI for the setting screen in a game.
 
-    Returns:
-        _type_: _description_
+    Attributes:
+        game_screen_frame (Frame): The frame for the game screen.
+        setting_screen_frame (Frame): The frame for the setting screen.
+        var (Variable): A variable to store various game settings.
+        initialize (bool): A flag to initialize the GUI. Default is True.
+
+    Methods:
+        __init__(game_frame: Frame, setting_frame: Frame, var: Variable, initialize: bool = True) -> None:
+            Initializes the setting screen GUI.
+        _calculate_dimension() -> None:
+            Calculates the dimensions for the game and setting screens.
+        _possision_snack_and_idels() -> None:
+            Positions the snake and other elements like food and heart on the game screen.
+        _adding_second_screen_element() -> None:
+            Initializes the second screen with required objects such as navigation buttons and save button.
+        Initialize_First_Screen() -> None:
+            Initializes the first screen (game screen).
+        Initialize_second_Screen() -> None:
+            Initializes the second screen (setting screen).
+        change_screen(canvas: Canvas | None = None) -> None:
+            Changes the current screen to a new canvas in the application.
+        get_idels_coordinates() -> tuple[list]:
+            Gets the coordinates of various elements on the game screen.
+        update_size_and_color() -> None:
+            Updates the size and color of various elements on the screen.
+        add_to_master() -> None:
+            Adds the frames to the master layout.
+        remove_to_master() -> None:
+            Removes the frames from the master layout.
     """
     def __init__(self, game_frame:Frame, setting_frame:Frame, var:Variable, initialize:bool = True) -> None:
+        """
+        Initializes the setting screen GUI.
+
+        Args:
+            game_frame (Frame): The frame for the game screen.
+            setting_frame (Frame): The frame for the setting screen.
+            var (Variable): A variable to store various game settings.
+            initialize (bool): A flag to initialize the GUI. Default is True.
+        """
         self.game_screen_frame = game_frame
         self.setting_screen_frame = setting_frame
-        
         self.var = var
         
-        self._calculate_dimension()
         self.Initialize_First_Screen()
         self.Initialize_second_Screen()
+        self.update_size_and_color()
         self.current_screen = self.demo_screen
-        self.account_screen = None
-        self.shop_screen = None
+        self.GAME_SCREEN.add_to_Master()
+        self.back_button.pack()
         
         if initialize:
             self.add_to_master()
     
-    def _calculate_dimension(self):
+    def _calculate_dimension(self) -> None:
         '''
         Calculate the screen dimensions for the game and settings screen.
         '''
@@ -1934,10 +1967,9 @@ class setting_screen_gui:
         self.main_screen_height = None
         
     def _possision_snack_and_idels(self) -> None:
-        '''
-        possison the sneck and idels like food and heart and stuff
-        and postion etc........
-        '''
+        """
+        Position the snake and other elements like food and heart on the game screen.
+        """
         center_borderx = self._game_screen_width // 2
         center_bordery = self.GAME_SCREEN._game_bord_height // 2
         box_size = self.var.game_box_size
@@ -1972,145 +2004,82 @@ class setting_screen_gui:
     
     def _adding_second_screen_element(self) -> None:
         """
-        inisalize the second_screen with all obj requird in screen
-        like nevigation buttons-2, save button-1
-        inclue :-
-            - nevigation_button1  : game button canvs
-            - nevigation_button2  : account button canvs
-            - _text_nev_button_id : (tuple)button1 and button2 text id
-            - _text_nev_button2   : account_button_text_id
-            - save_button         : save button canvas
-            - save_button_text_id : save button_text id
-            - demo_screen         : demo screen for setting
-            - main_screen_height  : the main screen_height
+        Initialize the second screen with all objects required in the screen.
 
-        return :
-            None
+        Includes:
+            - nevigation_button1: game button canvas
+            - nevigation_button2: account button canvas
+            - _text_nev_button_id: (tuple) button1 and button2 text id
+            - _text_nev_button2: account_button_text_id
+            - save_button: save button canvas
+            - save_button_text_id: save button text id
+            - demo_screen: demo screen for setting
+            - main_screen_height: the main screen height
         """
-        nev_button_height = self.GAME_SCREEN._nevigation_height
         #adding account and shop button and writing text on it :0
         self.nevigation_button1 = Canvas(
-            master = self.setting_screen_frame,
-            height = nev_button_height,
-            width = (self._settingscreen_width // 2 ) - 7,
-            bg = self.var.theme1
+            master = self.setting_screen_frame
         )
         self.nevigation_button2 = Canvas(
-            master = self.setting_screen_frame,
-            height = nev_button_height,
-            width = (self._settingscreen_width // 2 ) - 7,
-            bg = self.var.theme2
+            master = self.setting_screen_frame
         )
         button_text_id1 = self.nevigation_button1.create_text(
-            self._settingscreen_width // 4,
-            nev_button_height // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "shop",
-            fill = self.var.theme2,
-            anchor = "center"
+            0 , 0 ,text = "shop", anchor = "center"
         )
         button_text_id2 = self.nevigation_button2.create_text(
-            self._settingscreen_width // 4,
-            nev_button_height // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "setting",
-            fill = self.var.theme1,
-            anchor = "center"
+            0 ,0 ,text = "setting", anchor = "center"
         )
         self._text_nev_button_id = (button_text_id1,button_text_id2)
         
         #adding down save button and its text 
         self.save_button = Canvas(
-            master = self.setting_screen_frame,
-            height = self._gameexit_button_height,
-            width = self._settingscreen_width ,
-            bg = self.var.theme2
+            master = self.setting_screen_frame
         )
         self.save_button_text_id = self.save_button.create_text(
-            self._settingscreen_width // 2,
-            self._gameexit_button_height // 2,
-            font = ("Arial",self.var.home_text_size,'bold'),
-            text = "Save",
-            fill = self.var.theme1,
-            anchor = "center"
+            0 , 0 , text = "Save", anchor = "center"
         )
-        # calculating main screen_ height and creating demo screen :0
-        self.main_screen_height = self._settingscreen_height - self._gameexit_button_height - nev_button_height
         
         self.demo_screen = Canvas(
-            master = self.setting_screen_frame,
-            height = self.main_screen_height,
-            width = self._settingscreen_width,
-            bg = self.var.theme2
+            master = self.setting_screen_frame
         )
-    
-    def __shift_button_button1(self, event) -> None:
-        """
-        Handle the event when navigation button 1 is clicked.
+        self.demo_screen_text = self.demo_screen.create_text(
+            0 , 0, text = "Please select an item from the left side to begin shopping." 
+            +"\n\nImportant Reminders :\n1. After purchasing items, click the 'Save' button"
+            + "located under the shop window."
+            +"\n2. Once you have finished setting up, click the 'Save' button at the bottom to"
+            + "save settings you made for your account.",
+            anchor = "nw",justify='left',
+        )
 
-        This method updates the background colors and text colors of two navigation buttons to reflect
-        the active state of button 1. It also switches the visible screen by hiding the basic setting 
-        and account setting screens, and displaying the current screen.
-
-        Args:
-            event: The event that triggered this method.
+    def Initialize_First_Screen(self) -> None:
         """
-        self.nevigation_button1.config(bg = self.var.theme1)
-        self.nevigation_button1.itemconfig(self._text_nev_button_id[0], fill = self.var.theme2)
-        self.nevigation_button2.config(bg = self.var.theme2)
-        self.nevigation_button2.itemconfig(self._text_nev_button_id[1], fill = self.var.theme1)
-        
-        self.change_screen(self.shop_screen if self.shop_screen else self.demo_screen)
-    
-    def __shift_button_button2(self, event) -> None:
+        Initializes the first screen (game screen).
         """
-        Handle the event when navigation button 2 is clicked.
-
-        This method updates the background colors and text colors of two navigation buttons to reflect
-        the active state of button 2. It also switches the visible screen by hiding the current screen 
-        and account setting screens, and displaying the basic setting screen.
-
-        Args:
-            event: The event that triggered this method.
-        """
-        self.nevigation_button1.config(bg = self.var.theme2)
-        self.nevigation_button1.itemconfig(self._text_nev_button_id[0], fill = self.var.theme1)
-        self.nevigation_button2.config(bg = self.var.theme1)
-        self.nevigation_button2.itemconfig(self._text_nev_button_id[1], fill = self.var.theme2)   
-        
-        self.change_screen(self.account_screen if self.account_screen else self.demo_screen)
-        
-    def Initialize_First_Screen(self):
-        self.GAME_SCREEN = Game_screen(self.game_screen_frame,self.var,False)
-        self.GAME_SCREEN.demo_screen_var_update(
-            initialize=True,
-            game_height = self._game_screen_height,
-            game_width = self._game_screen_width
+        self.GAME_SCREEN = Game_screen(
+            Master = self.game_screen_frame,
+            var = self.var,
+            initialize = False #its should set to be true okay
         )
         self.back_button = Canvas(
-            master = self.game_screen_frame,
-            height = self._gameexit_button_height,
-            width = self._game_screen_width,
-            bg = self.var.theme2
+            master = self.game_screen_frame
         )
         self.back_button_text_id = self.back_button.create_text(
-            self._game_screen_width //2 , self._gameexit_button_height // 2,
-            font = ("Arial", self.var.home_text_size, "bold"),
-            text = "back",
-            fill = self.var.theme1
+            0 ,0 ,text = "back"
         )
-        self._possision_snack_and_idels()
-        self.GAME_SCREEN.add_to_Master()
-        self.back_button.pack()
+        # self.GAME_SCREEN.add_to_Master()
+        # self.back_button.pack()
 
-    def Initialize_second_Screen(self):
+    def Initialize_second_Screen(self) -> None:
+        """
+        Initializes the second screen (setting screen).
+        """
         self._adding_second_screen_element()
         self.nevigation_button1.grid(row = 0, column = 0)
         self.nevigation_button2.grid(row = 0, column = 1)
         self.demo_screen.grid(row = 1, column = 0, columnspan = 2)
         self.save_button.grid(row = 2, column = 0, columnspan = 2)
     
-    def change_screen(self,canvas:Canvas, second_screen:bool = False):
+    def change_screen(self,canvas:Canvas|None = None) -> None:
         """
         Change the current screen to a new canvas in the application.
 
@@ -2121,27 +2090,22 @@ class setting_screen_gui:
         4. Displays the new canvas by placing it in the grid at row 1, column 0, spanning two columns.
 
         Args:
-            canvas (Canvas): The new canvas to be displayed on the screen.
+            canvas (Canvas | None): The new canvas to be displayed on the screen.
         """
-        # self.__shift_button_button1(None)
+        canvas = canvas if canvas is not None else self.demo_screen
         self.current_screen.grid_forget()
         self.current_screen = canvas
-        self.current_screen.grid(row = 1 , column = 0,columnspan = 2)    
-        
-        if second_screen:
-            self.shop_screen = canvas
-            self.__shift_button_button1(None)
-            
+        self.current_screen.grid(row = 1 , column = 0,columnspan = 2)
     
     def get_idels_coordinates(self) -> tuple[list]:
-        '''
+        """
         Get the coordinates of various elements on the game screen.
 
         This method retrieves the coordinates of different elements on the game screen, such as menu options, score text, hearts, food, and snake body segments.
 
         Returns:
-            None
-        '''
+            tuple[list]: A tuple containing lists of coordinates for various game elements.
+        """
         nevigation_canvas = self.GAME_SCREEN.NEVIGATION_CANVAS
         game_canvas = self.GAME_SCREEN.GAME_CANVAS
         
@@ -2178,34 +2142,124 @@ class setting_screen_gui:
         return (coordinates_home_and_score, hearts_coordinates, coordinates_food,
                 coordinates_snake, coordinates_canvas_heart, coordinates_coin)
     
-    def update_size_and_color(self):
-        pass
-    
-    def add_accont_shop_screen(self, shop:Canvas|None = None, account:Canvas|None = None) -> None:
-        self.account_screen = account if account else self.demo_screen
-        self.shop_screen = shop if shop else self.demo_screen
-    
-    def bind_keys(self):
-        self._bind_keys_id = [
-        self.nevigation_button1.bind("<Button-1>",self.__shift_button_button1),
-        self.nevigation_button2.bind("<Button-1>",self.__shift_button_button2)
-        ]
-    
-    def remove_bind_keys(self):
-        self.nevigation_button1.unbind("<Button-1>", self._bind_keys_id[0])
-        self.nevigation_button2.unbind("<Button-1>", self._bind_keys_id[1])
-    
-    def add_to_master(self):
+    def update_size_and_color(self) -> None:
+        """
+        Update the size and color of various elements on the screen.
+        """
+        self._calculate_dimension()
+        font = (self.var.FONT_STYLE, self.var.home_text_size, "bold")
+        
+        self.GAME_SCREEN.demo_screen_var_update(
+            initialize=True,
+            game_height = self._game_screen_height,
+            game_width = self._game_screen_width
+        )
+        self.back_button.config(
+            height = self._gameexit_button_height,
+            width = self._game_screen_width,
+            bg = self.var.theme2
+        )
+        self.back_button.itemconfigure(
+            self.back_button_text_id,
+            font = font,
+            fill = self.var.theme1
+        )
+        self.back_button.coords(
+            self.back_button_text_id,
+            self._game_screen_width //2 , self._gameexit_button_height // 2
+        )
+        
+        self._possision_snack_and_idels()
+        
+        #updating secoend screen
+        nev_button_height = self.GAME_SCREEN._nevigation_height
+        
+        self.nevigation_button1.config(
+            height = nev_button_height,
+            width = (self._settingscreen_width // 2 ) - 7,
+            bg = self.var.theme1
+        )
+        self.nevigation_button2.config(
+            height = nev_button_height,
+            width = (self._settingscreen_width // 2 ) - 7,
+            bg = self.var.theme2
+        )
+        self.nevigation_button1.itemconfig(
+            self._text_nev_button_id[0],
+            font = font,
+            fill = self.var.theme2
+        )
+        self.nevigation_button1.coords(
+            self._text_nev_button_id[0],
+            self._settingscreen_width // 4,
+            nev_button_height // 2,
+        )
+        self.nevigation_button2.itemconfig(
+            self._text_nev_button_id[1],
+            font = font,
+            fill = self.var.theme1
+        )
+        self.nevigation_button2.coords(
+            self._text_nev_button_id[1],
+            self._settingscreen_width // 4,
+            nev_button_height // 2,
+        )
+        
+        #adding down save button and its text 
+        self.save_button.config(
+            height = self._gameexit_button_height,
+            width = self._settingscreen_width ,
+            bg = self.var.theme2
+        )
+        self.save_button.itemconfigure(
+            self.save_button_text_id,
+            font = font,
+            fill = self.var.theme1
+        )
+        self.save_button.coords(
+            self.save_button_text_id,
+            self._settingscreen_width // 2,
+            self._gameexit_button_height // 2,
+        )
+        # calculating main screen_ height and creating demo screen :0
+        self.main_screen_height = self._settingscreen_height - self._gameexit_button_height - nev_button_height
+        
+        self.demo_screen.config(
+            height = self.main_screen_height,
+            width = self._settingscreen_width,
+            bg = self.var.theme1
+        )
+        self._settingscreen_width
+        divistion_x = self._settingscreen_width // 5
+        divistion_y = self.main_screen_height // 7
+        startx , starty = divistion_x , divistion_y
+        wrapwidth = divistion_x * 3
+        
+        self.demo_screen.coords(
+            self.demo_screen_text,
+            startx, starty
+        )
+        self.demo_screen.itemconfigure(
+            self.demo_screen_text,
+            font = font,
+            fill = self.var.theme2,
+            width = wrapwidth
+        )
+        
+    def add_to_master(self) -> None:
+        """
+        Add the frames to the master layout.
+        """
         self.game_screen_frame.grid(row = 0, column = 0)
         self.setting_screen_frame.grid(row = 0, column = 1)
-        self.bind_keys()
             
-    def remove_to_master(self):
+    def remove_to_master(self) -> None:
+        """
+        Remove the frames from the master layout.
+        """
         self.game_screen_frame.grid_forget()
         self.setting_screen_frame.grid_forget()
-        self.remove_bind_keys()
         
-
 
 class WindowGenerator:
     """

@@ -407,9 +407,9 @@ class setting_screen:
         self.var = var
         self.home_screen = home_screen
         
-        self.main_frame = Frame(master = self.master, relief="flat", bg="black")
-        self.game_screen_frame = Frame(self.main_frame)
-        self.setting_screen_frame = Frame(self.main_frame)
+        self.main_frame = Frame(master = self.master, bg=self.var.theme1)
+        self.game_screen_frame = Frame(self.main_frame, bg=self.var.theme1)
+        self.setting_screen_frame = Frame(self.main_frame, bg=self.var.theme1)
         
         self.setting_screen = setting_screen_gui(
             game_frame = self.game_screen_frame,
@@ -433,11 +433,6 @@ class setting_screen:
             width = self._setting_frame_width,
             height = self._setting_frame_height
         )
-        
-        self.setting_screen.add_accont_shop_screen(
-            account = self.accont_window.canvas
-        )
-        
     
     def _get_arttbutes(self) -> None:
         """
@@ -462,6 +457,43 @@ class setting_screen:
         self.home_screen.update_everything(self.var)
         game.update_everything()
     
+    def __shift_button_button1(self, event) -> None:
+        """
+        Handle the event when navigation button 1 is clicked.
+
+        This method updates the background colors and text colors of two navigation buttons to reflect
+        the active state of button 1. It also switches the visible screen by hiding the basic setting 
+        and account setting screens, and displaying the current screen.
+
+        Args:
+            event: The event that triggered this method.
+        """
+        self.setting_screen.nevigation_button1.config(bg = self.var.theme1)
+        self.setting_screen.nevigation_button1.itemconfig(self.setting_screen._text_nev_button_id[0], fill = self.var.theme2)
+        self.setting_screen.nevigation_button2.config(bg = self.var.theme2)
+        self.setting_screen.nevigation_button2.itemconfig(self.setting_screen._text_nev_button_id[1], fill = self.var.theme1)
+        #changing_screen
+        window = self.shop_window.main_canvas if self.shop_window.current_data else None
+        self.setting_screen.change_screen(window)#shop screen
+    
+    def __shift_button_button2(self, event) -> None:
+        """
+        Handle the event when navigation button 2 is clicked.
+
+        This method updates the background colors and text colors of two navigation buttons to reflect
+        the active state of button 2. It also switches the visible screen by hiding the current screen 
+        and account setting screens, and displaying the basic setting screen.
+
+        Args:
+            event: The event that triggered this method.
+        """
+        self.setting_screen.nevigation_button1.config(bg = self.var.theme2)
+        self.setting_screen.nevigation_button1.itemconfig(self.setting_screen._text_nev_button_id[0], fill = self.var.theme1)
+        self.setting_screen.nevigation_button2.config(bg = self.var.theme1)
+        self.setting_screen.nevigation_button2.itemconfig(self.setting_screen._text_nev_button_id[1], fill = self.var.theme2)   
+        #changeing screen
+        self.setting_screen.change_screen(self.accont_window.canvas)#account screen
+        
     def _check_bind_event_on_game_screen(self, event , screen:int) -> None:
         """Check and handle events based on the current game screen and event coordinates.
 
@@ -515,8 +547,9 @@ class setting_screen:
                 method2 = lambda : setattr(self.var,'nevigation_info',self.shop_window.current_data)
                 self.shop_window.change_window(self.var.canvas_info,method1,method2)
                 
-        shop_window = self.shop_window.main_canvas
-        self.setting_screen.change_screen(shop_window, second_screen = True)
+        # shop_window = self.shop_window.main_canvas
+        # self.setting_screen.change_screen(shop_window)
+        self.__shift_button_button1(None)
     
     def bind_keys(self) -> None:
         self._bind_keys_id = [
@@ -528,7 +561,9 @@ class setting_screen:
             ),
             self.setting_screen.GAME_SCREEN.GAME_CANVAS.bind(
                 "<Button-1>", lambda event: self._check_bind_event_on_game_screen(event , 2)
-            )
+            ),
+            self.setting_screen.nevigation_button1.bind("<Button-1>",self.__shift_button_button1),
+            self.setting_screen.nevigation_button2.bind("<Button-1>",self.__shift_button_button2)
         ]
     
     def remove_bind_keys(self) -> None:
@@ -539,6 +574,8 @@ class setting_screen:
         self.setting_screen.save_button.unbind("<Button-1>", self._bind_keys_id[1])
         self.setting_screen.GAME_SCREEN.NEVIGATION_CANVAS.unbind("<Button-1>",self._bind_keys_id[2])
         self.setting_screen.GAME_SCREEN.GAME_CANVAS.unbind("<Button-1>",self._bind_keys_id[3])
+        self.setting_screen.nevigation_button1.unbind("<Button-1>", self._bind_keys_id[4])
+        self.setting_screen.nevigation_button2.unbind("<Button-1>", self._bind_keys_id[5])
     
     def update_size_and_color(self):
         self.setting_screen.update_size_and_color()
@@ -944,7 +981,7 @@ if __name__ == "__main__":
     game = Game_engion(Master=root, var=var, pause_screen=pause_menu)
     shop = setting_screen(root , var, home_screen = home_screen)
     about_me_ = about_me_class(root,var.game_width,var.game_height,var,home_screen)
-    
+
     main()
     root.update()
     root.mainloop()

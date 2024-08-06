@@ -193,6 +193,7 @@ class Variable:
 
     def update_by_dict(self, info) -> None:
         print(info)
+        
 class demo_variable:
     
     def __init__(self, dict1:dict) -> None:
