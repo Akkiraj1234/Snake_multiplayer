@@ -194,6 +194,9 @@ class Variable:
     def update_by_dict(self, info) -> None:
         print(info)
         
+    def get_account_list(self) -> tuple[str,tuple[str]]:
+        return self.active_user_name, ("hello world", "test subject", "lol")
+        
 class demo_variable:
     
     def __init__(self, dict1:dict) -> None:

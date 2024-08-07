@@ -424,7 +424,9 @@ class setting_screen:
             master = self.setting_screen_frame,
             var = self.var,
             width = self._setting_frame_width,
-            height = self._setting_frame_height
+            height = self._setting_frame_height,
+            root = root,
+            change_window = self.setting_screen.change_screen
         )
         
         self.shop_window = shop_screen(
@@ -965,10 +967,12 @@ def main():
     - Starts the animation of the home screen.
     """
     root.geometry(f"{var.game_width+5}x{var.game_height+5}")
-    # root.resizable(width=False,height=False)
     root.title(var.INISIAL_HOME_TEXT)
     root.config(bg=var.CANVAS_COLOR)
     home_screen.start_animation(var.game_speed)
+    
+    root.resizable(width=False,height=False)
+    # root.protocol("WM_DELETE_WINDOW", on_close)
     
 
 

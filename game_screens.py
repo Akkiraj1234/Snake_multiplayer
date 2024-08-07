@@ -967,79 +967,58 @@ class inisial_screens:
 
 class account_screen:
     
-    def __init__(self,var:Variable, height:int, width:int, master:Frame) -> Canvas:
+    def __init__(self,var:Variable, height:int, width:int, master:Frame, root:Tk, change_window:callable ) -> Canvas:
         self.master = master
         self.height = height
         self.width = width
         self.var = var
+        self.window = WindowGenerator(root, var)
+        self.change_method = change_window
         
         self._create_window1()
         self._create_window2()
         self.update(width, height)
     
-    def __change_window_method(Self):
-        pass
+    def __change_window_method(self):
+        """
+        this function helps to confirm user password and also if password
+        ryt then take them to account setting canvas:0
+        """
+        get_pass = self.window.taking_password_for_verification_window()
+        if get_pass == self.var._player_acc_info["password"]:
+            messagebox.showinfo("password matched","password matched now u can modify you account")
+            self.change_method(self.canvas2)
+        else:
+            messagebox.showinfo("wrong password","wrong password u cant modify your account")
     
     def __change_password(self):
-        pass
+        
+        value1, value2 = self.window.change_password_window()
+        
+        if value1 is None:
+            return None
+        
+        if not (value1 == value2):
+            messagebox.showwarning("Password Mismatch", "The new password and confirmation do not match.")
+            return None
+        
+        self.var.update_password(value1)
+        
+        if value1 == self.var._player_acc_info["password"]:
+            messagebox.showinfo("Password Changed Successfully", "Your password has been updated successfully.")
+        else:
+            messagebox.showerror("Password Change Failed", "There was an error updating your password. Please try again.")
     
     def __new_account(self):
-        pass
+        value = self.window.create_new_account_window()
+        print(value)
     
     def __change_account(self):
-        pass
+        value = self.window.change_account_window()
+        print(value)
     
     def __go_back(self):
-        pass
-    
-    def _upating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
-        '''
-        this method create a form on a canvas and return it
-        
-        Argument:
-            - width and height of the window
-            - a canvas type obj by tk
-            - takes tupple as an argument containing 2 obj
-            - 1st obj => the left side of window
-            - 2nd obj => the ryt side of window
-        
-        Return:
-            - the canvas containg a form
-        
-        Note:
-            - if u wanna add a window in middle horigentally so just 
-                add one window in a tuple or add other artibute as none
-                ex :- (window , None) or (None , window)
-        
-        Example:
-            >>> tuple_obj = (window1 ,window2) or (window1 , None)
-            >>> canvas = creating_form_on_canvas(
-                canvas = canvas , 300 , 600,
-                (widget , widget1) , (lable1 , entry1 ),
-                (widget2 , None ) , (window5 , canvas1)
-            )
-        '''
-        #calculation of diameters :0
-        middle1 = width // 4
-        middle2 = middle1 *3
-        distance = height // len(args)-1
-        start = distance * 2 // 3
-        
-        # adding to the window :0
-        for left_id , right_id in args:
-            
-            if not (left_id and right_id):
-                canvas.coords(left_id or right_id, middle1 *2 , start)
-                start += distance
-                continue
-            
-            #addig_both_window_left and ryt
-            canvas.coords(left_id , middle1 , start )
-            canvas.coords(right_id , middle2 , start )
-            start += distance
-        
-        #returning the canvas         
-        return canvas
+        self.change_method(self.canvas)
     
     def _create_window1(self) -> None:
         """
@@ -1194,8 +1173,8 @@ class account_screen:
         self._A_go_back_button.config()
         
         #updating postion
-        self._creating_form_on_canvas(self.height, self.width, self.canvas, *self.canvas_ids)
-        self._creating_form_on_canvas(self.height, self.width, self.canvas2, *self.canvas2_ids)
+        self.window.upating_form_on_canvas(self.height, self.width, self.canvas, *self.canvas_ids)
+        self.window.upating_form_on_canvas(self.height, self.width, self.canvas2, *self.canvas2_ids)
         
     def update_window1_info(self) -> None:
         """
@@ -1260,7 +1239,9 @@ class account_screen:
             "active_user_name" : self._A_Name_var.get(),
         }
         return new_info
-    
+
+#fix update_size_and_color with new styling
+#fix all private methdos
 
 class shop_screen:
     """
@@ -2299,184 +2280,29 @@ class WindowGenerator:
         font_size (int): The font size for texts.
         __value (list): A private list to capture values from entry widgets.
     """
-    def __init__(self,root:Tk ,var:Variable, setting_gui:setting_screen_gui) -> None:
+    def __init__(self, root:Tk , var:Variable) -> None:
         """
-        Initialize the setting window screen with specified parameters.
+        Initialize the WindowGenerator with the main Tkinter root window and a Variable instance.
 
         Args:
             root (Tk): The main Tkinter root window.
-            theme (tuple[str,str]): A tuple containing theme colors.
-            font_size (int): The font size for texts.
+            var (Variable): An instance of Variable class used for getting account information.
         """
         self.root = root
         self.var = var
-        self.setting_gui = setting_gui
-        
-        self.shop_canvas = None
-        self.account_canvas1 = None
-        self.account_canvas2 = None
-        self.shop_canvas_button = None
-        self.shop_canvas_shape_id = None
-        self.shop_canvas_text_id = None
-        
+        self.__value = None
     
-    def __account_setting_calling_func(self) -> None:
+    @property
+    def font(self):
         """
-        this function helps to confirm user password and also if password
-        ryt then take them to account setting canvas:0
+        Get the font style for text in the windows.
+
+        Returns:
+            tuple: A tuple containing the font style, size, and weight.
         """
-        get_pass = self.taking_password_for_verification_window()
-        if get_pass == self.var._player_acc_info["password"]:
-            messagebox.showinfo("password matched","password matched now u can modify you account")
-            self.setting_gui.current_screen.grid_forget()
-            # self.
-        else:
-            messagebox.showinfo("wrong password","wrong password u cant modify your account")
-    
-    def __change_password_func(self) -> None:
-        value1, value2 = self.change_password_window()
+        return (self.var.FONT_STYLE, self.var.home_text_size, "bold")
         
-        if value1 is None:
-            return None
-        
-        if not (value1 == value2):
-            messagebox.showwarning("Password Mismatch", "The new password and confirmation do not match.")
-            return None
-        
-        self.var.update_password(value1)
-        
-        if value1 == self.var._player_acc_info["password"]:
-            messagebox.showinfo("Password Changed Successfully", "Your password has been updated successfully.")
-        else:
-            messagebox.showerror("Password Change Failed", "There was an error updating your password. Please try again.")
-    
-    def __create_new_account(self):
-        self.create_new_account_window()
-    
-    def __change_account(self):
-        self.change_account_window()
-    
-    def __go_back(self):
-        self.account_setting_screen.grid_forget()
-        self.basic_setting_screen.grid(row = 1 , column = 0,columnspan = 2)
-        
-    def create_shop_window(self,master:Frame, width:int, height:int, info:tuple[dict]) -> None:
-        if not self.shop_canvas:
-            self.shop_canvas = Canvas(
-                master = master,
-                width = width,
-                height = height,
-                bg = self.var.theme1
-            )
-            
-        if not self.shop_canvas_button:
-            self.shop_canvas_button = [
-                Button(
-                    self.shop_canvas,
-                    bg = self.var.theme1,
-                    fg=self.var.theme2,
-                    font = ("Arial",10, "bold"),
-                    # text = "buy",
-                ) for _ in range(6)
-            ]
-        
-        if not self.shop_canvas_shape_id:
-            self.shop_canvas_shape_id = [
-                Canvas.create_rectangle(
-                    self.shop_canvas,
-                    0 , 0 , 0 , 0 ,
-                    state = "hidden"
-                ) for _ in range(6)
-            ]
-        if not self.shop_canvas_text_id:
-            self.shop_canvas_text_id = [
-                Canvas.create_text(
-                    self.shop_canvas,
-                    0 , 0 , state = "hidden"
-                )
-            ]
-        
-        self._add_square_obj_in_canvas(self.shop_canvas,width,info)
-        return self.shop_canvas
-    
-    def _add_square_obj_in_canvas(self,canvas:Canvas,width:int,info:tuple[dict]):
-        #calculating_info
-        box_size = (width / 1.4) // 3
-        pad = (width / 3.25) // 4
-        
-        x , y = pad,pad
-        for i in range(3):
-            info_dict = info[i]
-            canvas.create_rectangle(
-                x, y, x + box_size, y + box_size, fill=info_dict["color"]
-            )
-            canvas.create_text(
-                x + box_size / 2, y+ box_size / 2, fill="black",
-                text = info_dict["price"]
-            )
-            canvas.create_window(
-                x + box_size / 2,(y+box_size)+(pad/2),
-                anchor = "center", window = self.shop_canvas_button[i]
-            )
-            x += box_size + pad
-        
-        x , y = pad,box_size + pad + pad
-        for i in range(3,6):
-            info_dict = info[i]
-            canvas.create_rectangle(
-                x, y, x + box_size, y + box_size, fill=info_dict["color"]
-            )
-            x += box_size + pad
-        
-        
-    
-    def create_account_window_or_update(self,master, width:int, height:int, grid_info:dict) -> tuple[Canvas,Canvas]:
-        
-        
-        #1. creating canvas for account option beasic account setting
-        self.basic_setting_screen = Canvas(
-            master = master,
-            height = height,
-            width = width,
-            bg = self.var.theme1
-        )
-        #collecing its var and all widgets in tuple[tuple[any, any]]
-        args = self.var.basic_setting_screen_var(
-            canvas = self.basic_setting_screen,
-            sec_account_calling_method = self.__account_setting_calling_func
-        )
-        #adding widget list (args) to the basic_setting_screen
-        self.creating_form_on_canvas(
-            height = height,
-            width = width,
-            canvas = self.basic_setting_screen,
-            *args
-        )
-        
-        #2. creating canvas for account option account main setting
-        self.account_setting_screen = Canvas(
-            master = master,
-            height = height,
-            width = width,
-            bg = self.var.theme1
-        )
-        #collecing its var and all widgets in tuple[tuple[any, any]]
-        args = self.var.setting_option_menu_var(
-            canvas = self.account_setting_screen,
-            changepass_method = self.__change_password_func,
-            createnewacc_method = self.__create_new_account,
-            changeaccount_method = self.__create_new_account,
-            goback_method = self.__go_back
-        )
-        #adding widget list (args) to the account_setting_screen
-        self.creating_form_on_canvas(
-            height = height,
-            width = width,
-            canvas = self.account_setting_screen,
-            *args
-        )
-             
-    def creating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
+    def upating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
         '''
         this method create a form on a canvas and return it
         
@@ -2510,15 +2336,16 @@ class WindowGenerator:
         start = distance * 2 // 3
         
         # adding to the window :0
-        for left , right in args:
+        for left_id , right_id in args:
             
-            if not (left and right):
-                canvas.create_window(middle1 *2 ,start ,window =left or right)
+            if not (left_id and right_id):
+                canvas.coords(left_id or right_id, middle1 *2 , start)
                 start += distance
                 continue
+            
             #addig_both_window_left and ryt
-            canvas.create_window(middle1 , start , window = left)
-            canvas.create_window(middle2 , start , window = right)
+            canvas.coords(left_id , middle1 , start )
+            canvas.coords(right_id , middle2 , start )
             start += distance
         
         #returning the canvas         
@@ -2569,7 +2396,7 @@ class WindowGenerator:
         Note:
             The password entry field is masked for security, displaying asterisks instead of the actual characters.
         """
-        self.__value == None
+        self.__value = (None, None)
         
         window = self.create_top_level_screen(
             title = "Verify Password",
@@ -2584,7 +2411,7 @@ class WindowGenerator:
             master = frame1, 
             relief="flat", 
             text="password :",
-            font = (self.font ,8,"bold"),
+            font = self.font,
             bg="#e6f2ff",fg= "black" 
         )
         password1 = Entry(
@@ -2593,14 +2420,14 @@ class WindowGenerator:
             relief="solid",
             justify="center",
             show = "*",
-            font=(self.font ,8,"bold")
+            font = self.font
         )
         button = Button(
             master = frame1,
             relief="solid",
             text= "continue",
             bg= "#e6f2ff" ,fg="black",
-            font = (self.font ,8,"bold"),
+            font = self.font,
             command= lambda : self.__capture_and_close(password1 , window = window ,root_enable = True)
         )
         
@@ -2608,6 +2435,7 @@ class WindowGenerator:
         password1.grid(row=0 , column=1 , padx=5, pady=5)
         button.grid(row=1,column=0,columnspan=2,sticky='ew', padx=5)
         frame1.pack()
+        password1.focus_set()
         window.wait_window(window)
         
         return self.__value[0]
@@ -2640,14 +2468,14 @@ class WindowGenerator:
             text = "Enter New Password",
             relief = "flat",
             bg ="#e6f2ff",fg ="black",
-            font = (self.font ,8,"bold")
+            font = self.font
         )
         label2 = Label(
             master = frame1,
             text = "Verify New Password",
             relief = "flat",
             bg ="#e6f2ff",fg ="black",
-            font = (self.font ,8,"bold")
+            font = self.font
         )
         password1 = Entry(
             master = frame1,
@@ -2655,7 +2483,7 @@ class WindowGenerator:
             relief="solid",
             justify="center",
             show = "*",
-            font=(self.font ,8,"bold")
+            font = self.font
         )
         password2 = Entry(
             master = frame1,
@@ -2663,14 +2491,14 @@ class WindowGenerator:
             relief="solid",
             justify="center",
             show = "*",
-            font=(self.font ,8,"bold")
+            font = self.font
         )
         button = Button(
             master = frame1,
             relief="solid",
             text= "continue",
             bg= "#e6f2ff" ,fg="black",
-            font = (self.font ,8,"bold"),
+            font = self.font,
             command= lambda : self.__capture_and_close(password1 , password2 , window = window , root_enable = True)
         )
         label1.grid(row=0,column=0,padx=5,pady=5)
@@ -2678,17 +2506,190 @@ class WindowGenerator:
         password1.grid(row=0,column=1,padx=5,pady=5)
         password2.grid(row=1,column=1,padx=5,pady=5)
         button.grid(row=2,column=0,columnspan=2,sticky='ew', padx=5, pady=5)
-        
+        password1.focus_set()
         frame1.pack()
         window.wait_window(window)
         
         return self.__value
     
     def create_new_account_window(self):
-        print("will come soon")
+        """
+        Create a window for creating a new account.
+
+        Returns:
+            list: A list containing the account name, player name, and password entered by the user.
+
+        Notes:
+            Passwords entered are masked for security, displaying asterisks instead of the actual characters.
+        """
+        self.__value = [None,None,None]
+        window = self.create_top_level_screen(
+            title = "create_new_account",
+            width = 260,
+            height = 160,
+            color = "#e6f2ff"
+        )
+        frame1 = Frame(window ,bg = "#e6f2ff")
+        
+        label1 = Label(
+            master = frame1,
+            text = "Account Name",
+            relief = "flat",
+            bg ="#e6f2ff",fg ="black",
+            font = self.font
+        )
+        label2 = Label(
+            master = frame1,
+            text = "Player Name",
+            relief = "flat",
+            bg ="#e6f2ff",fg ="black",
+            font = self.font
+        )
+        label3 = Label(
+            master = frame1,
+            text = "Account Password",
+            relief = "flat",
+            bg ="#e6f2ff",fg ="black",
+            font = self.font
+        )
+        label4 = Label(
+            master = frame1,
+            text = "Retype Password",
+            relief = "flat",
+            bg ="#e6f2ff",fg ="black",
+            font = self.font
+        )
+        account_name = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font = self.font
+        )
+        player_name = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font = self.font
+        )
+        password1 = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font = self.font
+        )
+        password2 = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font = self.font
+        )
+        button = Button(
+            master = frame1,
+            relief="solid",
+            text= "create",
+            bg= "#e6f2ff" ,fg="black",
+            font = self.font,
+            command= lambda : self.__capture_and_close(account_name, player_name, password1 , password2 , window = window , root_enable = True)
+        )
+        
+        #adding to the window
+        label1.grid(row=0,column=0,padx=5,pady=5)
+        label2.grid(row=1,column=0,padx=5,pady=5)
+        label3.grid(row=2,column=0,padx=5,pady=5)
+        label4.grid(row=3,column=0,padx=5,pady=5)
+        account_name.grid(row=0,column=1,padx=5,pady=5)
+        player_name.grid(row=1,column=1,padx=5,pady=5)
+        password1.grid(row=2,column=1,padx=5,pady=5)
+        password2.grid(row=3,column=1,padx=5,pady=5)
+        button.grid(row=4,column=0,columnspan=2,sticky='ew', padx=5, pady=5)
+        account_name.focus_set()
+        frame1.pack()
+        window.wait_window(window)
+        
+        return self.__value
         
     def change_account_window(self):
-        print("will come soon")
+        """
+        Create a window for changing the account.
+
+        This method displays a top-level window where the user can select an existing account from a dropdown menu and enter the password for the selected account. It facilitates switching accounts by verifying the entered password.
+
+        Returns:
+            list: A list containing two elements:
+                - The first element is the name of the selected account.
+                - The second element is the password entered for the selected account.
+
+        Notes:
+            - The account list is retrieved from the `self.var.get_account_list()` method.
+            - The password field is masked to display asterisks instead of the actual characters.
+            - The window is modal, meaning that it captures user input until it is closed.
+        """
+        self.__value = [None,None]
+        window = self.create_top_level_screen(
+            title = "change account",
+            width = 260,
+            height = 130,
+            color = "#e6f2ff"
+        )
+        frame1 = Frame(window , bg = "#e6f2ff" , padx= 5 ,pady=5)
+        name, account = self.var.get_account_list()
+        string_var = StringVar(frame1, value=name)
+        
+        lable1 = Label(
+            master = frame1, 
+            relief="flat", 
+            text="Select",
+            font = self.font,
+            bg="#e6f2ff",fg= "black" 
+        )
+        lable2 = Label(
+            master = frame1, 
+            relief="flat", 
+            text="password :",
+            font = self.font,
+            bg="#e6f2ff",fg= "black" 
+        )
+        select = OptionMenu(
+            frame1,
+            string_var,
+            *account
+        )
+        
+        password1 = Entry(
+            master = frame1,
+            width = 15,bd = 1,
+            relief="solid",
+            justify="center",
+            show = "*",
+            font = self.font
+        )
+        button = Button(
+            master = frame1,
+            relief="solid",
+            text= "continue",
+            bg= "#e6f2ff" ,fg="black",
+            font = self.font,
+            command= lambda : self.__capture_and_close(string_var, password1 , window = window ,root_enable = True)
+        )
+        
+        lable1.grid(row=0, column=0 , padx= 5, pady= 5)
+        lable2.grid(row=1, column=0 , padx= 5, pady= 5)
+        select.grid(row=0 , column=1 , padx=5, pady=5)
+        password1.grid(row=1 , column=1 , padx=5, pady=5)
+        button.grid(row=2,column=0,columnspan=2,sticky='ew', padx=5)
+        frame1.pack()
+        password1.focus_set()
+        window.wait_window(window)
+        
+        return self.__value
                
     def __capture_and_close(self, *entry_widget, window ,root_enable:bool):
         """
