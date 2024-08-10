@@ -1,4 +1,6 @@
 import json
+from os import listdir,name,path
+from helper import get_nested_value
 
 class Variable:
     """
@@ -36,9 +38,9 @@ class Variable:
         self.INISIAL_HOME_TEXT = "Sneck suffarie :0"
         self.CHANCE_OF_DROP = 17
         self.INCREASE_SPEED_AFTER = 20
-        
         self.game_speed = 100
         self.game_box_size = 30
+        self.__path_set_up()
     
     @property
     def CANVAS_COLOR(self) -> str:
@@ -79,7 +81,186 @@ class Variable:
     @property
     def COIN_VALUE(self) -> int:
         return self._player_acc_info["coin_info"]["upgradable"] * self._player_acc_info["coin_value"]
+    
+    def _defult_player_data(self, name:str|None = None, password:str|None = None) -> None:
+        """
+        return defult data for player account
+        takes name and password as artibute optional
+        """
         
+        return {
+            "name": "demo_player" if not name else name,
+            "password": "123" if not password else password,
+            "HIGH_SCORE": 0,
+            "points": 0,
+            "inisial_heart": 1,
+            "inisiak_snake": 1,
+            "coin_value": 2,
+            "text_info": {
+                "selected_index": 0,
+                "items": [
+                        {"color": "#FFFFFF","selected": True,"purchased": True,"price": 0},
+                        {"color": "#333333","selected": False,"purchased": False,"price": 100},
+                        {"color": "#4B0082","selected": False,"purchased": False,"price": 120},
+                        {"color": "#2F4F4F","selected": False,"purchased": False,"price": 150},
+                        {"color": "#800000","selected": False,"purchased": False,"price": 250},
+                        {"color": "#000000","selected": False,"purchased": False,"price": 100},
+                        {"color": "#F8F8FF","selected": False,"purchased": False,"price": 150},
+                        {"color": "#D3D3D3","selected": False,"purchased": False,"price": 200},
+                        {"color": "#FFD700","selected": False,"purchased": False,"price": 300},
+                        {"color": "#00FF00","selected": False,"purchased": False,"price": 500}
+                    ],
+                "upgradable": 0,
+                "charge": 0
+            },
+            "nevigation_info": {
+                "selected_index": 0,
+                "items": [
+                        {"color": "#000000","selected": True,"purchased": True,"price": 0},
+                        {"color": "#32CD32","selected": False,"purchased": False,"price": 200},
+                        {"color": "#1E90FF","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FF6347","selected": False,"purchased": False,"price": 230},
+                        {"color": "#FF69B4","selected": False,"purchased": False,"price": 250},
+                        {"color": "#8A2BE2","selected": False,"purchased": False,"price": 500},
+                    ],
+                "upgradable": 0,
+                "charge": 0
+            },
+            "canvas_info": {
+                "selected_index": 0,
+                "items": [
+                        {"color": "#050B2B","selected": True,"purchased" : True ,"price": 0},
+                        {"color": "#228B22","selected": False,"purchased": False,"price": 380},
+                        {"color": "#2E8B57","selected": False,"purchased": False,"price": 380},
+                        {"color": "#006400","selected": False,"purchased": False,"price": 380},
+                        {"color": "#556B2F","selected": False,"purchased": False,"price": 280},
+                        {"color": "#8FBC8F","selected": False,"purchased": False,"price": 500},
+                        {"color": "#9ACD32","selected": False,"purchased": False,"price": 380},
+                        {"color": "#BDB76B","selected": False,"purchased": False,"price": 200},
+                        {"color": "#808000","selected": False,"purchased": False,"price": 500},
+                        {"color": "#3CB371","selected": False,"purchased": False,"price": 2000},
+                        {"color": "#6B8E23","selected": False,"purchased": False,"price": 500}
+                    ],
+                "upgradable": 0,
+                "charge": 0
+            },
+            "food_info": {
+                "selected_index": 0,
+                "items": [
+                        {"color": "#ff0000","selected": True,"purchased" : True ,"price": 0},
+                        {"color": "#FFFF00","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FFA500","selected": False,"purchased": False,"price": 380},
+                        {"color": "#800080","selected": False,"purchased": False,"price": 380},
+                        {"color": "#00FF00","selected": False,"purchased": False,"price": 200},
+                        {"color": "#FFC0CB","selected": False,"purchased": False,"price": 500},
+                        {"color": "#8B4513","selected": False,"purchased": False,"price": 380},
+                        {"color": "#00FFFF","selected": False,"purchased": False,"price": 200},
+                        {"color": "#FFD700","selected": False,"purchased": False,"price": 500},
+                        {"color": "#FF6347","selected": False,"purchased": False,"price": 200},
+                        {"color": "#4B0082","selected": False,"purchased": False,"price": 500},
+                        {"color": "#ADFF2F","selected": False,"purchased": False,"price": 500}
+                    ],
+                "upgradable": 0,
+                "charge": 0
+            },
+            "heart_info": {
+                "selected_index": 0,
+                "items": [
+                        {"color": "#FF0000","selected": True,"purchased" : True ,"price": 0},
+                        {"color": "#E60000","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FF69B4","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FF1493","selected": False,"purchased": False,"price": 380},
+                        {"color": "#DB7093","selected": False,"purchased": False,"price": 200},
+                        {"color": "#C71585","selected": False,"purchased": False,"price": 500},
+                        {"color": "#FF4500","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FF6347","selected": False,"purchased": False,"price": 200},
+                        {"color": "#CD5C5C","selected": False,"purchased": False,"price": 500}
+                    ],
+                "upgradable": 1,
+                "charge": 500
+            },
+            "snake_info": {
+                "selected_index": 0,
+                "items": [
+                        {"color": "#ffff00","selected": True,"purchased" : True ,"price": 0},
+                        {"color": "#32CD32","selected": False,"purchased": False,"price": 380},
+                        {"color": "#1E90FF","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FFD700","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FF1493","selected": False,"purchased": False,"price": 200},
+                        {"color": "#8A2BE2","selected": False,"purchased": False,"price": 500},
+                        {"color": "#FF6347","selected": False,"purchased": False,"price": 380},
+                        {"color": "#00CED1","selected": False,"purchased": False,"price": 200},
+                        {"color": "#ADFF2F","selected": False,"purchased": False,"price": 500},
+                        {"color": "#FF69B4","selected": False,"purchased": False,"price": 200},
+                        {"color": "#FF8C00","selected": False,"purchased": False,"price": 500},
+                        {"color": "#7FFF00","selected": False,"purchased": False,"price": 500}
+                    ],
+                "upgradable": 1,
+                "charge": 100
+            },
+            "coin_info": {
+                "selected_index": 0,
+                "items": [
+                        {"color": "#ff0000","selected": True,"purchased" : True ,"price": 0},
+                        {"color": "#FFFF00","selected": False,"purchased": False,"price": 380},
+                        {"color": "#FFA500","selected": False,"purchased": False,"price": 380},
+                        {"color": "#800080","selected": False,"purchased": False,"price": 380},
+                        {"color": "#00FF00","selected": False,"purchased": False,"price": 220},
+                        {"color": "#FFC0CB","selected": False,"purchased": False,"price": 500},
+                        {"color": "#8B4513","selected": False,"purchased": False,"price": 380},
+                        {"color": "#00FFFF","selected": False,"purchased": False,"price": 250},
+                        {"color": "#FF6347","selected": False,"purchased": False,"price": 200},
+                        {"color": "#4B0082","selected": False,"purchased": False,"price": 500},
+                        {"color": "#ADFF2F","selected": False,"purchased": False,"price": 500},
+                    ],
+                "upgradable": 1,
+                "charge": 1000
+            }
+        }
+
+    def _defult_setting_data(self, account:str|None = None ) -> None:
+        """
+        return sefult setting data
+        takes account as argumtnt
+        """
+        return {
+            "basic_info": {
+                "game_width": 720,
+                "game_height": 360,
+                "box_size": 40,
+                "speed": 100,
+                "text_size": 8,
+                "volume_level": 80
+            },
+            "theme": {
+                "theme1": "#e6f2ff",
+                "theme2": "#111111",
+                "theme3": "#ff6f61"
+            },
+            "game_info": {
+                "Account": "demo_player" if not account else account,
+                "verstion": "1.0",
+                "box_size": 30,
+                "game_speed": 100
+            }
+        }
+    
+    def __path_set_up(self):
+        if name == 'nt':  # Check if the OS is Windows
+            self.path = path.join('C:', 'Users', 'Public', 'snake_game')
+        else:
+            self.path = path.join('/home', 'public', 'snake_game')
+        
+        self.account_path = path.join(self.path,"player_info")
+        self.setting_path = path.join(self.path,"Game_assest")
+        
+        if not path.exists(self.account_path):
+            print("path didnt found run setup.exe")
+            quit()
+        if not path.exists(self.setting_path):
+            print("path didnt found run setup.exe")
+            quit()
+         
     def get_the_info(self):
         """
         Initialize the game and user variables by loading data from JSON files.
@@ -110,6 +291,38 @@ class Variable:
         self.snake_info  = self._player_acc_info["snake_info"]
         self.heart_info  = self._player_acc_info["heart_info"]
         self.coin_info = self._player_acc_info["coin_info"]
+    
+    def _check_path_and_get_info(self,location:str,value_keys:list):
+        """
+        Checks if the specified file path exists and retrieves information from the file.
+
+        This method checks whether the provided file path exists. If the file exists,
+        it reads and loads the JSON data from the file, then retrieves the value
+        specified by the list of keys using `get_nested_value`.
+
+        Parameters:
+        location (str): The file path to check and read from.
+        value_keys (list): A list of keys representing the path to the desired value in the JSON data.
+
+        Returns:
+        any: The value retrieved from the JSON data, or an empty dictionary if the file 
+            doesn't exist or the keys are not found.
+        """
+        if path.exists(location):
+            pass
+        with open(location,'r',encoding='utf-8') as data:
+            try:
+                data = json.load(data)
+            except json.JSONDecodeError:
+                pass
+        return get_nested_value(data,value_keys)
+            
+            
+        
+        
+    def create_fille(slef,obj,path):
+        with open(path,'w',encoding='utf-8') as new_file:
+            json.dump(obj,new_file)
         
     def getting_and_extracting_info(self) -> None:
         """
@@ -127,9 +340,14 @@ class Variable:
             
         #gathering player account_name
         self._active_account = self._game_setting["game_info"]["Account"]
-            
+        path_name = f"player_info\\{self._active_account}.json"
+        
+        if not path.exists(path_name):
+            print('lol')
+            quit()
+        
         # Extracting player information by id
-        with open(f"player_info\\{self._active_account}.json","r",encoding="utf-8") as Account_details:
+        with open(path_name,"r",encoding="utf-8") as Account_details:
             self._player_acc_info = json.load(Account_details)
     
     def update_user_settings(self) -> None:
@@ -191,11 +409,31 @@ class Variable:
         self.update_user_settings()
         self.updaing_game_setting()
 
-    def update_by_dict(self, info) -> None:
-        print(info)
+    def change_account(self,path_,name) -> bool:
+        return False
+    
+    def update_by_dict(self, info:dict) -> None:
+        """
+        update the variable class by dict
+
+        Args:
+            info (dict): a dict contain info regarding what u wanna update
+
+        None:
+            the dict key should be name similar to the artibute of this class to update
+        """
+        if info is None:
+            return None
+        
+        for name , value in info.items():
+            if hasattr(self,name):
+                setattr(self, name, value)
+        self.updaing_game_setting()
         
     def get_account_list(self) -> tuple[str,tuple[str]]:
-        return self.active_user_name, ("hello world", "test subject", "lol")
+        data = listdir(self.account_path)
+        data = [name.split('.')[0] for name in data]
+        return self.active_user_name, data
         
 class demo_variable:
     

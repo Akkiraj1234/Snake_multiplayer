@@ -1,9 +1,9 @@
-from tkinter import Canvas, Frame, Button, Label, Entry, Toplevel ,Tk, messagebox, StringVar, IntVar, Scale, OptionMenu
+from tkinter import Canvas, Frame, Button, Label, Entry, Toplevel ,Tk, messagebox, StringVar, Scale, OptionMenu
 from random import choice
 
 from game_idles import *
 from variable import Variable, demo_variable
-from helper import deep_copy, lighten_hex_color, darken_hex_color
+from helper import deep_copy, darken_hex_color
 
 
 class Game_screen:
@@ -979,7 +979,7 @@ class account_screen:
         self._create_window2()
         self.update(width, height)
     
-    def __change_window_method(self):
+    def __change_window_method(self) -> None:
         """
         this function helps to confirm user password and also if password
         ryt then take them to account setting canvas:0
@@ -991,7 +991,7 @@ class account_screen:
         else:
             messagebox.showinfo("wrong password","wrong password u cant modify your account")
     
-    def __change_password(self):
+    def __change_password(self) -> None:
         
         value1, value2 = self.window.change_password_window()
         
@@ -1009,15 +1009,40 @@ class account_screen:
         else:
             messagebox.showerror("Password Change Failed", "There was an error updating your password. Please try again.")
     
-    def __new_account(self):
-        value = self.window.create_new_account_window()
-        print(value)
+    def __new_account(self) -> None:
+        account_name, name, pass1, pass2 = self.window.create_new_account_window()
+        account_list = self.var.get_account_list()
+        
+        if not (account_name and name and pass1 and pass2):
+            return None
+        
+        if account_name in account_list[1]:
+            messagebox.showerror("account name","account name already exists please create other account")
+            return None
+        
+        if not (pass1 == pass2):
+            messagebox.showerror("password didnt matched..","password didnt matched please fill both password currectly")
+            return None
+            
+        path = self.var.account_path+'\\'+account_name+'.json'
+        info = self.var._defult_player_data(name,pass1)
+        self.var.create_fille(info,path)
     
-    def __change_account(self):
-        value = self.window.change_account_window()
-        print(value)
-    
-    def __go_back(self):
+    def __change_account(self) -> None:
+        name, password = self.window.change_account_window()
+        path = f"{self.var.account_path}\\{name}.json"
+        value_keys = ["password"]
+
+        original_password = self.var._check_path_and_get_info(path, value_keys)
+
+        if original_password == password:
+            if self.var.change_account(path,name):
+                messagebox.showinfo("Login Failed", "some error happend try again or contact dev")
+                return None
+        else:
+            messagebox.showinfo("Login Failed", "Wrong password")
+
+    def __go_back(self) -> None:
         self.change_method(self.canvas)
     
     def _create_window1(self) -> None:
@@ -1147,7 +1172,7 @@ class account_screen:
         for label in self._AS_lable:
             label.config(font = font )
 
-        self._AS_button.config(font = font, width=30,)
+        self._AS_button.config(width=30, font = font)
         self._AS_width_entry.config(width=15,font=font)
         self._AS_height_entry.config(width=15,font=font)
         self._AS_text_var.config(length=107, font = font)
@@ -1224,13 +1249,36 @@ class account_screen:
         This method fetches the current values from various user input fields and 
         returns a dictionary containing these values
         """
+        game_width = self._AS_width_entry.get()
+        if game_width.isdigit():
+            game_width = int(game_width)
+        else:
+            messagebox.showwarning("wrong input", "game width should in int not string")
+            return None
+        
+        game_height = self._AS_height_entry.get()
+        if game_height.isdigit():
+            game_height = int(game_height)
+        else:
+            messagebox.showwarning("wrong input", "game height should in int not string")
+            return None
+
+        if not ( 500 <= game_width):
+            messagebox.showwarning("size influeanse", "game width should not less then 500")
+            return None
+
+        if not ( 250 <= game_height):
+            messagebox.showwarning("size influeanse", "game height should not less then 250")
+            return None
+        
+        game_height = game_width // 2
         
         size = self._AS_size_var.get()
         speed = self._AS_speed_var.get()
         
         new_info = {
-            "game_width" : self._AS_width_entry.get(),
-            "game_height" : self._AS_height_entry.get(),
+            "game_width" : game_width,
+            "game_height" : game_height,
             "home_boxsize" : 15 if size == "Small" else 30 if size == 'Medium' else 45 if size == 'Large' else 60,
             "home_speed" : 100 if speed == 'Extreme' else 150 if speed == "Fast" else 200 if speed == 'Normal' else 300,
             "home_text_size" : self._AS_text_var.get(),
@@ -1240,8 +1288,6 @@ class account_screen:
         }
         return new_info
 
-#fix update_size_and_color with new styling
-#fix all private methdos
 
 class shop_screen:
     """
@@ -1602,7 +1648,6 @@ class shop_screen:
             self.var.PLAYERP_COINE = self._current_value
             self.current_save_method()
             self.save = True
-            print("saved")
             
         elif index_num == 4:
             if self.current_Sindex + 6 < len(self.current_data["items"]):
@@ -2227,7 +2272,7 @@ class setting_screen_gui:
             self._settingscreen_width // 2,
             self._gameexit_button_height // 2,
         )
-        # calculating main screen_ height and creating demo screen :0
+        # calculating main screen_ height and updating demo screen :0
         self.main_screen_height = self._settingscreen_height - self._gameexit_button_height - nev_button_height
         
         self.demo_screen.config(
@@ -2522,7 +2567,7 @@ class WindowGenerator:
         Notes:
             Passwords entered are masked for security, displaying asterisks instead of the actual characters.
         """
-        self.__value = [None,None,None]
+        self.__value = [None,None,None,None]
         window = self.create_top_level_screen(
             title = "create_new_account",
             width = 260,

@@ -400,7 +400,7 @@ class setting_screen:
         - var (variable): An instance of the variable class containing game variables.
 
         Returns:
-        None
+            None
         '''
         #inisalizing frame and important variables
         self.master = master
@@ -599,7 +599,6 @@ class setting_screen:
         self.setting_screen.remove_to_master()
         self.main_frame.pack_forget()
         self.remove_bind_keys()
-
 
 class about_me_class:
     def __init__(self, root: Tk, width: int, height: int, var: Variable, home_screen:inisial_screens) -> None:

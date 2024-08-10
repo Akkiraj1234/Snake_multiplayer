@@ -211,3 +211,18 @@ def deep_copy(original:dict|list|tuple|set):
             copied_dict[key] = value
     
     return copied_dict
+
+def get_nested_value(d, keys):
+    """
+    Retrieves a value from a nested dictionary using a list of keys.
+
+    Parameters:
+    d (dict): The dictionary to search.
+    keys (list): A list of keys specifying the path to the value.
+
+    Returns:
+    any: The value at the specified path, or an empty dictionary if any key is missing.
+    """
+    for key in keys:
+        d = d.get(key, {})
+    return d
