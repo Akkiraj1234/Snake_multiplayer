@@ -1030,13 +1030,17 @@ class account_screen:
     
     def __change_account(self) -> None:
         name, password = self.window.change_account_window()
+        
+        if name and password:
+            return None
+        
         path = f"{self.var.account_path}\\{name}.json"
         value_keys = ["password"]
 
         original_password = self.var._check_path_and_get_info(path, value_keys)
 
         if original_password == password:
-            if self.var.change_account(path,name):
+            if not self.var.change_account(path,name):
                 messagebox.showinfo("Login Failed", "some error happend try again or contact dev")
                 return None
         else:
@@ -1124,7 +1128,7 @@ class account_screen:
         Label3 = Label(self.canvas2, text = "Money")
         self._A_lable = (Label1, Label2, Label3)
         
-        self._A_Name_var = Entry(self.canvas2)
+        self._A_Name_var = Label(self.canvas2)
         self._A_heighscore_lable = Label(self.canvas2)
         self._A_coin_lable = Label(self.canvas2)
         
@@ -1232,7 +1236,7 @@ class account_screen:
             
         Note: update everything persent in window2
         """
-        self._A_Name_var.insert(0, self.var.active_user_name)
+        self._A_Name_var.config(text = self.var.active_user_name)
         self._A_heighscore_lable.config(text = self.var.HIGHT_SCORE)
         self._A_coin_lable.config(text = self.var.PLAYERP_COINE)
 
@@ -1282,9 +1286,7 @@ class account_screen:
             "home_boxsize" : 15 if size == "Small" else 30 if size == 'Medium' else 45 if size == 'Large' else 60,
             "home_speed" : 100 if speed == 'Extreme' else 150 if speed == "Fast" else 200 if speed == 'Normal' else 300,
             "home_text_size" : self._AS_text_var.get(),
-            "volume_level" : self._AS_volume_var.get(),
-            
-            "active_user_name" : self._A_Name_var.get(),
+            "volume_level" : self._AS_volume_var.get()
         }
         return new_info
 
