@@ -966,6 +966,8 @@ class inisial_screens:
 
 
 class account_screen:
+    #fix update_and_size_and_color method for better 
+    #fixing with good calculation...
     
     def __init__(self,var:Variable, height:int, width:int, master:Frame, root:Tk, change_window:callable ) -> Canvas:
         self.master = master
@@ -2315,6 +2317,7 @@ class setting_screen_gui:
         
 
 class WindowGenerator:
+    #fix upating_form_on_canvas for good looks
     """
     A class for managing window settings and operations.
 
@@ -2755,3 +2758,15 @@ class WindowGenerator:
             self.root.attributes('-disabled', False)
             self.root.grab_set()
             self.root.focus_set()
+
+
+
+#for rn everything is fixed code work 100% well just 
+#clearlity work letter on the game_screen and check inisial screen once
+
+#game_screen: the probleam with the strucuture.. not updatable eassily fixing that but later
+#               probleam found from setting screen gui __init__ method wehere
+#               i have to add it to master inside (self.GAME_SCREEN.add_to_Master()) insdie __init__ method
+#               that should happend in Initialize_First_Screen but thats not so try to figure it out
+
+#inisal_screen: just need to check once for imporovemnt and founding any error
