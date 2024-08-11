@@ -1004,14 +1004,21 @@ class account_screen:
             messagebox.showwarning("Password Mismatch", "The new password and confirmation do not match.")
             return None
         
-        self.var.update_password(value1)
+        return_code = self.var.update_password(value1)
         
-        if value1 == self.var._player_acc_info["password"]:
+        if return_code:
             messagebox.showinfo("Password Changed Successfully", "Your password has been updated successfully.")
         else:
             messagebox.showerror("Password Change Failed", "There was an error updating your password. Please try again.")
     
     def __new_account(self) -> None:
+        """
+        Handles the creation of a new player account.
+
+        This method gathers user input for account creation, verifies the input, 
+        and creates a new account if all checks are passed. It displays appropriate 
+        messages to the user based on the success or failure of the account creation process.
+        """
         account_name, name, pass1, pass2 = self.window.create_new_account_window()
         account_list = self.var.get_account_list()
         
@@ -1019,32 +1026,42 @@ class account_screen:
             return None
         
         if account_name in account_list[1]:
-            messagebox.showerror("account name","account name already exists please create other account")
+            messagebox.showerror("Account Name Error", "Account name already exists. Please create another account.")
             return None
         
         if not (pass1 == pass2):
-            messagebox.showerror("password didnt matched..","password didnt matched please fill both password currectly")
+            messagebox.showerror("Password Mismatch", "Passwords do not match. Please re-enter the passwords correctly.")
             return None
-            
-        path = self.var.account_path+'\\'+account_name+'.json'
-        info = self.var._defult_player_data(name,pass1)
-        self.var.create_fille(info,path)
+        
+        data = self.var._defult_player_data(name,pass1)
+        return_code = self.var.create_new_account(account_name, data)
+        
+        if return_code:
+            messagebox.showinfo("Success", "Account created successfully!")
+        else:
+            messagebox.showerror("Failure", "Failed to create the account. Please try again.")
     
     def __change_account(self) -> None:
         name, password = self.window.change_account_window()
         
-        if name and password:
+        if not( name and password):
             return None
         
-        path = f"{self.var.account_path}\\{name}.json"
         value_keys = ["password"]
 
-        original_password = self.var._check_path_and_get_info(path, value_keys)
-
+        original_password = self.var._check_path_and_get_info(name, value_keys)
+        
         if original_password == password:
-            if not self.var.change_account(path,name):
+            print(original_password , password)
+            if not self.var.change_account(name):
                 messagebox.showinfo("Login Failed", "some error happend try again or contact dev")
                 return None
+            
+            messagebox.showinfo("Login Succeeded", "Login successful! If you encounter any issues, please try again or contact the developer.")
+            
+        elif original_password is None:
+            messagebox.showinfo("Login Failed", "some error contact devlopers")
+            
         else:
             messagebox.showinfo("Login Failed", "Wrong password")
 
@@ -2614,7 +2631,6 @@ class WindowGenerator:
             width = 15,bd = 1,
             relief="solid",
             justify="center",
-            show = "*",
             font = self.font
         )
         player_name = Entry(
@@ -2622,7 +2638,6 @@ class WindowGenerator:
             width = 15,bd = 1,
             relief="solid",
             justify="center",
-            show = "*",
             font = self.font
         )
         password1 = Entry(

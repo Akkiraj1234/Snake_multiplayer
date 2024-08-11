@@ -1,4 +1,4 @@
-from random import randint,choice
+from random import randint
 
 
 def lighten_hex_color(hex_color, lighten_factor=0.1) -> str:
@@ -212,7 +212,7 @@ def deep_copy(original:dict|list|tuple|set):
     
     return copied_dict
 
-def get_nested_value(d, keys):
+def get_nested_value(d, keys:dict):
     """
     Retrieves a value from a nested dictionary using a list of keys.
 
@@ -224,5 +224,9 @@ def get_nested_value(d, keys):
     any: The value at the specified path, or an empty dictionary if any key is missing.
     """
     for key in keys:
-        d = d.get(key, {})
+        try:
+            d = d.get(key, None)
+            
+        except KeyError:
+            return None
     return d

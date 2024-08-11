@@ -1,6 +1,7 @@
 import json
-from os import listdir,name,path
+import os
 from helper import get_nested_value
+from tkinter import messagebox
 
 class Variable:
     """
@@ -27,8 +28,6 @@ class Variable:
     """
     
     def __init__(self) -> None:
-        self.get_the_info()
-        
         #fixed and constant variables
         self.SNAKE_CORDINATES = (0,0)
         self.SNAKE_LOSS_COUNTDOWN = 2
@@ -40,7 +39,7 @@ class Variable:
         self.INCREASE_SPEED_AFTER = 20
         self.game_speed = 100
         self.game_box_size = 30
-        self.__path_set_up()
+        self.initial_method()
     
     @property
     def CANVAS_COLOR(self) -> str:
@@ -82,6 +81,64 @@ class Variable:
     def COIN_VALUE(self) -> int:
         return self._player_acc_info["coin_info"]["upgradable"] * self._player_acc_info["coin_value"]
     
+    def __path_set_up(self) -> None:
+        """
+        Sets up file paths for storing player information and game assets based on the operating system.
+
+        - On Windows, the path is set to `C:/Users/Public/snake_game`.
+        - On other systems, the path is set to `/home/public/snake_game`.
+        - If the specified path doesn't exist, it defaults to the current directory (`./`).
+
+        Checks if the necessary directories exist and have write permissions:
+        - If either the `player_info` or `Game_assets` directories are missing, or if there's no write permission,
+        the paths are set to `None` and a warning message is displayed.
+        """
+        if os.name == 'nt':
+            self.path = os.path.join('C:\\', 'Users', 'Public', 'snake_game')
+        else:
+            self.path = os.path.join('/home', 'public', 'snake_game')
+        
+        if not os.path.exists(self.path):
+            self.path = os.path.join('./')
+        
+        self.account_path = os.path.join(self.path,"player_info")
+        self.setting_path = os.path.join(self.path,"Game_assets")
+        
+        error1 = "For now, continuing with default data. You can't use settings or save data; some features will be off."
+        
+        if not (os.path.exists(self.account_path) and os.path.exists(self.setting_path))\
+            or not os.access(self.path, os.W_OK):
+            self.account_path = None
+            self.setting_path = None
+            print("path doesn not exists or No write permission for the path run setup.exe",'\n',error1)
+            messagebox.showerror("path not found","path doesn not exists or No write permission for the path run setup.exe" + error1)
+    
+    def __create_file(self, obj:dict, path:str) -> None:
+        """
+        Creates a JSON file with the given object data.
+
+        This method writes the provided object data to the specified path as a JSON file,
+        handling potential errors during file creation.
+
+        Args:
+            obj (dict): The data to be written to the JSON file.
+            path (str): The file path where the JSON file will be created.
+
+        Raises:
+            OSError: If the file cannot be created due to an OS-related error.
+            TypeError: If the provided object is not serializable to JSON.
+        """
+        try:
+            with open(path, 'w', encoding='utf-8') as new_file:
+                json.dump(obj, new_file)
+            print(f"File created successfully at: {path}")
+        
+        except OSError as e:
+            print(f"Error creating file at {path}: {e}")
+        
+        except TypeError as e:
+            print(f"Error serializing object to JSON: {e}")
+            
     def _defult_player_data(self, name:str|None = None, password:str|None = None) -> None:
         """
         return defult data for player account
@@ -245,28 +302,112 @@ class Variable:
             }
         }
     
-    def __path_set_up(self):
-        if name == 'nt':  # Check if the OS is Windows
-            self.path = path.join('C:', 'Users', 'Public', 'snake_game')
-        else:
-            self.path = path.join('/home', 'public', 'snake_game')
+    def _check_path_and_get_info(self,name:str, value_keys:list) -> any:
+        """
+        Checks if the specified file path exists and retrieves information from the file.
+
+        This method checks whether the provided file path exists. If the file exists,
+        it reads and loads the JSON data from the file, then retrieves the value
+        specified by the list of keys using `get_nested_value`.
+
+        Parameters:
+        location (str): The file path to check and read from.
+        value_keys (list): A list of keys representing the path to the desired value in the JSON data.
+
+        Returns:
+        any: The value retrieved from the JSON data, or an empty dictionary if the file 
+            doesn't exist or the keys are not found.
+        """
+        if not self.account_path:
+            return None
         
-        self.account_path = path.join(self.path,"player_info")
-        self.setting_path = path.join(self.path,"Game_assest")
+        path = os.path.join(self.account_path,f"{name}.json")
         
-        if not path.exists(self.account_path):
-            print("path didnt found run setup.exe")
-            quit()
-        if not path.exists(self.setting_path):
-            print("path didnt found run setup.exe")
-            quit()
-         
-    def get_the_info(self):
+        if not os.path.exists(path):
+            return None
+        
+        with open(path,'r',encoding='utf-8') as data:
+            try:
+                data = json.load(data)
+            except json.JSONDecodeError as e:
+                print(f"error 2: {e}")
+                return None
+            
+        return get_nested_value(data,value_keys)
+
+    def initial_method(self) -> None:
+        """
+        Initialize the game setup and load necessary information.
+
+        This method performs the initial setup by:
+        1. Setting up the file paths.
+        2. Extracting and loading game settings and player account information.
+        3. Retrieving additional information required for the game.
+
+        It calls three other methods: 
+        - `__path_set_up()`: Sets up the necessary file paths.
+        - `getting_and_extracting_info()`: Loads game settings and account info.
+        - `get_the_info()`: Retrieves any additional necessary data.
+        """
+        self.__path_set_up()
+        self.getting_and_extracting_info()
+        self.get_the_info()
+    
+    def getting_and_extracting_info(self) -> None:
+        """
+        Extracts game settings and player account information from JSON files.
+
+        This method initializes the '_game_setting' and '_player_acc_info' attributes 
+        by reading from 'setting.json' and the player's account JSON file, respectively.
+        If the JSON files do not exist, the method creates them with default data.
+        In case of errors while reading the files, default values are used, and 
+        an error message is displayed.
+
+        Raises:
+            json.JSONDecodeError: If there's an error decoding the JSON files.
+        """
+        if not (self.setting_path and self.account_path):
+            self._game_setting = self._defult_setting_data()
+            self._player_acc_info = self._defult_player_data()
+            return None
+            
+        path = f"{self.setting_path}\\setting.json"
+        
+        #if path not exits setting path creating the path... and fille
+        if not os.path.exists(path): 
+            self.__create_file(self._defult_setting_data(),path)
+        
+        #Extracting game setting info if setting.json exits if not use defult value
+        try:
+            with open(path, "r", encoding="utf-8") as Game_settings:
+                self._game_setting = json.load(Game_settings)
+        except json.JSONDecodeError as e:
+            print(f"Error reading the settings JSON file: {e}. Using default settings.")
+            self._game_setting = self._defult_setting_data()
+            messagebox.showerror(f"Error reading the settings JSON file: {e}. Using default settings. | run setup.exe to fix the error or try reopeing the game")
+        
+        #gathering player account_name
+        self._active_account = self._game_setting["game_info"]["Account"]
+        path = f"{self.account_path}\\{self._active_account}.json"
+        
+        if not os.path.exists(path):
+            path = f"{self.account_path}\\demo_player.json"
+            if not os.path.exists(path):
+                self.__create_file(self._defult_player_data(),path)
+        
+        # Extracting player information by id if not exits then use dafult data
+        try:
+            with open(path, "r", encoding="utf-8") as Account_details:
+                self._player_acc_info = json.load(Account_details)
+        except json.JSONDecodeError as e:
+            print(f"Error reading the account JSON file: {e}. Using default player data.")
+            self._player_acc_info = self._defult_player_data()
+            messagebox.showerror(f"Error reading the settings JSON file: {e}. Using default player data.| run setup.exe to fix the error or try reopeing the game")
+        
+    def get_the_info(self) -> None:
         """
         Initialize the game and user variables by loading data from JSON files.
         """
-        self.getting_and_extracting_info()
-        
         #game basic info that stay same for every user by changing it change but for all user
         self.game_width     = self._game_setting["basic_info"]["game_width"]
         self.game_height    = self._game_setting["basic_info"]["game_height"]
@@ -291,81 +432,112 @@ class Variable:
         self.snake_info  = self._player_acc_info["snake_info"]
         self.heart_info  = self._player_acc_info["heart_info"]
         self.coin_info = self._player_acc_info["coin_info"]
-    
-    def _check_path_and_get_info(self,location:str,value_keys:list):
+        
+    def get_account_list(self) -> tuple[str,tuple[str]]:
         """
-        Checks if the specified file path exists and retrieves information from the file.
+        Get the list of player account names.
 
-        This method checks whether the provided file path exists. If the file exists,
-        it reads and loads the JSON data from the file, then retrieves the value
-        specified by the list of keys using `get_nested_value`.
-
-        Parameters:
-        location (str): The file path to check and read from.
-        value_keys (list): A list of keys representing the path to the desired value in the JSON data.
+        Returns a tuple with the active user name and a list of all account names
+        found in the account directory. If the account path doesn't exist, it 
+        returns 'default_data' and an empty list.
 
         Returns:
-        any: The value retrieved from the JSON data, or an empty dictionary if the file 
-            doesn't exist or the keys are not found.
+            tuple[str, tuple[str]]: The active user name and a list of account names (without extensions).
         """
-        if path.exists(location):
-            pass
-        with open(location,'r',encoding='utf-8') as data:
-            try:
-                data = json.load(data)
-            except json.JSONDecodeError:
-                pass
-        return get_nested_value(data,value_keys)
-            
-            
+        if not os.path.exists(self.account_path):
+            return 'defult_data',[]
         
-        
-    def create_fille(slef,obj,path):
-        with open(path,'w',encoding='utf-8') as new_file:
-            json.dump(obj,new_file)
-        
-    def getting_and_extracting_info(self) -> None:
-        """
-        Extract information from JSON files.
-
-        This method extracts game settings information from a 'setting.json' file
-        and player account details from a file named after the player's account name.
-        It initializes the class attributes '_game_setting' and '_player_acc_info'
-        with the extracted data.
-        """
-        
-        # Extracting game setting info
-        with open("Game_assets\\setting.json","r",encoding="utf-8") as Game_settings:
-            self._game_setting = json.load(Game_settings)
-            
-        #gathering player account_name
-        self._active_account = self._game_setting["game_info"]["Account"]
-        path_name = f"player_info\\{self._active_account}.json"
-        
-        if not path.exists(path_name):
-            print('lol')
-            quit()
-        
-        # Extracting player information by id
-        with open(path_name,"r",encoding="utf-8") as Account_details:
-            self._player_acc_info = json.load(Account_details)
+        data = os.listdir(self.account_path)
+        data = [name.split('.')[0] for name in data]
+        return self.active_user_name, data
     
+    def create_new_account(self,name:str,data:dict) -> bool:
+        if not self.account_path:
+            return False
+        path = os.path.join(self.account_path,f"{name}.json")
+        self.__create_file(data,path)
+        
+        return os.path.exists(path)
+    
+    def change_account(self,name) -> bool:
+        self._active_account = name
+        self.updaing_game_setting()
+        
+        if not self.account_path:
+            return False
+        
+        path = os.path.join(self.account_path,f"{name}.json")
+        
+        if os.path.exists(path):
+            self.initial_method()
+            return True
+        
+        return False
+    
+    def update_password(self,password) -> bool:
+        """
+        Update the player's account password.
+
+        This method updates the password associated with the player's account.
+        However, it's currently implemented as a placeholder and does not perform
+        any actual password update operation. Future implementation should include
+        appropriate security measures for updating passwords.
+        """
+        self._player_acc_info["password"] = password
+        
+        if not self.account_path:
+            return False
+        
+        path = os.path.join(self.account_path, f"{self._active_account}.json")
+        
+        try:
+            with open(path, "w", encoding="utf-8") as player_file:
+                json.dump(self._player_acc_info, player_file)
+            return True
+        
+        except (IOError, json.JSONDecodeError) as e:
+            print(f"Error updating the password: {e}")
+            return False
+    
+    def update_by_dict(self, info:dict) -> None:
+        """
+        update the variable class by dict
+
+        Args:
+            info (dict): a dict contain info regarding what u wanna update
+
+        None:
+            the dict key should be name similar to the artibute of this class to update
+        """
+        if info is None:
+            return None
+        
+        for name , value in info.items():
+            if hasattr(self,name):
+                setattr(self, name, value)
+                
+        self.updaing_game_setting()
+        self.update_user_settings()
+        
     def update_user_settings(self) -> None:
         """
         Update user settings in the player account JSON file 
         by anything changes on the variable.
-        """
-        self._player_acc_info["name"]              = self.active_user_name
-        self._player_acc_info["HIGH_SCORE"]        = self.HIGHT_SCORE
-        self._player_acc_info["points"]            = self.PLAYERP_COINE
+        """    
+        self._player_acc_info["name"]            = self.active_user_name
+        self._player_acc_info["HIGH_SCORE"]      = self.HIGHT_SCORE
+        self._player_acc_info["points"]          = self.PLAYERP_COINE
         
-        self._player_acc_info["canvas_info"] = self.canvas_info
+        self._player_acc_info["canvas_info"]     = self.canvas_info
         self._player_acc_info["nevigation_info"] = self.nevigation_info
-        self._player_acc_info["text_info"] = self.text_info
-        self._player_acc_info["food_info"] = self.food_info 
-        self._player_acc_info["snake_info"] = self.snake_info 
-        self._player_acc_info["heart_info"] = self.heart_info
-        self._player_acc_info["coin_info"] = self.coin_info
+        self._player_acc_info["text_info"]       = self.text_info
+        self._player_acc_info["food_info"]       = self.food_info 
+        self._player_acc_info["snake_info"]      = self.snake_info 
+        self._player_acc_info["heart_info"]      = self.heart_info
+        self._player_acc_info["coin_info"]       = self.coin_info
+        
+        if not self.account_path:
+            return None
         
         with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
             json.dump(self._player_acc_info, player_file,)
@@ -385,22 +557,11 @@ class Variable:
         self._game_setting["theme"]["theme2"]           = self.theme2
         self._game_setting["game_info"]["Account"]      = self._active_account
         
+        if not self.setting_path:
+            return None
+        
         with open("Game_assets\\setting.json","w",encoding="utf-8") as game_setting:
             json.dump(self._game_setting,game_setting)
-    
-    def update_password(self,password) -> None:
-        """
-        Update the player's account password.
-
-        This method updates the password associated with the player's account.
-        However, it's currently implemented as a placeholder and does not perform
-        any actual password update operation. Future implementation should include
-        appropriate security measures for updating passwords.
-        """
-        self._player_acc_info["password"] = password
-        
-        with open(f"player_info\\{self._active_account}.json", "w", encoding="utf-8") as player_file:
-            json.dump(self._player_acc_info, player_file)
         
     def update(self) -> None:
         """
@@ -408,32 +569,6 @@ class Variable:
         """
         self.update_user_settings()
         self.updaing_game_setting()
-
-    def change_account(self,path_,name) -> bool:
-        return False
-    
-    def update_by_dict(self, info:dict) -> None:
-        """
-        update the variable class by dict
-
-        Args:
-            info (dict): a dict contain info regarding what u wanna update
-
-        None:
-            the dict key should be name similar to the artibute of this class to update
-        """
-        if info is None:
-            return None
-        
-        for name , value in info.items():
-            if hasattr(self,name):
-                setattr(self, name, value)
-        self.updaing_game_setting()
-        
-    def get_account_list(self) -> tuple[str,tuple[str]]:
-        data = listdir(self.account_path)
-        data = [name.split('.')[0] for name in data]
-        return self.active_user_name, data
         
 class demo_variable:
     
@@ -458,3 +593,4 @@ class demo_variable:
         """
         for key, value in dict1.items():
             setattr(self, key, value)
+
