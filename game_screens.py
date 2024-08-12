@@ -1,4 +1,4 @@
-from tkinter import Canvas, Frame, Button, Label, Entry, Toplevel ,Tk, messagebox, StringVar, Scale, OptionMenu
+from tkinter import Canvas, Frame, Button, Label, Entry, Toplevel ,Tk, messagebox, StringVar, Scale, OptionMenu, END
 from random import choice
 
 from game_idles import *
@@ -35,7 +35,7 @@ class Game_screen:
         remove_to_Master(): Removes navigation and game canvases from master widget.
     """
    
-    def __init__(self,Master:Tk, var:Variable, initialize:bool = True) -> None:
+    def __init__(self,Master:Tk, var:Variable) -> None:
         """
         Initialize the game screen. 
         with main game canvas and nevigation panel
@@ -66,18 +66,85 @@ class Game_screen:
         self.MENU_OPTION = None
         self.SCORE_TEXT = None
         
-        if initialize:
-            self.SET_UP()
+        self.inisialize()
     
-    def SET_UP(self) -> None:
-        """
-        genrate the game canvas by adjusting 
-        window_size and nevigation_size create the
-        game_canvas with all things set up
-        """
-        self.adjust_window_size()
+    def inisialize(self):
         self.nevigation_setup()
         self.game_canvas_setup()
+    
+    def nevigation_setup(self) -> None:
+        """
+        This method sets up the navigation canvas with essential elements such as a heart icon
+        representing the player's remaining lives, a score text displaying the current score,
+        and a menu option for accessing game options or pausing the game.
+        """
+        var = self.var if not self.demo else self.var1
+        
+        self.NEVIGATION_CANVAS = Canvas(
+            master = self.MASTER
+            )
+        
+        self.HEART_NEW = Heart_NEV(
+            canvas = self.NEVIGATION_CANVAS,
+            color = var.HEART_COLOR,
+            initial_heart = var.INISISAL_HEART,
+            limit = var.HEART_LIMIT
+            )
+        
+        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
+            0 , 0 ,
+            text = f"Score: 0",
+            )
+        
+        self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
+            0 , 0 ,
+            text = "Menu",
+            )  
+        self.NEVIGATION_CANVAS.pack()
+    
+    def game_canvas_setup(self) -> None:
+        """
+        This method sets up the game canvas with the snake and food objects.
+        It creates a canvas widget with the specified background color, width,
+        and height. Then, it initializes the snake and food objects on the canvas
+        using the provided game variables.
+        """
+        var = self.var if not self.demo else self.var1
+        
+        self.GAME_CANVAS = Canvas(
+            master = self.MASTER,
+            bg = var.CANVAS_COLOR
+            )
+        
+        self.SNAKE = Snake(
+            canvas = self.GAME_CANVAS,
+            coordinates = var.SNAKE_CORDINATES,
+            box_size = var.game_box_size,
+            lenght = var.SNAKE_LENGHT,
+            color = var.SNAKE_COLOR
+            )
+        
+        self.FOOD = Food(
+            canvas = self.GAME_CANVAS,
+            box_size = var.game_box_size,
+            color = var.FOOD_COLOR,
+            )
+        
+        self.HEART = Heart(
+            canvas = self.GAME_CANVAS,
+            box_size = var.game_box_size,
+            color = var.HEART_COLOR
+        )
+        
+        self.COIN = Coin(
+            canvas = self.GAME_CANVAS,
+            box_size = var.game_box_size,
+            color = var.COIN_COLOR
+        )
+        self.HEART.delete_all()
+        self.COIN.delete_all()
+        
+        self.GAME_CANVAS.pack()
         
     def adjust_window_size(self) -> None:
         """
@@ -108,113 +175,14 @@ class Game_screen:
             self._nevigation_height = var.game_box_size
             
         self._game_bord_height = self.game_height - self._nevigation_height
-    
-    def nevigation_setup(self) -> None:
-        """
-        This method sets up the navigation canvas with essential elements such as a heart icon
-        representing the player's remaining lives, a score text displaying the current score,
-        and a menu option for accessing game options or pausing the game.
-        """
-        var = self.var if not self.demo else self.var1
-        
-        braking_into_4 =  self._nevigation_height // 4
-        
-        self.NEVIGATION_CANVAS = Canvas(
-            master = self.MASTER,
-            bg = var.NEV_COLOR,
-            width = self.game_width,
-            height = self._nevigation_height
-            )
-        
-        self.HEART_NEW = Heart_NEV(
-            canvas = self.NEVIGATION_CANVAS,
-            color = var.HEART_COLOR,
-            initial_heart = var.INISISAL_HEART,
-            limit = var.HEART_LIMIT
-            )
-        
-        self.SCORE_TEXT = self.NEVIGATION_CANVAS.create_text(
-            self.game_width // 2,
-            braking_into_4 * 2,
-            font = ("Arial",braking_into_4 * 2,"bold"),
-            text = f"Score: 0",
-            fill = var.TEXT_COLOR
-            )
-        
-        self.MENU_OPTION = self.NEVIGATION_CANVAS.create_text(
-            braking_into_4 * 4,
-            braking_into_4 * 2,
-            font = ("Arial", braking_into_4 * 2, "bold"),
-            text = "Menu",
-            fill = var.TEXT_COLOR
-            )
-    
-    def game_canvas_setup(self) -> None:
-        """
-        This method sets up the game canvas with the snake and food objects.
-        It creates a canvas widget with the specified background color, width,
-        and height. Then, it initializes the snake and food objects on the canvas
-        using the provided game variables.
-        """
-        var = self.var if not self.demo else self.var1
-        
-        self.GAME_CANVAS = Canvas(
-            master = self.MASTER,
-            bg = var.CANVAS_COLOR,
-            width = self.game_width,
-            height = self._game_bord_height
-            )
-        
-        self.SNAKE = Snake(
-            canvas = self.GAME_CANVAS,
-            lenght = var.SNAKE_LENGHT,
-            coordinates = var.SNAKE_CORDINATES,
-            color = var.SNAKE_COLOR,
-            box_size = var.game_box_size
-            )
-        
-        self.FOOD = Food(
-            canvas = self.GAME_CANVAS,
-            box_size = var.game_box_size,
-            color = var.FOOD_COLOR,
-            )
-        
-        self.HEART = Heart(
-            canvas = self.GAME_CANVAS,
-            box_size = var.game_box_size,
-            color = var.HEART_COLOR
-        )
-        
-        self.COIN = Coin(
-            canvas = self.GAME_CANVAS,
-            box_size = var.game_box_size,
-            color = var.COIN_COLOR
-        )
-        self.HEART.delete_all()
-        self.COIN.delete_all()
-        
-    def update_things(self,**kwargs) -> None:
-        """
-        Update game elements based on provided keyword arguments.
-
-        Args:
-            **kwargs: Keyword arguments to update game elements. Available args:
-                      - score: Score to be updated.
-        """
-        if kwargs.get('score',None) is not None:
-            self.NEVIGATION_CANVAS.itemconfig(
-                self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
-            )
-            print("updated ",kwargs['score'])
-        else:
-            print("error : 0012, cant update text of score !")
-        
-    def update_everything(self) -> None:
+            
+    def UPDATE(self) -> None:
         """
         this method update all elemets posstion and color acording to new one
         """
-        var = self.var if not self.demo else self.var1
         self.adjust_window_size()
+        
+        var = self.var if not self.demo else self.var1
         
         #updating nevigation and its itemes================
         braking_into_4 =  self._nevigation_height // 4
@@ -225,7 +193,7 @@ class Game_screen:
             height = self._nevigation_height
             )
         
-        if self.HEART:
+        if self.HEART_NEW:
             self.HEART_NEW.update_color(var.HEART_COLOR)
             self.HEART_NEW.update_size()
             self.HEART_NEW.initial_heart = var.INISISAL_HEART
@@ -256,6 +224,7 @@ class Game_screen:
             )
         if self.SNAKE: 
             self.SNAKE.update_color(var.SNAKE_COLOR)
+            self.SNAKE.lenght = var.SNAKE_LENGHT
             
         if self.FOOD: 
             self.FOOD.update_color(var.FOOD_COLOR)
@@ -278,9 +247,25 @@ class Game_screen:
                 self.NEVIGATION_CANVAS.itemconfig(
                         text_id,
                         fill = color
-                    ) 
+                    )
+                
+    def update_things(self,**kwargs) -> None:
+        """
+        Update game elements based on provided keyword arguments.
 
-    def demo_screen_var_update(self, initialize:bool = False,**kwargs) -> demo_variable:
+        Args:
+            **kwargs: Keyword arguments to update game elements. Available args:
+                      - score: Score to be updated.
+        """
+        if kwargs.get('score',None) is not None:
+            self.NEVIGATION_CANVAS.itemconfig(
+                self.SCORE_TEXT,text=f"Score: {kwargs['score']}"
+            )
+            print("updated ",kwargs['score'])
+        else:
+            print("error : 0012, cant update text of score !") 
+
+    def demo_screen_var_update(self, **kwargs) -> demo_variable:
         """
         Update screen variables with provided keyword arguments and optionally initialize the screen.
         
@@ -319,28 +304,19 @@ class Game_screen:
         else:
             self.var1.update_with_dict(var)
         
-        if initialize:
-            self.SET_UP()
-        else:
-            self.adjust_window_size()
-            self.update_everything()
-            
+        self.UPDATE()
         return var
         
     def add_to_Master(self) -> None:
         """
         Pack the navigation and game canvases and add it to master
         """
-        self.MASTER.pack()    
-        self.NEVIGATION_CANVAS.pack()
-        self.GAME_CANVAS.pack()
+        self.MASTER.pack()  
 
     def remove_to_Master(self)-> None:
         """
         remove the navigation and game canvases. from master
         """
-        self.NEVIGATION_CANVAS.pack_forget()
-        self.GAME_CANVAS.pack_forget()
         self.MASTER.pack_forget()
 
 
@@ -969,17 +945,16 @@ class account_screen:
     #fix update_and_size_and_color method for better 
     #fixing with good calculation...
     
-    def __init__(self,var:Variable, height:int, width:int, master:Frame, root:Tk, change_window:callable ) -> Canvas:
+    def __init__(self,var:Variable, master:Frame, root:Tk, change_window:callable ) -> Canvas:
         self.master = master
-        self.height = height
-        self.width = width
+        self.height = 0
+        self.width = 0
         self.var = var
         self.window = WindowGenerator(root, var)
         self.change_method = change_window
         
         self._create_window1()
         self._create_window2()
-        self.update(width, height)
     
     def __change_window_method(self) -> None:
         """
@@ -1064,6 +1039,9 @@ class account_screen:
             
         else:
             messagebox.showinfo("Login Failed", "Wrong password")
+        
+        self.update_window1_info()
+        self.update_window2_info()
 
     def __go_back(self) -> None:
         self.change_method(self.canvas)
@@ -1128,7 +1106,7 @@ class account_screen:
             (add(self._AS_button) , None)
             
         )
-        
+
     def _create_window2(self) -> None:
         """
         Create and configure window 2 with labels, entry fields, and buttons.
@@ -1223,7 +1201,7 @@ class account_screen:
         #updating postion
         self.window.upating_form_on_canvas(self.height, self.width, self.canvas, *self.canvas_ids)
         self.window.upating_form_on_canvas(self.height, self.width, self.canvas2, *self.canvas2_ids)
-        
+    
     def update_window1_info(self) -> None:
         """
         Update window with current game settings.
@@ -1235,6 +1213,8 @@ class account_screen:
             - Configures font for labels, buttons, and input fields.
         Note: update everything persent in update_window1
         """
+        self._AS_width_entry.delete(0,END)
+        self._AS_height_entry.delete(0, END)
         self._AS_width_entry.insert(0, self.var.game_width)
         self._AS_height_entry.insert(0, self.var.game_height)
         size = self.var.home_boxsize
@@ -1243,7 +1223,7 @@ class account_screen:
         self._AS_speed_var.set('Extreme' if speed <= 100 else 'Fast' if speed <= 150 else 'Normal' if speed <= 200 else 'Slow')
         self._AS_text_var.set(self.var.home_text_size)
         self._AS_volume_var.set(self.var.volume_level)
-    
+
     def update_window2_info(self) -> None:
         """
         Update window with current user information.
@@ -1266,7 +1246,7 @@ class account_screen:
         self.update_size_color(width, height)
         self.update_window1_info()
         self.update_window2_info()
-    
+
     def get_value(self) -> dict:
         """
         This method fetches the current values from various user input fields and 
@@ -1332,7 +1312,7 @@ class shop_screen:
     current_save_method (callable): Method to save the current state of the window.
     
     """
-    def __init__(self,master:Frame|Tk, var:Variable, width:int, height:int) -> None:
+    def __init__(self,master:Frame|Tk, var:Variable) -> None:
         """
         Initializes the WindowCreator with the parent widget and variable instance.
 
@@ -1365,7 +1345,6 @@ class shop_screen:
         self.current_save_method = None
         
         self.set_up()
-        self.resize_window(width,height)
         self._bind_key()
     
     def __is_visible(self, id) -> bool:
@@ -1668,6 +1647,7 @@ class shop_screen:
         elif index_num == 3:
             self.var.PLAYERP_COINE = self._current_value
             self.current_save_method()
+            self.var.update_user_settings()
             self.save = True
             
         elif index_num == 4:
@@ -1959,7 +1939,7 @@ class shop_screen:
         
             self.main_canvas.itemconfig(self.upgradable_text,state = "hidden", text = '')
         
-    def update_size_and_color(self, width, height) -> None:
+    def UPDATE(self, width, height) -> None:
         #resize withon method will resize the window
         #and all its artibute and then gather the coords..
         #acording to the new window size
@@ -2019,10 +1999,7 @@ class setting_screen_gui:
         
         self.Initialize_First_Screen()
         self.Initialize_second_Screen()
-        self.update_size_and_color()
         self.current_screen = self.demo_screen
-        self.GAME_SCREEN.add_to_Master()
-        self.back_button.pack()
         
         if initialize:
             self.add_to_master()
@@ -2129,8 +2106,7 @@ class setting_screen_gui:
         """
         self.GAME_SCREEN = Game_screen(
             Master = self.game_screen_frame,
-            var = self.var,
-            initialize = False #its should set to be true okay
+            var = self.var
         )
         self.back_button = Canvas(
             master = self.game_screen_frame
@@ -2138,8 +2114,8 @@ class setting_screen_gui:
         self.back_button_text_id = self.back_button.create_text(
             0 ,0 ,text = "back"
         )
-        # self.GAME_SCREEN.add_to_Master()
-        # self.back_button.pack()
+        self.GAME_SCREEN.add_to_Master()
+        self.back_button.pack()
 
     def Initialize_second_Screen(self) -> None:
         """
@@ -2334,7 +2310,6 @@ class setting_screen_gui:
         
 
 class WindowGenerator:
-    #fix upating_form_on_canvas for good looks
     """
     A class for managing window settings and operations.
 
@@ -2368,7 +2343,14 @@ class WindowGenerator:
             tuple: A tuple containing the font style, size, and weight.
         """
         return (self.var.FONT_STYLE, self.var.home_text_size, "bold")
-        
+    
+    def __method(self, func:callable, *args) -> None:
+            for item in args:
+                if not item.get():
+                    item.focus_set()
+                    return
+            func()
+            
     def upating_form_on_canvas(self, height:int, width:int, canvas:Canvas,*args:tuple) -> Canvas:
         '''
         this method create a form on a canvas and return it
@@ -2489,13 +2471,15 @@ class WindowGenerator:
             show = "*",
             font = self.font
         )
+        func = lambda : self.__capture_and_close(password1 , window = window ,root_enable = True)
+        
         button = Button(
             master = frame1,
             relief="solid",
             text= "continue",
             bg= "#e6f2ff" ,fg="black",
             font = self.font,
-            command= lambda : self.__capture_and_close(password1 , window = window ,root_enable = True)
+            command = func
         )
         
         lable1.grid(row=0, column=0 , padx= 5, pady= 5)
@@ -2503,6 +2487,7 @@ class WindowGenerator:
         button.grid(row=1,column=0,columnspan=2,sticky='ew', padx=5)
         frame1.pack()
         password1.focus_set()
+        window.bind("<Return>",lambda event: self.__method(func,password1))
         window.wait_window(window)
         
         return self.__value[0]
@@ -2560,13 +2545,16 @@ class WindowGenerator:
             show = "*",
             font = self.font
         )
+        
+        func = lambda : self.__capture_and_close(password1 , password2 , window = window , root_enable = True)
+        
         button = Button(
             master = frame1,
             relief="solid",
             text= "continue",
             bg= "#e6f2ff" ,fg="black",
             font = self.font,
-            command= lambda : self.__capture_and_close(password1 , password2 , window = window , root_enable = True)
+            command= func
         )
         label1.grid(row=0,column=0,padx=5,pady=5)
         label2.grid(row=1,column=0,padx=5,pady=5)
@@ -2575,6 +2563,7 @@ class WindowGenerator:
         button.grid(row=2,column=0,columnspan=2,sticky='ew', padx=5, pady=5)
         password1.focus_set()
         frame1.pack()
+        window.bind("<Return>",lambda event : self.__method(func,password1, password2))
         window.wait_window(window)
         
         return self.__value
@@ -2656,13 +2645,14 @@ class WindowGenerator:
             show = "*",
             font = self.font
         )
+        func = lambda : self.__capture_and_close(account_name, player_name, password1 , password2 , window = window , root_enable = True)
         button = Button(
             master = frame1,
             relief="solid",
             text= "create",
             bg= "#e6f2ff" ,fg="black",
             font = self.font,
-            command= lambda : self.__capture_and_close(account_name, player_name, password1 , password2 , window = window , root_enable = True)
+            command = func
         )
         
         #adding to the window
@@ -2676,6 +2666,7 @@ class WindowGenerator:
         password2.grid(row=3,column=1,padx=5,pady=5)
         button.grid(row=4,column=0,columnspan=2,sticky='ew', padx=5, pady=5)
         account_name.focus_set()
+        window.bind("<Return>",lambda event : self.__method(func,account_name,player_name,password1, password2))
         frame1.pack()
         window.wait_window(window)
         
@@ -2736,13 +2727,14 @@ class WindowGenerator:
             show = "*",
             font = self.font
         )
+        func = lambda : self.__capture_and_close(string_var, password1 , window = window ,root_enable = True)
         button = Button(
             master = frame1,
             relief="solid",
             text= "continue",
             bg= "#e6f2ff" ,fg="black",
             font = self.font,
-            command= lambda : self.__capture_and_close(string_var, password1 , window = window ,root_enable = True)
+            command = func
         )
         
         lable1.grid(row=0, column=0 , padx= 5, pady= 5)
@@ -2752,6 +2744,7 @@ class WindowGenerator:
         button.grid(row=2,column=0,columnspan=2,sticky='ew', padx=5)
         frame1.pack()
         password1.focus_set()
+        window.bind("<Return>",lambda event : self.__method(func,password1))
         window.wait_window(window)
         
         return self.__value
@@ -2775,13 +2768,3 @@ class WindowGenerator:
             self.root.focus_set()
 
 
-
-#for rn everything is fixed code work 100% well just 
-#clearlity work letter on the game_screen and check inisial screen once
-
-#game_screen: the probleam with the strucuture.. not updatable eassily fixing that but later
-#               probleam found from setting screen gui __init__ method wehere
-#               i have to add it to master inside (self.GAME_SCREEN.add_to_Master()) insdie __init__ method
-#               that should happend in Initialize_First_Screen but thats not so try to figure it out
-
-#inisal_screen: just need to check once for imporovemnt and founding any error

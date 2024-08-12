@@ -39,6 +39,7 @@ class Variable:
         self.INCREASE_SPEED_AFTER = 20
         self.game_speed = 100
         self.game_box_size = 30
+        self.update_methods = []
         self.initial_method()
     
     @property
@@ -470,6 +471,7 @@ class Variable:
         
         if os.path.exists(path):
             self.initial_method()
+            self.update_method()
             return True
         
         return False
@@ -569,7 +571,14 @@ class Variable:
         """
         self.update_user_settings()
         self.updaing_game_setting()
-        
+    
+    def add_update_method(self,method_) -> None:
+        self.update_methods.append(method_)
+
+    def update_method(self):
+        for method in self.update_methods:
+            method()
+
 class demo_variable:
     
     def __init__(self, dict1:dict) -> None:

@@ -1,6 +1,7 @@
 from variable import Variable
 from game_screens import inisial_screens, Game_screen, setting_screen_gui , shop_screen , account_screen
-from helper import check_cords_in_range, deep_copy
+from helper import check_cords_in_range
+
 from tkinter import Tk,Frame,Button,Label
 from random import choice
 import webbrowser
@@ -44,6 +45,7 @@ class Game_engion:
         self.MASTER = Master
         self.var = var
         self.GAME_FRAME = Game_screen(self.MASTER, self.var)
+        self.GAME_FRAME.UPDATE()
         self.pause_screen = pause_screen
         
         #varibales needed
@@ -418,13 +420,9 @@ class setting_screen:
             initialize = True
         )
         
-        self._get_arttbutes()
-        
         self.accont_window = account_screen(
             master = self.setting_screen_frame,
             var = self.var,
-            width = self._setting_frame_width,
-            height = self._setting_frame_height,
             root = root,
             change_window = self.setting_screen.change_screen
         )
@@ -432,9 +430,9 @@ class setting_screen:
         self.shop_window = shop_screen(
             master = self.setting_screen_frame,
             var = self.var,
-            width = self._setting_frame_width,
-            height = self._setting_frame_height
         )
+        
+        self.UPDATE()
     
     def _get_arttbutes(self) -> None:
         """
@@ -579,10 +577,11 @@ class setting_screen:
         self.setting_screen.nevigation_button1.unbind("<Button-1>", self._bind_keys_id[4])
         self.setting_screen.nevigation_button2.unbind("<Button-1>", self._bind_keys_id[5])
     
-    def update_size_and_color(self):
+    def UPDATE(self):
         self.setting_screen.update_size_and_color()
         self._get_arttbutes()
-        self.shop_window.update_size_and_color()
+        self.accont_window.update(self._setting_frame_width,self._setting_frame_height)
+        self.shop_window.UPDATE(self._setting_frame_width,self._setting_frame_height)
     
     def ADD_TO_MASTER(self) -> None:
         '''
@@ -599,6 +598,7 @@ class setting_screen:
         self.setting_screen.remove_to_master()
         self.main_frame.pack_forget()
         self.remove_bind_keys()
+
 
 class about_me_class:
     def __init__(self, root: Tk, width: int, height: int, var: Variable, home_screen:inisial_screens) -> None:
@@ -787,9 +787,12 @@ def home_pause_menu():
     home_screen.update_nessassaery(update=True)
 
 def update_everything():
-    pause_menu.update_everything()
-    home_screen.update_everything()
+    pause_menu.update_everything(var)
+    home_screen.update_everything(var)
     game.update_everything()
+    shop.UPDATE()
+    about_me_.update_things()
+    
     root.config(bg = var.CANVAS_COLOR)
 
 def home_screen_inisalization(Master:Tk, var:Variable) -> inisial_screens:
@@ -984,6 +987,8 @@ if __name__ == "__main__":
     game = Game_engion(Master=root, var=var, pause_screen=pause_menu)
     shop = setting_screen(root , var, home_screen = home_screen)
     about_me_ = about_me_class(root,var.game_width,var.game_height,var,home_screen)
+    
+    var.add_update_method(update_everything)
 
     main()
     root.update()
