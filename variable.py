@@ -576,6 +576,7 @@ class Variable:
         self.update_methods.append(method_)
 
     def update_method(self):
+        print(" me happend in var")
         for method in self.update_methods:
             method()
 

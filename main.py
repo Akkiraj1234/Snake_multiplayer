@@ -315,7 +315,7 @@ class Game_engion:
         self.PAUSE_GAME(status)
     
     def update_everything(self):
-        self.GAME_FRAME.update_everything()
+        self.GAME_FRAME.UPDATE()
         
     def set_everrything_to_default(self) -> None:
         """
@@ -448,14 +448,14 @@ class setting_screen:
     def __save_button_method(self, event) -> None:
         new_info_dict = self.accont_window.get_value()
         self.var.update_by_dict(new_info_dict)
+        self.UPDATE()
     
     def __back_button_method(self, event) -> None:
         self.REMOVE_TO_MASTER()
         self.home_screen.add_to_master()
         self.home_screen.start_animation(self.var.home_speed)
         self.home_screen.update_nessassaery(update=True)
-        self.home_screen.update_everything(self.var)
-        game.update_everything()
+        update_everything()
     
     def __shift_button_button1(self, event) -> None:
         """
@@ -787,6 +787,7 @@ def home_pause_menu():
     home_screen.update_nessassaery(update=True)
 
 def update_everything():
+    root.geometry(f"{var.game_width+5}x{var.game_height+5}")
     pause_menu.update_everything(var)
     home_screen.update_everything(var)
     game.update_everything()
@@ -973,7 +974,7 @@ def main():
     root.config(bg=var.CANVAS_COLOR)
     home_screen.start_animation(var.game_speed)
     
-    root.resizable(width=False,height=False)
+    # root.resizable(width=False,height=False)
     # root.protocol("WM_DELETE_WINDOW", on_close)
     
 
